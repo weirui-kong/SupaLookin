@@ -21,8 +21,6 @@
 #import "LKAboutWindowController.h"
 #import "LKJSONAttributeWindowController.h"
 #import "LKJSONAttributeViewController.h"
-@import AppCenter;
-@import AppCenterAnalytics;
 
 @interface LKNavigationManager ()
 

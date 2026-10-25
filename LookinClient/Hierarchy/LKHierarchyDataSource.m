@@ -15,8 +15,6 @@
 #import "LookinDisplayItem+LookinClient.h"
 #import "LKDanceUIAttrMaker.h"
 #import "LKStaticAsyncUpdateManager.h"
-@import AppCenter;
-@import AppCenterAnalytics;
 
 @interface LKSelectColorItem : NSObject
 
@@ -155,8 +153,6 @@
     // no preview
     NSSet<NSString *> *classesWithNoPreview = [NSSet setWithArray:@[@"UITextEffectsWindow", @"UIRemoteKeyboardWindow"]];
     
-    __block BOOL hasCustomSubviews = NO;
-    __block BOOL hasCustomAttrs = NO;
     [flatItems enumerateObjectsUsingBlock:^(LookinDisplayItem * _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
         if ([obj itemIsKindOfClassesWithNames:classesPreferredToCollapse]) {
             [obj enumerateSelfAndChildren:^(LookinDisplayItem *item) {
@@ -192,16 +188,7 @@
         if (obj.customInfo.danceuiSource.length > 0) {
             [LKDanceUIAttrMaker makeDanceUIJumpAttribute:obj danceSource:obj.customInfo.danceuiSource];
         }
-        
-        if (obj.isUserCustom) {
-            hasCustomSubviews = YES;
-        }
-        if (obj.customAttrGroupList.count > 0) {
-            hasCustomAttrs = YES;
-        }
     }];
-    [MSACAnalytics trackEvent:@"CustomSubview" withProperties:@{@"Has": hasCustomSubviews ? @"True" : @"False"}];
-    [MSACAnalytics trackEvent:@"CustomAttrs" withProperties:@{@"Has": hasCustomAttrs ? @"True" : @"False"}];
     
     self.flatItems = flatItems;
     
@@ -664,8 +651,6 @@
 
 // 有可能从 normal 状态或 search 状态进入该状态
 - (void)focusDisplayItem:(LookinDisplayItem *)item {
-    [MSACAnalytics trackEvent:@"Focus"];
-
     if (!item) {
         NSAssert(NO, @"");
         return;

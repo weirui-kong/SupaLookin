@@ -25,8 +25,6 @@
 #import "LKTutorialManager.h"
 #import "LKPreferenceManager.h"
 #import "LKMeasureController.h"
-@import AppCenter;
-@import AppCenterAnalytics;
 
 NSString *const LKAppShowConsoleNotificationName = @"LKAppShowConsoleNotificationName";
 
@@ -222,8 +220,6 @@ NSString *const LKAppShowConsoleNotificationName = @"LKAppShowConsoleNotificatio
         AlertError(error, self.view.window);
     }];
     [preferenceManager.fastMode subscribe:self action:@selector(_handleFastModeChange:) relatedObject:nil sendAtOnce:YES];
-    
-    [[LKPreferenceManager mainManager] reportStatistics];
 }
 
 - (void)viewDidLayout {
@@ -246,7 +242,6 @@ NSString *const LKAppShowConsoleNotificationName = @"LKAppShowConsoleNotificatio
     @weakify(self);
     [[NSNotificationCenter.defaultCenter rac_addObserverForName:LKAppShowConsoleNotificationName object:nil] subscribeNext:^(NSNotification * _Nullable x) {
         @strongify(self);
-        [MSACAnalytics trackEvent:@"PrintItem"];
         
         BOOL isFirstTimeToShowConsole = (self.consoleController == nil);
         self.showConsole = true;
@@ -265,8 +260,6 @@ NSString *const LKAppShowConsoleNotificationName = @"LKAppShowConsoleNotificatio
 - (void)setShowConsole:(BOOL)showConsole {
     _showConsole = showConsole;
     if (showConsole) {
-        [MSACAnalytics trackEvent:@"Launch Console"];
-        
         if (!self.consoleController) {
             self.consoleController = [[LKConsoleViewController alloc] initWithHierarchyDataSource:[LKStaticHierarchyDataSource sharedInstance]];
             [self addChildViewController:self.consoleController];

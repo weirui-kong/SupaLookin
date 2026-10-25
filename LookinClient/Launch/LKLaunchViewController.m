@@ -15,7 +15,6 @@
 #import "LKNavigationManager.h"
 #import "LKPreferenceManager.h"
 #import "LKTextControl.h"
-#import "LKPerformanceReporter.h"
 
 @interface LKLaunchViewController () <NSGestureRecognizerDelegate>
 
@@ -187,8 +186,6 @@
     }
     self.isEnteringApp = YES;
     
-    [LKPerformanceReporter.sharedInstance willStartReload];
-    
     @weakify(self);
     [[app fetchHierarchyData] subscribeNext:^(LookinHierarchyInfo *info) {
         @strongify(self);
@@ -204,9 +201,6 @@
                 [[LKNavigationManager sharedInstance] closeLaunch];
             }];
         }
-        
-        [LKPerformanceReporter.sharedInstance didFetchHierarchy];
-        
     } error:^(NSError * _Nullable error) {
         @strongify(self);
         [self _handleEnterAppFailWithError:error];

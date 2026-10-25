@@ -16,7 +16,6 @@
 #import "LookinHierarchyInfo.h"
 #import "LookinStaticAsyncUpdateTask.h"
 #import "LKNavigationManager.h"
-#import "LKPerformanceReporter.h"
 #import "LookinDisplayItem+LookinClient.h"
 #import "LKPreferenceManager.h"
 #import "LKVersionComparer.h"
@@ -398,7 +397,6 @@
             NSAssert(NO, @"");
         }
         [self notifyTasksCountToDelegate];
-        [LKPerformanceReporter.sharedInstance didComplete];
         
         if (completionBlock) {
             completionBlock();

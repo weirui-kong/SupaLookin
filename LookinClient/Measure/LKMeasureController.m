@@ -15,8 +15,6 @@
 #import "LKMeasureResultView.h"
 #import "LKNavigationManager.h"
 #import "LKPreferenceSwitchView.h"
-@import AppCenter;
-@import AppCenterAnalytics;
 
 @interface LKMeasureController ()
 
@@ -85,8 +83,6 @@
             
         case LookinMeasureState_unlocked:
             // 由快捷键触发
-            [MSACAnalytics trackEvent:@"Start Measure" withProperties:@{@"shortcut":@"YES"}];
-            
             if (!self.lockSwitchButton) {
                 self.lockSwitchButton = [NSButton new];
                 [self.lockSwitchButton setButtonType:NSButtonTypeSwitch];
@@ -101,8 +97,6 @@
             break;
             
         case LookinMeasureState_locked: {
-            [MSACAnalytics trackEvent:@"Start Measure" withProperties:@{@"shortcut":@"NO"}];
-            
             if (!self.shortcutLabel) {
                 self.shortcutLabel = [LKLabel new];
                 self.shortcutLabel.stringValue = NSLocalizedString(@"shortcut: holding \"option\" key", nil);

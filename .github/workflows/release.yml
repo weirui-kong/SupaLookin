@@ -41,14 +41,11 @@ jobs:
           git push origin HEAD:master
           git push origin "v${{ steps.bump.outputs.new_version }}"
 
-      - name: Install CocoaPods dependencies
-        run: pod install --repo-update
-
       - name: Build (Release, ad-hoc signed)
         run: |
           set -euo pipefail
           xcodebuild \
-            -workspace SupaLookin.xcworkspace \
+            -project SupaLookin.xcodeproj \
             -scheme SupaLookin \
             -configuration Release \
             -derivedDataPath build \

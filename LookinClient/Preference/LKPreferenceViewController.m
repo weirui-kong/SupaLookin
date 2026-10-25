@@ -8,7 +8,6 @@
 
 #import "LKPreferenceViewController.h"
 #import "LKPreferenceManager.h"
-#import "LKPreferenceSwitchView.h"
 #import "LKPreferencePopupView.h"
 #import "LKNavigationManager.h"
 #import "LKMessageManager.h"
@@ -18,7 +17,6 @@
 @property(nonatomic, strong) LKPreferencePopupView *view_doubleClick;
 @property(nonatomic, strong) LKPreferencePopupView *view_appearance;
 @property(nonatomic, strong) LKPreferencePopupView *view_colorFormat;
-@property(nonatomic, strong) LKPreferenceSwitchView *view_enableLog;
 @property(nonatomic, strong) LKPreferencePopupView *view_contrast;
 
 //@property(nonatomic, strong) NSButton *debugButton;
@@ -65,12 +63,6 @@
     };
     [self.view addSubview:self.view_doubleClick];
     
-    self.view_enableLog = [[LKPreferenceSwitchView alloc] initWithTitle:NSLocalizedString(@"Share analytics with Lookin", nil) message:NSLocalizedString(@"Help to improve Lookin by automatically sending diagnostics and usage data.", nil)];
-    self.view_enableLog.didChange = ^(BOOL isChecked) {
-        [LKPreferenceManager mainManager].enableReport = isChecked;
-    };
-    [self.view addSubview:self.view_enableLog];
-    
 //    self.debugButton = [NSButton lk_normalButtonWithTitle:@"Debug" target:self action:@selector(_handleDebugButton)];
 //    [self.view addSubview:self.debugButton];
     
@@ -93,7 +85,6 @@
 
     self.view_appearance.selectedIndex = manager.appearanceType;
     self.view_doubleClick.selectedIndex = manager.doubleClickBehavior;
-    self.view_enableLog.isChecked = manager.enableReport;
 }
 
 - (void)viewDidLayout {
@@ -108,12 +99,6 @@
     
     $(self.view_doubleClick).x(insets.left).toRight(insets.right).y(self.view_contrast.$maxY).height(50);
     
-    __block CGFloat y = self.view_doubleClick.$maxY;
-    [$(self.view_enableLog).array enumerateObjectsUsingBlock:^(NSView *  _Nonnull view, NSUInteger idx, BOOL * _Nonnull stop) {
-        $(view).x(115).toRight(insets.right).y(y).heightToFit;
-        y = view.$maxY + 5;
-    }];
-    
     $(self.resetButton).width(120).bottom(insets.bottom).right(insets.right);
 //    $(self.debugButton).bottom(insets.bottom).maxX(self.resetButton.$x - 15);
 }
@@ -121,7 +106,6 @@
 - (void)_handleResetButton {
     LKPreferenceManager *manager = [LKPreferenceManager mainManager];
     manager.appearanceType = LookinPreferredAppeanranceTypeSystem;
-    manager.enableReport = YES;
     manager.rgbaFormat = YES;
     manager.doubleClickBehavior = LookinDoubleClickBehaviorCollapse;
     manager.imageContrastLevel = 0;

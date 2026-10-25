@@ -18,8 +18,6 @@
 #import "LKWindowController.h"
 #include <mach-o/dyld.h>
 #import <Sparkle/Sparkle.h>
-@import AppCenter;
-@import AppCenterAnalytics;
 
 static NSUInteger const kTag_About = 11;
 static NSUInteger const kTag_Preferences = 12;
@@ -61,6 +59,7 @@ static NSUInteger const kTag_Acknowledgements = 72;
 @interface LKAppMenuManager ()
 
 @property(nonatomic, copy) NSDictionary<NSNumber *, NSString *> *delegatingTagToSelMap;
+@property(nonatomic, strong) SPUStandardUpdaterController *updaterController;
 
 @end
 
@@ -80,6 +79,8 @@ static NSUInteger const kTag_Acknowledgements = 72;
 }
 
 - (void)setup {
+    self.updaterController = [[SPUStandardUpdaterController alloc] initWithStartingUpdater:YES updaterDelegate:nil userDriverDelegate:nil];
+    
     self.delegatingTagToSelMap = @{
                                    @(kTag_Reload):NSStringFromSelector(@selector(appMenuManagerDidSelectReload)),
                                    @(kTag_Dimension):NSStringFromSelector(@selector(appMenuManagerDidSelectDimension)),
@@ -285,8 +286,6 @@ static NSUInteger const kTag_Acknowledgements = 72;
         return;
     }
     [wc appMenuManagerDidSelectExpansionIndex:index];
-    
-    [MSACAnalytics trackEvent:@"Hierarchy Expansion" withProperties:@{@"level":[NSString stringWithFormat:@"%@", idxNum]}];
 }
 
 - (void)_handleShowConfig {
@@ -346,7 +345,7 @@ static NSUInteger const kTag_Acknowledgements = 72;
 }
 
 - (void)_handleCheckUpdates {
-    [[SUUpdater sharedUpdater] checkForUpdates:self];
+    [self.updaterController checkForUpdates:self];
 }
 
 - (void)_handleShowCocoaPods {

@@ -63,8 +63,6 @@ typedef NS_ENUM(NSInteger, LookinMeasureState) {
 // 范围是 0 ～ 1
 @property(nonatomic, strong, readonly) LookinDoubleMsgAttribute *zInterspace;
 
-@property(nonatomic, assign) BOOL enableReport;
-
 @property(nonatomic, assign) BOOL rgbaFormat;
 
 /// 0 ~ 2
@@ -113,7 +111,5 @@ extern NSString *const NotificationName_DidChangeSectionShowing;
 + (BOOL)popupToAskDoubleClickBehaviorIfNeededWithWindow:(NSWindow *)window;
 
 - (void)reset;
-
-- (void)reportStatistics;
 
 @end

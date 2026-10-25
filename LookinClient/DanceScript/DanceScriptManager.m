@@ -7,8 +7,6 @@
 //
 
 #import "DanceScriptManager.h"
-@import AppCenter;
-@import AppCenterAnalytics;
 
 @implementation DanceScriptManager
 
@@ -115,8 +113,6 @@
     
     // 输出脚本执行结果
     NSLog(@"脚本执行输出：%@", output);
-    
-    [MSACAnalytics trackEvent:@"DanceJump"];
 }
 
 @end

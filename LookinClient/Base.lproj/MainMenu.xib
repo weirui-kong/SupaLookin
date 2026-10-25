@@ -243,6 +243,5 @@
             <point key="canvasLocation" x="139" y="154"/>
         </menu>
         <userDefaultsController representsSharedInstance="YES" id="KGc-ZG-ddL"/>
-        <customObject id="ljh-qk-5vX" customClass="SUUpdater"/>
     </objects>
 </document>

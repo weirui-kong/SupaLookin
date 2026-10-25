@@ -31,8 +31,6 @@
 "Color Format" = "颜色格式";
 "Color will be displayed in format like (255, 12, 34, 0.5). Alpha value is between 0 and 1." = "将以诸如 (255, 12, 34, 0.5) 这样的格式显示色值信息，其中透明度 A 的范围是 0 ~ 1";
 "Color will be displayed in format like #7e7e7eff. The components are #RRGGBBAA." = "将以诸如 #7e7e7eff 这样的格式显示色值信息，顺序是 #RRGGBBAA";
-"Share analytics with Lookin" = "分享诊断和统计数据";
-"Help to improve Lookin by automatically sending diagnostics and usage data." = "将崩溃数据以及与你使用方式相关的统计数据分享给我们，以帮助我们改善该程序";
 "Reset" = "重置偏好设置";
 
 "Show layer outline" = "显示图层边框";

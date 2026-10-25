@@ -29,8 +29,6 @@
 "Color Format" = "Color Format";
 "Color will be displayed in format like (255, 12, 34, 0.5). Alpha value is between 0 and 1." = "Color will be displayed in format like (255, 12, 34, 0.5). Alpha value is between 0 and 1.";
 "Color will be displayed in format like #7e7e7eff. The components are #RRGGBBAA." = "Color will be displayed in format like #7e7e7eff. The components are #RRGGBBAA.";
-"Share analytics with Lookin" = "Share analytics with Lookin";
-"Help to improve Lookin by automatically sending diagnostics and usage data." = "Help to improve Lookin by automatically sending diagnostics and usage data.";
 "Reset" = "Reset";
 
 "Show layer outline" = "Show layer outline";

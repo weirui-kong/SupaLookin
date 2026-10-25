@@ -27,13 +27,9 @@
 #import "LookinHierarchyFile.h"
 #import "LKPreviewView.h"
 #import "LKHierarchyView.h"
-#import "LKPerformanceReporter.h"
 #import "LKMessageManager.h"
 #import "LKServerVersionRequestor.h"
 #import "LKVersionComparer.h"
-
-@import AppCenter;
-@import AppCenterAnalytics;
 
 @interface LKStaticWindowController () <NSToolbarDelegate, LKStaticAsyncUpdateManagerDelegate>
 
@@ -161,7 +157,6 @@
     NSMutableArray *ret = @[LKToolBarIdentifier_Reload, LKToolBarIdentifier_FastMode, LKToolBarIdentifier_App, NSToolbarFlexibleSpaceItemIdentifier, LKToolBarIdentifier_Dimension, LKToolBarIdentifier_Rotation, LKToolBarIdentifier_Setting, NSToolbarFlexibleSpaceItemIdentifier, LKToolBarIdentifier_Scale, NSToolbarFlexibleSpaceItemIdentifier, LKToolBarIdentifier_Measure, LKToolBarIdentifier_Console].mutableCopy;
     if ([[[LKMessageManager sharedInstance] queryMessages] count] > 0) {
         [ret addObject:LKToolBarIdentifier_Message];
-        [MSACAnalytics trackEvent:@"Show Notification"];
     }
     return [ret copy];;
 }
@@ -235,15 +230,11 @@
     
     [self.viewController.progressView animateToProgress:InitialIndicatorProgressWhenFetchHierarchy];
     
-    [LKPerformanceReporter.sharedInstance willStartReload];
     @weakify(self);
     [[app fetchHierarchyData] subscribeNext:^(LookinHierarchyInfo *info) {
         [self.viewController.progressView finishWithCompletion:nil];
         [[LKStaticHierarchyDataSource sharedInstance] reloadWithHierarchyInfo:info keepState:YES];
         self.isFetchingHierarchy = NO;
-        
-        [LKPerformanceReporter.sharedInstance didFetchHierarchy];
-        
     } error:^(NSError * _Nullable error) {
         // error
         @strongify(self);
@@ -351,12 +342,6 @@
     }
     
     [NSMenu popUpContextMenu:menu withEvent:[[NSApplication sharedApplication] currentEvent] forView:button];
-    
-    [MSACAnalytics trackEvent:@"Open Notification" withProperties:@{
-        @"Jobs": [NSString stringWithFormat:@"%@", @([msgs containsObject:LKMessage_Jobs])],
-        @"SwiftSubspec": [NSString stringWithFormat:@"%@", @([msgs containsObject:LKMessage_SwiftSubspec])],
-        @"LowServer": [NSString stringWithFormat:@"%@", @([msgs containsObject:LKMessage_NewServerVersion])],
-    }];
 }
 
 - (void)_handleFreeRotation {
@@ -461,8 +446,6 @@
             }
         }
     }];
-    
-    [MSACAnalytics trackEvent:@"Export Document"];
 }
 
 - (void)appMenuManagerDidSelectOpenInNewWindow {
@@ -471,9 +454,6 @@
     file.serverVersion = newHierarchyInfo.serverVersion;
     file.hierarchyInfo = newHierarchyInfo;
     [[LKNavigationManager sharedInstance] showReaderWithHierarchyFile:file title:nil];
-    
-    [MSACAnalytics trackEvent:@"Open New Window"];
-
 }
 
 - (void)appMenuManagerDidSelectFilter {

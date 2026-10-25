@@ -1,8 +1,8 @@
-Pods/
 Build/
+.build/
+.swiftpm/
 DerivedData/
 SupaLookin.xcodeproj/xcuserdata/
-SupaLookin.xcworkspace/xcuserdata/
 *.xcuserstate
 .DS_Store
 Gemfile

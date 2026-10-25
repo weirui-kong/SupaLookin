@@ -10,8 +10,6 @@
 #import "LookinDashboardBlueprint.h"
 #import "LKPreviewView.h"
 #import "LKTutorialManager.h"
-@import AppCenter;
-@import AppCenterAnalytics;
 
 NSString *const NotificationName_DidChangeSectionShowing = @"NotificationName_DidChangeSectionShowing";
 
@@ -23,7 +21,6 @@ const CGFloat LKInitialPreviewScale = 0.27;
 static NSString * const Key_PreviousClientVersion = @"preVer";
 static NSString * const Key_ShowOutline = @"showOutline";
 static NSString * const Key_ShowHiddenItems = @"showHiddenItems";
-static NSString * const Key_EnableReport = @"enableReport";
 static NSString * const Key_RgbaFormat = @"egbaFormat";
 static NSString * const Key_ZInterspace = @"zInterspace_v095";
 static NSString * const Key_AppearanceType = @"appearanceType";
@@ -92,14 +89,6 @@ static NSString * const Key_ReceivingConfigTime_Class = @"ConfigTime_Class";
             [userDefaults setObject:@(NO) forKey:Key_ShowHiddenItems];
         }
         [self.showHiddenItems subscribe:self action:@selector(_handleShowHiddenItemsChange:) relatedObject:nil];
-        
-        NSNumber *obj_enableReport = [userDefaults objectForKey:Key_EnableReport];
-        if (obj_enableReport != nil) {
-            _enableReport = [obj_enableReport boolValue];
-        } else {
-            _enableReport = YES;
-            [userDefaults setObject:@(_enableReport) forKey:Key_EnableReport];
-        }
         
         NSNumber *obj_doubleClickBehavior = [userDefaults objectForKey:Key_DoubleClickBehavior];
         if (obj_doubleClickBehavior) {
@@ -215,18 +204,6 @@ static NSString * const Key_ReceivingConfigTime_Class = @"ConfigTime_Class";
     if (self.shouldStoreToLocal) {
         [[NSUserDefaults standardUserDefaults] setObject:@(param.boolValue) forKey:Key_ShowHiddenItems];
     }
-}
-
-- (void)setEnableReport:(BOOL)enableReport {
-    if (_enableReport == enableReport) {
-        return;
-    }
-    _enableReport = enableReport;
-    if (self.shouldStoreToLocal) {
-        [[NSUserDefaults standardUserDefaults] setObject:@(enableReport) forKey:Key_EnableReport];
-    }
-    
-    MSACAppCenter.enabled = enableReport;
 }
 
 - (void)setRgbaFormat:(BOOL)rgbaFormat {
@@ -484,16 +461,6 @@ static NSString * const Key_ReceivingConfigTime_Class = @"ConfigTime_Class";
 
 - (void)reset {
     [LKTutorialManager sharedInstance].hasAskedDoubleClickBehavior = NO;
-}
-
-- (void)reportStatistics {
-    [MSACAnalytics trackEvent:@"Preference" withProperties:@{
-        @"DoubleClick": [NSString stringWithFormat:@"%@", @(self.doubleClickBehavior)],
-        @"ShowHidden": [NSString stringWithFormat:@"%@", @(self.showHiddenItems.currentBOOLValue)],
-        @"RGBA": [NSString stringWithFormat:@"%@", @(self.rgbaFormat)],
-        @"FreeRotation": [NSString stringWithFormat:@"%@", @(self.freeRotation.currentBOOLValue)],
-        @"FastMode": [NSString stringWithFormat:@"%@", @(self.fastMode.currentBOOLValue)]
-    }];
 }
 
 @end

@@ -24,8 +24,6 @@
 #import "LKDashboardSearchMethodsDataSource.h"
 #import "LookinCustomAttrModification.h"
 #import "LKDashboardTextControlEditingFlag.h"
-@import AppCenter;
-@import AppCenterAnalytics;
 
 @interface LKDashboardViewController () <LKDashboardCardViewDelegate, LKDashboardHeaderViewDelegate, LKDashboardSearchPropViewDelegate, LKDashboardSearchMethodsViewDelegate>
 
@@ -353,8 +351,6 @@
         return;
     }
     
-    [MSACAnalytics trackEvent:@"SearchAttr"];
-    
     searchString = searchString.lowercaseString;
     
     // 以下是在渲染 attrs
@@ -451,8 +447,6 @@
 #pragma mark - <LKDashboardSearchMethodsViewDelegate>
 
 - (void)dashboardSearchMethodsView:(LKDashboardSearchMethodsView *)view requestToInvokeMethod:(NSString *)method oid:(unsigned long)oid {
-    [MSACAnalytics trackEvent:@"ClickServerAttr"];
-    
     RACSignal *signal;
     if (oid == 0 || method.length == 0) {
         signal = [RACSignal error:LookinErr_Inner];
