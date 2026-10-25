@@ -67,3 +67,7 @@ Fix: added `com.apple.security.cs.disable-library-validation` to `LookinClient/L
 ## Update: CocoaPods removed (see `20261025-spm-migration.md`)
 
 All dependencies now come from Swift Package Manager: local packages under `Packages/`, plus Sparkle from its remote repository, pinned in the committed `Package.resolved`. The workflow no longer runs `pod install`, and builds with `xcodebuild -project SupaLookin.xcodeproj` instead of `-workspace SupaLookin.xcworkspace`; `xcodebuild` resolves the packages itself. The ad-hoc signing overrides are unchanged, and so is the `disable-library-validation` entitlement, since Sparkle is still an embedded dynamic framework.
+
+## Update: runner moved to macos-26 (see `20261025-swift-rewrite-m0-scaffold.md`)
+
+`SupaLookin.xcodeproj` now uses the Xcode 16 project format (`objectVersion = 77`), which the `macos-14` image's default Xcode can't open. The release job runs on `macos-26`, whose default Xcode is 26.x. It still builds and releases only the `SupaLookin` scheme.

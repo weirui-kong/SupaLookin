@@ -10,7 +10,9 @@ Shared instructions for any coding agent working in this repository (Claude Code
 
    - **Behavior is 1:1.** Logic, data flow, UI layout, interactions, user-facing strings and localization keys match the Objective-C app (`LookinClient/`). Don't redesign, "improve", or drop behavior while porting; any intentional behavior change goes through its own spec.
    - **Names map 1:1.** A ported type keeps its original name, `LK` prefix included (`LKConnectionManager` stays `LKConnectionManager`), so every Swift type can be traced back to its Objective-C counterpart. Members take the name the Swift importer would give the original selector.
+   - **Language-level optimizations are allowed; behavior is not negotiable.** Swift-specific improvements (types, safety, concurrency, simpler data flow) are welcome, but business logic, UI presentation and interaction logic must match the original exactly.
    - **Code style is Swift's, not transliterated Objective-C.** Use the Swift API Design Guidelines and native Swift constructs (value types, optionals, enums with associated values, `async`/`await`, Combine) wherever they express the same behavior. Don't reproduce Objective-C-only patterns such as ReactiveObjC signals or ShortCocoa's `$()` syntax.
+   - **No Objective-C in the Swift target.** It has no `.h` / `.m` files and no bridging header. `@objc` appears only where AppKit's runtime leaves no Swift route (nib-instantiated classes, selector-based target-action, KVO on AppKit-owned properties). Objective-C lives only under `Packages/`.
    - **Objective-C code keeps Lookin's style.** When touching the Objective-C app or the vendored packages under `Packages/`, match the existing code's conventions as before.
 
    **File header, new files only:** every newly created source file uses this header (matches the original Lookin comment-header shape, with the new author line):
@@ -26,7 +28,7 @@ Shared instructions for any coding agent working in this repository (Claude Code
 
    Do not retrofit this onto existing files — leave their original headers (e.g. `Created by 李凯 on ...`) untouched. A Swift file ported from an Objective-C file is a new file and gets this header.
 
-   **Comments:** don't write a comment unless it's necessary; if it is, keep it concise. Never write a comment that describes what the code does — add one only when *not* having it would leave a reader confused or likely to misread the code (a non-obvious *why*: a workaround, a quirk, a subtle constraint). Leave the original repository's existing comments untouched; only touch one if there's a specific need to (e.g. the code it describes changed). When porting, carry over an original comment only if it still explains a non-obvious *why* in the Swift code.
+   **Comments:** don't write a comment unless it's necessary; if it is, keep it concise. Never write a comment that describes what the code does — add one only when *not* having it would leave a reader confused or likely to misread the code (a non-obvious *why*: a workaround, a quirk, a subtle constraint). Leave the original repository's existing comments untouched; only touch one if there's a specific need to (e.g. the code it describes changed). When porting, the original comments may be carried over into the Swift code. Commented-out code is not ported.
 
 ## Project context
 

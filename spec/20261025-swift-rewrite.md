@@ -119,3 +119,18 @@ Done under its own spec once M1–M5 have passed their parity checks:
 - SwiftUI.
 - The MCP server's design, which goes in its own spec.
 - Moving updates to a SupaLookin-owned appcast.
+
+## Update: no Objective-C in the main project
+
+The Swift target becomes the app's main project at cutover, so it contains no Objective-C from the start:
+
+- **Sources:** `SupaLookin/` and `SupaLookinNextTests/` hold only Swift sources and resources. No `.h` / `.m` files, no bridging header. Objective-C lives only under `Packages/`: LookinShared permanently, and ReactiveObjC until cutover. The Swift target never links ReactiveObjC.
+- **`@objc`:** `@objc`, `@objc dynamic` and `#selector` appear only where AppKit's runtime leaves no Swift route:
+  - classes and outlets instantiated from a nib
+  - target-action on menus and controls that have no closure-based alternative
+  - KVO on AppKit-owned properties
+  
+  Everywhere else the code uses closures, Combine and Swift protocols.
+- **`NSObject`:** a type subclasses `NSObject` only when an AppKit or Foundation API requires it, such as delegates, data sources and `NSCoding`.
+
+After cutover deletes `LookinClient/`, the main project has no Objective-C sources at all.
