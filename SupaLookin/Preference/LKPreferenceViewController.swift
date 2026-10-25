@@ -17,6 +17,9 @@ final class LKPreferenceViewController: LKBaseViewController {
     private var view_colorFormat: LKPreferencePopupView!
     private var view_contrast: LKPreferencePopupView!
     private var resetButton: NSButton!
+    private var view_mcp: LKPreferencePopupView!
+    private var mcpStatusLabel: LKLabel!
+    private var mcpCopyButton: NSButton!
 
     override var view: NSView {
         didSet {
@@ -60,6 +63,33 @@ final class LKPreferenceViewController: LKBaseViewController {
         }
         view.addSubview(view_doubleClick)
 
+        let mcpServer = LKMCPServer.sharedInstance
+        view_mcp = LKPreferencePopupView(title: NSLocalizedString("MCP Server", comment: ""), message: nil, options: [NSLocalizedString("On", comment: ""), NSLocalizedString("Off", comment: "")])
+        view_mcp.buttonX = controlX
+        view_mcp.didChange = { selectedIndex in
+            mcpServer.isEnabled = selectedIndex == 0
+        }
+        view.addSubview(view_mcp)
+
+        mcpStatusLabel = LKLabel()
+        mcpStatusLabel.font = .systemFont(ofSize: LKHelper.isEnglish ? 12 : 13)
+        mcpStatusLabel.textColor = .secondaryLabelColor
+        mcpStatusLabel.lineBreakMode = .byTruncatingMiddle
+        view.addSubview(mcpStatusLabel)
+
+        mcpCopyButton = NSButton.normalButton(title: NSLocalizedString("Copy Command", comment: "")) { _ in
+            NSPasteboard.general.clearContents()
+            NSPasteboard.general.setString(mcpServer.clientCommand, forType: .string)
+        }
+        view.addSubview(mcpCopyButton)
+
+        // Emits the current status right away, so every view it touches must exist by now
+        mcpServer.statusPublisher
+            .sink { [weak self] status in
+                self?.renderMCPStatus(status)
+            }
+            .store(in: &cancellables)
+
         resetButton = NSButton.normalButton(title: NSLocalizedString("Reset", comment: "")) { [unowned self] _ in
             self.handleResetButton()
         }
@@ -75,6 +105,21 @@ final class LKPreferenceViewController: LKBaseViewController {
         view_contrast.selectedIndex = manager.imageContrastLevel
         view_appearance.selectedIndex = manager.appearanceType.rawValue
         view_doubleClick.selectedIndex = manager.doubleClickBehavior.rawValue
+        view_mcp.selectedIndex = LKMCPServer.sharedInstance.isEnabled ? 0 : 1
+    }
+
+    private func renderMCPStatus(_ status: LKMCPServerStatus) {
+        switch status {
+        case .stopped:
+            mcpStatusLabel.stringValue = NSLocalizedString("Stopped", comment: "")
+        case .starting:
+            mcpStatusLabel.stringValue = NSLocalizedString("Starting…", comment: "")
+        case .running(let url):
+            mcpStatusLabel.stringValue = String(format: NSLocalizedString("Running at %@", comment: ""), url.absoluteString)
+        case .failed(let message):
+            mcpStatusLabel.stringValue = message
+        }
+        mcpCopyButton.isEnabled = status != .stopped
     }
 
     override func viewDidLayout() {
@@ -87,6 +132,10 @@ final class LKPreferenceViewController: LKBaseViewController {
         view_contrast.setX(insets.left).extendToRight(insets.right).setY(view_colorFormat.frame.maxY).setHeight(65)
 
         view_doubleClick.setX(insets.left).extendToRight(insets.right).setY(view_contrast.frame.maxY).setHeight(50)
+
+        view_mcp.setX(insets.left).extendToRight(insets.right).setY(view_doubleClick.frame.maxY).setHeight(50)
+        mcpCopyButton.fitSize().setX(insets.left + view_mcp.buttonX + 210).setY(view_mcp.frame.minY - 3)
+        mcpStatusLabel.setX(insets.left + view_mcp.buttonX).extendToRight(insets.right).fitHeight().setY(view_mcp.frame.minY + 28)
 
         resetButton.setWidth(120).alignBottom(insets.bottom).alignRight(insets.right)
     }

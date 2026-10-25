@@ -15,7 +15,7 @@ final class LKDashboardAttributeConstraintsItemControl: LKTextControl {
 
     var constraint: LookinAutoLayoutConstraint? {
         didSet {
-            label.stringValue = constraint.map { string(from: $0) } ?? ""
+            label.stringValue = constraint?.summaryText ?? ""
             updateLabelColor()
         }
     }
@@ -39,31 +39,6 @@ final class LKDashboardAttributeConstraintsItemControl: LKTextControl {
                 label.textColor = NSColor(lookinRed: 150, green: 151, blue: 152)
             }
         }
-    }
-
-    private func string(from constraint: LookinAutoLayoutConstraint) -> String {
-        var string = "\(LookinAutoLayoutConstraint.description(withItemObject: constraint.firstItem, type: constraint.firstItemType, detailed: false)).\(LookinAutoLayoutConstraint.description(withAttributeInt: constraint.firstAttribute)) \(LookinAutoLayoutConstraint.symbol(withRelation: constraint.relation))"
-
-        if constraint.secondAttribute == 0 {
-            string += " \(NSString.lookin_string(from: constraint.constant, decimal: 3) ?? "")"
-        } else {
-            string += " \(LookinAutoLayoutConstraint.description(withItemObject: constraint.secondItem, type: constraint.secondItemType, detailed: false)).\(LookinAutoLayoutConstraint.description(withAttributeInt: constraint.secondAttribute))"
-
-            if constraint.multiplier != 1 {
-                string += " * \(NSString.lookin_string(from: constraint.multiplier, decimal: 3) ?? "")"
-            }
-            if constraint.constant > 0 {
-                string += " + \(NSString.lookin_string(from: constraint.constant, decimal: 3) ?? "")"
-            } else if constraint.constant < 0 {
-                string += " - \(NSString.lookin_string(from: -constraint.constant, decimal: 3) ?? "")"
-            }
-        }
-
-        if constraint.priority != 1000 {
-            string += " @ \(NSNumber(value: constraint.priority))"
-        }
-
-        return string
     }
 
     override var shouldTrackMouseEnteredAndExited: Bool {

@@ -89,4 +89,30 @@ extension LookinAutoLayoutConstraint {
             return "?"
         }
     }
+
+    // Shared by the constraints card and MCP's get_item
+    var summaryText: String {
+        var string = "\(LookinAutoLayoutConstraint.description(withItemObject: firstItem, type: firstItemType, detailed: false)).\(LookinAutoLayoutConstraint.description(withAttributeInt: firstAttribute)) \(LookinAutoLayoutConstraint.symbol(withRelation: relation))"
+
+        if secondAttribute == 0 {
+            string += " \(NSString.lookin_string(from: constant, decimal: 3) ?? "")"
+        } else {
+            string += " \(LookinAutoLayoutConstraint.description(withItemObject: secondItem, type: secondItemType, detailed: false)).\(LookinAutoLayoutConstraint.description(withAttributeInt: secondAttribute))"
+
+            if multiplier != 1 {
+                string += " * \(NSString.lookin_string(from: multiplier, decimal: 3) ?? "")"
+            }
+            if constant > 0 {
+                string += " + \(NSString.lookin_string(from: constant, decimal: 3) ?? "")"
+            } else if constant < 0 {
+                string += " - \(NSString.lookin_string(from: -constant, decimal: 3) ?? "")"
+            }
+        }
+
+        if priority != 1000 {
+            string += " @ \(NSNumber(value: priority))"
+        }
+
+        return string
+    }
 }

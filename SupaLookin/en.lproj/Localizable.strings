@@ -217,3 +217,12 @@
 "Some layer data failed to transmit." = "Some layer data failed to transmit.";
 "It may be due to changes in the layer structure within the iOS app. You can try reloading the entire structure in Lookin." = "It may be due to changes in the layer structure within the iOS app. You can try reloading the entire structure in Lookin.";
 "properties or methods" = "properties or methods";
+
+"MCP Server" = "MCP Server";
+"On" = "On";
+"Off" = "Off";
+"Copy Command" = "Copy Command";
+"Stopped" = "Stopped";
+"Starting…" = "Starting…";
+"Running at %@" = "Running at %@";
+"Port %@ is unavailable." = "Port %@ is unavailable.";

@@ -8,6 +8,8 @@
 
 /* Begin PBXBuildFile section */
 		0A509195308E0CFC00FF455C /* LookinShared in Frameworks */ = {isa = PBXBuildFile; productRef = 9AF9E3A577D1C64421C2636E /* LookinShared */; };
+		3C63BFDDBE9BD142CB478638 /* MCP in Frameworks */ = {isa = PBXBuildFile; productRef = 1C8C88A78496326515928A64 /* MCP */; };
+		98135AABDA25211B0A6DEDAF /* FlyingFox in Frameworks */ = {isa = PBXBuildFile; productRef = 676C33EBDDF6D5A0416D27DA /* FlyingFox */; };
 		BD8B5B893F8E675250DEE87C /* LookinShared in Frameworks */ = {isa = PBXBuildFile; productRef = AE1FE787C5567D14E3724CAA /* LookinShared */; };
 		E87E824D120E1799D556E262 /* Sparkle in Frameworks */ = {isa = PBXBuildFile; productRef = B556E45665F72A9F522F1487 /* Sparkle */; };
 /* End PBXBuildFile section */
@@ -32,40 +34,18 @@
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
-		9DFA0439A169BAAB7AF391C0 /* Exceptions for "SupaLookin" folder in "SupaLookin" target */ = {
+		9DFA0439A169BAAB7AF391C0 /* PBXFileSystemSynchronizedBuildFileExceptionSet */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
 				Info.plist,
-				Lookin.entitlements,
 			);
 			target = E8D28F294523567CF934E2F5 /* SupaLookin */;
 		};
 /* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
-		5316FB5CB7C97BA1A264EE72 /* SupaLookinTests */ = {
-			isa = PBXFileSystemSynchronizedRootGroup;
-			exceptions = (
-			);
-			explicitFileTypes = {
-			};
-			explicitFolders = (
-			);
-			path = SupaLookinTests;
-			sourceTree = "<group>";
-		};
-		DFDD3CF1D428457C2BCA30F1 /* SupaLookin */ = {
-			isa = PBXFileSystemSynchronizedRootGroup;
-			exceptions = (
-				9DFA0439A169BAAB7AF391C0 /* Exceptions for "SupaLookin" folder in "SupaLookin" target */,
-			);
-			explicitFileTypes = {
-			};
-			explicitFolders = (
-			);
-			path = SupaLookin;
-			sourceTree = "<group>";
-		};
+		5316FB5CB7C97BA1A264EE72 /* SupaLookinTests */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = SupaLookinTests; sourceTree = "<group>"; };
+		DFDD3CF1D428457C2BCA30F1 /* SupaLookin */ = {isa = PBXFileSystemSynchronizedRootGroup; exceptions = (9DFA0439A169BAAB7AF391C0 /* PBXFileSystemSynchronizedBuildFileExceptionSet */, ); explicitFileTypes = {}; explicitFolders = (); path = SupaLookin; sourceTree = "<group>"; };
 /* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -83,6 +63,8 @@
 			files = (
 				BD8B5B893F8E675250DEE87C /* LookinShared in Frameworks */,
 				E87E824D120E1799D556E262 /* Sparkle in Frameworks */,
+				3C63BFDDBE9BD142CB478638 /* MCP in Frameworks */,
+				98135AABDA25211B0A6DEDAF /* FlyingFox in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -165,6 +147,8 @@
 			packageProductDependencies = (
 				AE1FE787C5567D14E3724CAA /* LookinShared */,
 				B556E45665F72A9F522F1487 /* Sparkle */,
+				1C8C88A78496326515928A64 /* MCP */,
+				676C33EBDDF6D5A0416D27DA /* FlyingFox */,
 			);
 			productName = SupaLookin;
 			productReference = A00630C21E35A811784DB30A /* Supa Lookin.app */;
@@ -178,20 +162,6 @@
 			attributes = {
 				LastUpgradeCheck = 1010;
 				ORGANIZATIONNAME = hughkli;
-				TargetAttributes = {
-					AA48F29A21CC0CA50032EC2C = {
-						CreatedOnToolsVersion = 10.1;
-						LastSwiftMigration = 1500;
-						SystemCapabilities = {
-							com.apple.HardenedRuntime = {
-								enabled = 1;
-							};
-							com.apple.Sandbox = {
-								enabled = 0;
-							};
-						};
-					};
-				};
 			};
 			buildConfigurationList = AA48F29621CC0CA50032EC2C /* Build configuration list for PBXProject "SupaLookin" */;
 			compatibilityVersion = "Xcode 16.0";
@@ -204,8 +174,10 @@
 			);
 			mainGroup = AA48F29221CC0CA50032EC2C;
 			packageReferences = (
-				4FBDFB277EB465465528E113 /* XCLocalSwiftPackageReference "LookinShared" */,
+				4FBDFB277EB465465528E113 /* XCLocalSwiftPackageReference "Packages/LookinShared" */,
 				468AB0D40F5FF95E206ECC3F /* XCRemoteSwiftPackageReference "Sparkle" */,
+				5C1422732D12323FF91BD29E /* XCRemoteSwiftPackageReference "swift-sdk" */,
+				FAE4EF2CCA080FEB901B5C57 /* XCRemoteSwiftPackageReference "FlyingFox" */,
 			);
 			productRefGroup = AA48F29C21CC0CA50032EC2C /* Products */;
 			projectDirPath = "";
@@ -513,7 +485,7 @@
 /* End XCConfigurationList section */
 
 /* Begin XCLocalSwiftPackageReference section */
-		4FBDFB277EB465465528E113 /* XCLocalSwiftPackageReference "LookinShared" */ = {
+		4FBDFB277EB465465528E113 /* XCLocalSwiftPackageReference "Packages/LookinShared" */ = {
 			isa = XCLocalSwiftPackageReference;
 			relativePath = Packages/LookinShared;
 		};
@@ -528,17 +500,43 @@
 				minimumVersion = 2.10.0;
 			};
 		};
+		5C1422732D12323FF91BD29E /* XCRemoteSwiftPackageReference "swift-sdk" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/modelcontextprotocol/swift-sdk";
+			requirement = {
+				kind = exactVersion;
+				version = 0.12.1;
+			};
+		};
+		FAE4EF2CCA080FEB901B5C57 /* XCRemoteSwiftPackageReference "FlyingFox" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/swhitty/FlyingFox";
+			requirement = {
+				kind = exactVersion;
+				version = 0.27.1;
+			};
+		};
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
+		1C8C88A78496326515928A64 /* MCP */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 5C1422732D12323FF91BD29E /* XCRemoteSwiftPackageReference "swift-sdk" */;
+			productName = MCP;
+		};
+		676C33EBDDF6D5A0416D27DA /* FlyingFox */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = FAE4EF2CCA080FEB901B5C57 /* XCRemoteSwiftPackageReference "FlyingFox" */;
+			productName = FlyingFox;
+		};
 		9AF9E3A577D1C64421C2636E /* LookinShared */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = 4FBDFB277EB465465528E113 /* XCLocalSwiftPackageReference "LookinShared" */;
+			package = 4FBDFB277EB465465528E113 /* XCLocalSwiftPackageReference "Packages/LookinShared" */;
 			productName = LookinShared;
 		};
 		AE1FE787C5567D14E3724CAA /* LookinShared */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = 4FBDFB277EB465465528E113 /* XCLocalSwiftPackageReference "LookinShared" */;
+			package = 4FBDFB277EB465465528E113 /* XCLocalSwiftPackageReference "Packages/LookinShared" */;
 			productName = LookinShared;
 		};
 		B556E45665F72A9F522F1487 /* Sparkle */ = {
