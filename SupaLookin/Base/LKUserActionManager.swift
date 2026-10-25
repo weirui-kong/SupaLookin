@@ -29,7 +29,7 @@ final class LKUserActionManager {
 
     static let sharedInstance = LKUserActionManager()
 
-    private var delegators: [WeakReference<AnyObject>] = []
+    private var delegators: [WeakReference] = []
 
     private init() {}
 
@@ -54,11 +54,11 @@ final class LKUserActionManager {
     }
 }
 
-final class WeakReference<Object: AnyObject> {
+private struct WeakReference {
 
-    weak var object: Object?
+    weak var object: AnyObject?
 
-    init(_ object: Object) {
+    init(_ object: AnyObject) {
         self.object = object
     }
 }

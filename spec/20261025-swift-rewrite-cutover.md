@@ -37,3 +37,9 @@ Final step of [`20261025-swift-rewrite.md`](20261025-swift-rewrite.md), done aft
 ## Out of scope
 
 - `AGENTS.md`'s project context, which still describes the two targets.
+
+## Update: building with Xcode 26.6
+
+The first release from the Swift target failed on GitHub's runners. Their newest Xcode is 26.6 (Swift 6.3.3), and its optimizer crashes inlining the deinit of a generic class (`LKActionTrampoline<Sender>`, `LKKVOSubject<Value>`). The code has no generic classes now: `LKActionTrampoline` takes an untyped handler that each `onAction` extension casts, and `LKKVOSubject` and `LKUserActionManager`'s weak delegate box are structs.
+
+`ci.yml` also builds the Release configuration, so an optimizer-only failure shows up on every push instead of after the release workflow has already bumped and tagged the version.

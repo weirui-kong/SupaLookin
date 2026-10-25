@@ -23,3 +23,16 @@ jobs:
             CODE_SIGN_IDENTITY=- \
             DEVELOPMENT_TEAM= \
             test
+
+      - name: Build Release
+        run: |
+          set -euo pipefail
+          xcodebuild \
+            -project SupaLookin.xcodeproj \
+            -scheme SupaLookin \
+            -configuration Release \
+            -derivedDataPath build \
+            CODE_SIGN_STYLE=Manual \
+            CODE_SIGN_IDENTITY=- \
+            DEVELOPMENT_TEAM= \
+            build

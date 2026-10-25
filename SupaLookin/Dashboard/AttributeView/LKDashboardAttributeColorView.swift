@@ -190,12 +190,14 @@ final class LKDashboardAttributeColorView: LKDashboardAttributeView, NSMenuDeleg
         }
         panel.setTarget(nil)
         panel.setAction(nil)
-        let trampoline = LKActionTrampoline<NSColorPanel> { [weak self] panel in
-            self?.modify(toColor: panel.color)
+        let trampoline = LKActionTrampoline { [weak self] sender in
+            if let panel = sender as? NSColorPanel {
+                self?.modify(toColor: panel.color)
+            }
         }
         panel.lookin_bindObject(trampoline, forKey: "lk_colorPanelTrampoline")
         panel.setTarget(trampoline)
-        panel.setAction(#selector(LKActionTrampoline<NSColorPanel>.performAction(_:)))
+        panel.setAction(#selector(LKActionTrampoline.performAction(_:)))
         panel.orderFront(self)
     }
 

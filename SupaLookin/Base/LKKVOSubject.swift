@@ -10,7 +10,8 @@ import Combine
 /// Stands in for `RACObserve` on a property: `publisher` emits the current value on subscription, and again whenever the
 /// owner calls `notify()`. Setters call it last, because KVO's didChange fired after the whole setter ran, including an
 /// early return for an unchanged value.
-final class LKKVOSubject<Value> {
+// A struct: Swift 6.3 crashes inlining the deinit of a generic class in optimized builds.
+struct LKKVOSubject<Value> {
 
     private let getter: () -> Value
     private let subject = PassthroughSubject<Void, Never>()

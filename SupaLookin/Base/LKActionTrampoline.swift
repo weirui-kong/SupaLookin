@@ -9,40 +9,52 @@ import Cocoa
 import LookinShared
 
 /// The one place that turns AppKit's selector-based target-action into closures, so the rest of the app needs no `@objc` handlers.
-final class LKActionTrampoline<Sender: AnyObject>: NSObject {
+// Not generic: Swift 6.3 crashes inlining the deinit of a generic NSObject subclass in optimized builds.
+final class LKActionTrampoline: NSObject {
 
-    private let handler: (Sender) -> Void
+    private let handler: (Any?) -> Void
 
-    init(_ handler: @escaping (Sender) -> Void) {
+    init(_ handler: @escaping (Any?) -> Void) {
         self.handler = handler
     }
 
     @objc func performAction(_ sender: Any?) {
-        if let sender = sender as? Sender {
-            handler(sender)
-        }
+        handler(sender)
     }
 }
 
 private let trampolineKey = "lk_actionTrampoline"
 
+extension NSObject {
+
+    fileprivate func bindTrampoline(_ handler: @escaping (Any?) -> Void) -> LKActionTrampoline {
+        let trampoline = LKActionTrampoline(handler)
+        lookin_bindObject(trampoline, forKey: trampolineKey)
+        return trampoline
+    }
+}
+
 extension NSControl {
 
     func onAction(_ handler: @escaping (Self) -> Void) {
-        let trampoline = LKActionTrampoline<Self>(handler)
-        lookin_bindObject(trampoline, forKey: trampolineKey)
-        target = trampoline
-        action = #selector(LKActionTrampoline<Self>.performAction(_:))
+        target = bindTrampoline { sender in
+            if let sender = sender as? Self {
+                handler(sender)
+            }
+        }
+        action = #selector(LKActionTrampoline.performAction(_:))
     }
 }
 
 extension NSMenuItem {
 
     func onAction(_ handler: @escaping (NSMenuItem) -> Void) {
-        let trampoline = LKActionTrampoline<NSMenuItem>(handler)
-        lookin_bindObject(trampoline, forKey: trampolineKey)
-        target = trampoline
-        action = #selector(LKActionTrampoline<NSMenuItem>.performAction(_:))
+        target = bindTrampoline { sender in
+            if let sender = sender as? NSMenuItem {
+                handler(sender)
+            }
+        }
+        action = #selector(LKActionTrampoline.performAction(_:))
     }
 
     convenience init(title: String, keyEquivalent: String = "", handler: @escaping (NSMenuItem) -> Void) {
@@ -54,10 +66,12 @@ extension NSMenuItem {
 extension NSGestureRecognizer {
 
     func onAction(_ handler: @escaping (Self) -> Void) {
-        let trampoline = LKActionTrampoline<Self>(handler)
-        lookin_bindObject(trampoline, forKey: trampolineKey)
-        target = trampoline
-        action = #selector(LKActionTrampoline<Self>.performAction(_:))
+        target = bindTrampoline { sender in
+            if let sender = sender as? Self {
+                handler(sender)
+            }
+        }
+        action = #selector(LKActionTrampoline.performAction(_:))
     }
 }
 
@@ -65,9 +79,11 @@ extension NSToolbarItem {
 
     /// A view-based item forwards its target-action to the view, so the sender is the item's control rather than the item.
     func onAction(_ handler: @escaping (AnyObject) -> Void) {
-        let trampoline = LKActionTrampoline<AnyObject>(handler)
-        lookin_bindObject(trampoline, forKey: trampolineKey)
-        target = trampoline
-        action = #selector(LKActionTrampoline<AnyObject>.performAction(_:))
+        target = bindTrampoline { sender in
+            if let sender = sender as AnyObject? {
+                handler(sender)
+            }
+        }
+        action = #selector(LKActionTrampoline.performAction(_:))
     }
 }
