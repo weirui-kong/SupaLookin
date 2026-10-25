@@ -1,4 +1,4 @@
-# Agent Instructions — BetterLookin
+# Agent Instructions — SupaLookin
 
 Shared instructions for any coding agent working in this repository (Claude Code, Codex, or otherwise). `CLAUDE.md` at the repo root points here so there is a single source of truth.
 
@@ -25,9 +25,9 @@ Shared instructions for any coding agent working in this repository (Claude Code
 
 ## Project context
 
-BetterLookin is an independent, long-term continuation of the unmaintained `hughkli/Lookin` (macOS UI inspector) and `QMUI/LookinServer` (iOS-side instrumentation library). See `.private/LICENSE_REVIEW.md` (local-only, not committed) for the licensing audit behind this fork: the macOS client is GPLv3, the iOS-side/shared library is MIT, and they're independent works connected over network/USB rather than one statically-linked binary.
+SupaLookin is an independent, long-term continuation of the unmaintained `hughkli/Lookin` (macOS UI inspector) and `QMUI/LookinServer` (iOS-side instrumentation library). See `.private/LICENSE_REVIEW.md` (local-only, not committed) for the licensing audit behind this fork: the macOS client is GPLv3, the iOS-side/shared library is MIT, and they're independent works connected over network/USB rather than one statically-linked binary.
 
-- App name: **Better Lookin**
-- Bundle ID: `icu.retrouvailles.betterlookin`
-- Xcode project/workspace/target: `BetterLookin.xcodeproj` / `BetterLookin.xcworkspace` / target `BetterLookin`
+- App name: **Supa Lookin**
+- Bundle ID: `icu.retrouvailles.supalookin`
+- Xcode project/workspace/target: `SupaLookin.xcodeproj` / `SupaLookin.xcworkspace` / target `SupaLookin`
 - Dependency management: CocoaPods (`Podfile`) — pods: AppCenter, ReactiveObjC, Sparkle, LookinShared (LookinServer)

@@ -2,7 +2,7 @@ use_frameworks!
 
 #inhibit_all_warnings!
 
-target 'BetterLookin' do
+target 'SupaLookin' do
     platform :osx, '14.0'
     pod 'AppCenter'
     pod 'ReactiveObjC', '3.1.0'

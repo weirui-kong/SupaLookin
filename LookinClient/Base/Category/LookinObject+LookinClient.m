@@ -7,7 +7,7 @@
 //
 
 #import "LookinObject+LookinClient.h"
-#import "Better_Lookin-Swift.h"
+#import "Supa_Lookin-Swift.h"
 
 @implementation LookinObject (LookinClient)
 

@@ -1,8 +1,8 @@
 Pods/
 Build/
 DerivedData/
-BetterLookin.xcodeproj/xcuserdata/
-BetterLookin.xcworkspace/xcuserdata/
+SupaLookin.xcodeproj/xcuserdata/
+SupaLookin.xcworkspace/xcuserdata/
 *.xcuserstate
 .DS_Store
 Gemfile

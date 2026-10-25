@@ -22,8 +22,8 @@ jobs:
         id: bump
         run: |
           set -euo pipefail
-          PBXPROJ="BetterLookin.xcodeproj/project.pbxproj"
-          OLD_VERSION=$(grep -B1 "PRODUCT_BUNDLE_IDENTIFIER = icu.retrouvailles.betterlookin;" "$PBXPROJ" \
+          PBXPROJ="SupaLookin.xcodeproj/project.pbxproj"
+          OLD_VERSION=$(grep -B1 "PRODUCT_BUNDLE_IDENTIFIER = icu.retrouvailles.supalookin;" "$PBXPROJ" \
             | grep "MARKETING_VERSION" | head -1 | sed -E 's/.*= ([0-9]+\.[0-9]+\.[0-9]+);/\1/')
           IFS='.' read -r MAJOR MINOR PATCH <<< "$OLD_VERSION"
           NEW_VERSION="${MAJOR}.${MINOR}.$((PATCH + 1))"
@@ -35,7 +35,7 @@ jobs:
           set -euo pipefail
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add BetterLookin.xcodeproj/project.pbxproj
+          git add SupaLookin.xcodeproj/project.pbxproj
           git commit -m "Bump version to ${{ steps.bump.outputs.new_version }}"
           git tag "v${{ steps.bump.outputs.new_version }}"
           git push origin HEAD:master
@@ -48,8 +48,8 @@ jobs:
         run: |
           set -euo pipefail
           xcodebuild \
-            -workspace BetterLookin.xcworkspace \
-            -scheme BetterLookin \
+            -workspace SupaLookin.xcworkspace \
+            -scheme SupaLookin \
             -configuration Release \
             -derivedDataPath build \
             CODE_SIGN_STYLE=Manual \
@@ -62,13 +62,13 @@ jobs:
         run: |
           set -euo pipefail
           VERSION="${{ steps.bump.outputs.new_version }}"
-          APP_PATH="build/Build/Products/Release/Better Lookin.app"
+          APP_PATH="build/Build/Products/Release/Supa Lookin.app"
           STAGING="dmg-staging"
-          DMG_NAME="Better Lookin-${VERSION}.dmg"
+          DMG_NAME="Supa Lookin-${VERSION}.dmg"
           mkdir "$STAGING"
           cp -R "$APP_PATH" "$STAGING/"
           ln -s /Applications "$STAGING/Applications"
-          hdiutil create -volname "Better Lookin" -srcfolder "$STAGING" -ov -format UDZO "$DMG_NAME"
+          hdiutil create -volname "Supa Lookin" -srcfolder "$STAGING" -ov -format UDZO "$DMG_NAME"
           echo "dmg_name=${DMG_NAME}" >> "$GITHUB_OUTPUT"
 
       - name: Create GitHub Release
@@ -82,15 +82,15 @@ jobs:
           cat > "$NOTES_FILE" <<EOF
           ## 安装
 
-          下载 \`${DMG_NAME}\`,打开后将 \`Better Lookin.app\` 拖入"应用程序"文件夹。
+          下载 \`${DMG_NAME}\`,打开后将 \`Supa Lookin.app\` 拖入"应用程序"文件夹。
 
-          如果 macOS 显示 **"Better Lookin.app" is damaged and can't be opened. You should move it to the Trash.**,请确认安装包来自此 Release,然后在"终端"执行:
+          如果 macOS 显示 **"Supa Lookin.app" is damaged and can't be opened. You should move it to the Trash.**,请确认安装包来自此 Release,然后在"终端"执行:
 
           \`\`\`
-          xattr -dr com.apple.quarantine "/Applications/Better Lookin.app"
+          xattr -dr com.apple.quarantine "/Applications/Supa Lookin.app"
           \`\`\`
 
-          完成后再次打开 \`Better Lookin.app\`。
+          完成后再次打开 \`Supa Lookin.app\`。
           EOF
           gh release create "v${VERSION}" "$DMG_NAME" \
             --title "v${VERSION}" \

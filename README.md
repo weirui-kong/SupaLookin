@@ -1,5 +1,5 @@
 > 🚧 **Under active development. Things may break or change without notice.**
 
-# BetterLookin
+# SupaLookin
 
-BetterLookin is based on [Lookin](https://github.com/hughkli/Lookin).
+SupaLookin is based on [Lookin](https://github.com/hughkli/Lookin).
