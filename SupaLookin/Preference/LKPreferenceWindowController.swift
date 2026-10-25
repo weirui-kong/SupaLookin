@@ -13,7 +13,7 @@ import Cocoa
 final class LKPreferenceWindowController: LKWindowController {
 
     init() {
-        let window = LKWindow(contentRect: NSRect(x: 0, y: 0, width: 600, height: 380), styleMask: [.titled, .closable, .miniaturizable], backing: .buffered, defer: true)
+        let window = LKWindow(contentRect: NSRect(x: 0, y: 0, width: 600, height: 440), styleMask: [.titled, .closable, .miniaturizable], backing: .buffered, defer: true)
         window.isMovableByWindowBackground = true
         window.title = NSLocalizedString("Preferences", comment: "")
         window.center()

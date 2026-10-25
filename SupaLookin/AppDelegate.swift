@@ -37,6 +37,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
     func applicationDidFinishLaunching(_ notification: Notification) {
         _ = LKConnectionManager.sharedInstance
+        LKMCPServer.sharedInstance.startIfEnabled()
         if !launchedToOpenFile {
             LKNavigationManager.sharedInstance.showLaunch()
         }

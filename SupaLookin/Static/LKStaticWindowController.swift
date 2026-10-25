@@ -254,24 +254,41 @@ final class LKStaticWindowController: LKWindowController, NSToolbarDelegate, LKS
         viewController.progressView.animate(toProgress: InitialIndicatorProgressWhenFetchHierarchy)
 
         Task { [weak self] in
-            do {
-                guard let info = try await app.fetchHierarchyData() else {
-                    throw LookinError.inner
-                }
-                guard let self else { return }
-                self.viewController.progressView.finish(completion: nil)
-                LKStaticHierarchyDataSource.sharedInstance.reload(with: info, keepState: true)
-                self.isFetchingHierarchy = false
-            } catch {
-                // error
-                guard let self else { return }
-                self.viewController.progressView.resetToZero()
-                self.isFetchingHierarchy = false
-
-                if let window = self.window {
-                    NSAlert(error: error).beginSheetModal(for: window, completionHandler: nil)
-                }
+            if let error = await self?.fetchHierarchy(from: app), let window = self?.window {
+                NSAlert(error: error).beginSheetModal(for: window, completionHandler: nil)
             }
+        }
+    }
+
+    private func fetchHierarchy(from app: LKInspectableApp) async -> Error? {
+        do {
+            guard let info = try await app.fetchHierarchyData() else {
+                throw LookinError.inner
+            }
+            viewController.progressView.finish(completion: nil)
+            LKStaticHierarchyDataSource.sharedInstance.reload(with: info, keepState: true)
+            isFetchingHierarchy = false
+            return nil
+        } catch {
+            // error
+            viewController.progressView.resetToZero()
+            isFetchingHierarchy = false
+            return error
+        }
+    }
+
+    // Unlike Reload in the menu, MCP's reload never alerts, and never stops a detail sync that's running
+    func reloadForMCP() async throws {
+        guard let app = LKAppsManager.sharedInstance.inspectingApp else {
+            throw LookinError.noConnect
+        }
+        if isFetchingHierarchy || isFetchingDetails {
+            throw LookinError.make("The hierarchy is syncing.", "Try again once Supa Lookin finishes syncing.")
+        }
+        isFetchingHierarchy = true
+        viewController.progressView.animate(toProgress: InitialIndicatorProgressWhenFetchHierarchy)
+        if let error = await fetchHierarchy(from: app) {
+            throw error
         }
     }
 
