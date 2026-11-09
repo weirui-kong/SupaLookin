@@ -168,17 +168,10 @@
                     <modifierMask key="keyEquivalentModifierMask"/>
                     <menu key="submenu" title="Help" systemMenu="help" id="1Xd-pd-BoU">
                         <items>
-                            <menuItem title="Integrate by CocoaPods (Click to Copy)" id="Yrs-Xq-P5S">
-                                <modifierMask key="keyEquivalentModifierMask"/>
-                            </menuItem>
-                            <menuItem title="pod 'LookinServer', :configurations =&gt; ['Debug']" tag="66" id="xxP-d2-qU0">
-                                <modifierMask key="keyEquivalentModifierMask"/>
-                            </menuItem>
-                            <menuItem isSeparatorItem="YES" id="Y2C-86-yPe"/>
                             <menuItem title="Integrate by SPM (Click to Copy)" id="tzW-YO-PTy">
                                 <modifierMask key="keyEquivalentModifierMask"/>
                             </menuItem>
-                            <menuItem title="https://github.com/QMUI/LookinServer/" tag="67" id="B9m-qb-e0j">
+                            <menuItem title="https://github.com/weirui-kong/SupaLookin" tag="67" id="B9m-qb-e0j">
                                 <modifierMask key="keyEquivalentModifierMask"/>
                             </menuItem>
                             <menuItem isSeparatorItem="YES" id="Q9p-dn-YRK"/>
@@ -202,7 +195,7 @@
                                         <menuItem title="Lookin (macOS App)" tag="58" id="F1N-6J-GJB">
                                             <modifierMask key="keyEquivalentModifierMask"/>
                                         </menuItem>
-                                        <menuItem title="LookinServer" tag="59" id="jAS-fg-MOz">
+                                        <menuItem title="SPLKServer" tag="59" id="jAS-fg-MOz">
                                             <modifierMask key="keyEquivalentModifierMask"/>
                                         </menuItem>
                                     </items>
@@ -219,7 +212,7 @@
                                         <menuItem title="https://github.com/hughkli/Lookin/issues" tag="62" id="gGJ-eo-aDM">
                                             <modifierMask key="keyEquivalentModifierMask"/>
                                         </menuItem>
-                                        <menuItem title="https://github.com/QMUI/LookinServer/issues" tag="63" id="jcR-PK-iVE">
+                                        <menuItem title="https://github.com/weirui-kong/SupaLookin/issues" tag="63" id="jcR-PK-iVE">
                                             <modifierMask key="keyEquivalentModifierMask"/>
                                         </menuItem>
                                         <menuItem isSeparatorItem="YES" id="5sm-PB-Pq7"/>

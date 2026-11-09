@@ -134,3 +134,7 @@ The Swift target becomes the app's main project at cutover, so it contains no Ob
 - **`NSObject`:** a type subclasses `NSObject` only when an AppKit or Foundation API requires it, such as delegates, data sources and `NSCoding`.
 
 After cutover deletes `LookinClient/`, the main project has no Objective-C sources at all.
+
+## Update: SPLK prefix (see `20261109-splk-server.md`)
+
+Every type, file and category name that kept Lookin's `LK` or `Lookin` prefix under "Names map 1:1" now uses `SPLK` instead (`LKConnectionManager` → `SPLKConnectionManager`, `LookinDocument` → `SPLKDocument`, `NSView+LookinClient.swift` → `NSView+SPLKClient.swift`). Swapping the prefix back still traces each one to its Lookin counterpart. LookinShared, the shared package this spec keeps in Objective-C, is replaced by the `SPLKServer` package, which stays Objective-C.

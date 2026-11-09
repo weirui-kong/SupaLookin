@@ -19,23 +19,23 @@ final class DanceScriptManager {
     func handleText(_ json: String?) {
         let keyWindow = NSApplication.shared.keyWindow
         guard let json else {
-            LKHelper.alertError(LookinError.inner, window: keyWindow)
+            SPLKHelper.alertError(SPLKError.inner, window: keyWindow)
             return
         }
         let parsed: Any
         do {
             parsed = try JSONSerialization.jsonObject(with: json.data(using: .utf8) ?? Data())
         } catch {
-            LKHelper.alertErrorText("Failed", "Failed to parse: \(json)", window: keyWindow)
+            SPLKHelper.alertErrorText("Failed", "Failed to parse: \(json)", window: keyWindow)
             assertionFailure()
             return
         }
         guard let dict = parsed as? [String: Any] else {
-            LKHelper.alertErrorText("Failed", "Unexpected format: \(json)", window: keyWindow)
+            SPLKHelper.alertErrorText("Failed", "Unexpected format: \(json)", window: keyWindow)
             return
         }
         guard let type = dict["type"] as? String, let method = dict["method"] as? String, let path = dict["build_path"] as? String else {
-            LKHelper.alertErrorText("Failed", "Unexpected format: \(json)", window: keyWindow)
+            SPLKHelper.alertErrorText("Failed", "Unexpected format: \(json)", window: keyWindow)
             return
         }
         execute(withType: type, method: method, path: path)
@@ -44,24 +44,24 @@ final class DanceScriptManager {
     private func copyScriptFromAppToDisk() -> String? {
         let keyWindow = NSApplication.shared.keyWindow
         let fileManager = FileManager.default
-        let newScriptPath = (NSTemporaryDirectory() as NSString).appendingPathComponent("Lookin_DanceJump.sh")
+        let newScriptPath = (NSTemporaryDirectory() as NSString).appendingPathComponent("SPLK_DanceJump.sh")
         if fileManager.fileExists(atPath: newScriptPath) {
             return newScriptPath
         }
 
         let scriptPath = Bundle.main.url(forResource: "DanceScript", withExtension: "sh")?.relativePath
         guard let scriptPath, fileManager.fileExists(atPath: scriptPath) else {
-            LKHelper.alertErrorText("Failed", "Cannot find script: \(scriptPath ?? "(null)")", window: keyWindow)
+            SPLKHelper.alertErrorText("Failed", "Cannot find script: \(scriptPath ?? "(null)")", window: keyWindow)
             return nil
         }
         let succ = (try? fileManager.copyItem(atPath: scriptPath, toPath: newScriptPath)) != nil
         try? fileManager.setAttributes([.posixPermissions: NSNumber(value: Int16(0o755))], ofItemAtPath: newScriptPath)
         if !succ {
-            LKHelper.alertErrorText("Failed", "Copy script error", window: keyWindow)
+            SPLKHelper.alertErrorText("Failed", "Copy script error", window: keyWindow)
             return nil
         }
         if !fileManager.fileExists(atPath: newScriptPath) {
-            LKHelper.alertErrorText("Failed", "Copy script weird error", window: keyWindow)
+            SPLKHelper.alertErrorText("Failed", "Copy script weird error", window: keyWindow)
             return nil
         }
         return newScriptPath
@@ -69,7 +69,7 @@ final class DanceScriptManager {
 
     /*
 
-     对应 lookin_source 的类型是这个 json 结构
+     对应 splk_source 的类型是这个 json 结构
      {"type":"DanceUIApp.ContentView","method":"body.get","build_path":"\/Users\/bytedance\/Library\/Developer\/Xcode\/DerivedData\/DanceUIApp-ayaxbucdgzeouqefaavnvvhsjpvj\/Build\/Products\/Debug-iphonesimulator\/DanceUIApp.app\/DanceUIApp"}
 
      传参的顺序是 sh viewdebug.sh build_path type method

@@ -10,7 +10,7 @@
 
 import Cocoa
 import Combine
-import LookinShared
+import SPLKServer
 
 final class AppDelegate: NSObject, NSApplicationDelegate {
 
@@ -19,9 +19,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     private var cancellables = Set<AnyCancellable>()
 
     func applicationWillFinishLaunching(_ notification: Notification) {
-        LKAppMenuManager.sharedInstance.setup()
+        SPLKAppMenuManager.sharedInstance.setup()
 
-        LKPreferenceManager.mainManager.appearanceTypePublisher
+        SPLKPreferenceManager.mainManager.appearanceTypePublisher
             .sink { type in
                 switch type {
                 case .dark:
@@ -36,10 +36,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     }
 
     func applicationDidFinishLaunching(_ notification: Notification) {
-        _ = LKConnectionManager.sharedInstance
-        LKMCPServer.sharedInstance.startIfEnabled()
+        _ = SPLKConnectionManager.sharedInstance
+        SPLKMCPServer.sharedInstance.startIfEnabled()
         if !launchedToOpenFile {
-            LKNavigationManager.sharedInstance.showLaunch()
+            SPLKNavigationManager.sharedInstance.showLaunch()
         }
 
 #if DEBUG
@@ -54,7 +54,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     func application(_ sender: NSApplication, openFile filename: String) -> Bool {
         launchedToOpenFile = true
         do {
-            try LKNavigationManager.sharedInstance.showReader(withFilePath: filename)
+            try SPLKNavigationManager.sharedInstance.showReader(withFilePath: filename)
             return true
         } catch {
             return false
@@ -63,7 +63,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
     func applicationShouldTerminate(_ sender: NSApplication) -> NSApplication.TerminateReply {
         // 清理打开 UIImageView 的图片时创建的临时文件
-        let tempImageFilesToDelete = LKHelper.sharedInstance.tempImageFiles
+        let tempImageFilesToDelete = SPLKHelper.sharedInstance.tempImageFiles
         if tempImageFilesToDelete.isEmpty {
             return .terminateNow
         }
@@ -80,19 +80,19 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
     private func runTests() {
         // 确保 String 的 value 没有重复
-        let allGroupIDs = LookinDashboardBlueprint.groupIDs() ?? []
+        let allGroupIDs = SPLKDashboardBlueprint.groupIDs() ?? []
         if allGroupIDs.count != Set(allGroupIDs).count {
             assertionFailure()
         }
 
         // 确保 String 的 value 没有重复
-        let allSecIDs = allGroupIDs.flatMap { LookinDashboardBlueprint.sectionIDs(forGroupID: $0) ?? [] }
+        let allSecIDs = allGroupIDs.flatMap { SPLKDashboardBlueprint.sectionIDs(forGroupID: $0) ?? [] }
         if allSecIDs.count != Set(allSecIDs).count {
             assertionFailure()
         }
 
         // 确保 String 的 value 没有重复
-        let allAttrIDs = allSecIDs.flatMap { LookinDashboardBlueprint.attrIDs(forSectionID: $0) ?? [] }
+        let allAttrIDs = allSecIDs.flatMap { SPLKDashboardBlueprint.attrIDs(forSectionID: $0) ?? [] }
         if allAttrIDs.count != Set(allAttrIDs).count {
             assertionFailure()
         }

@@ -9,7 +9,7 @@ The server shares Supa Lookin's current session. The agent sees the same app, hi
 ## Requirements
 
 - Supa Lookin running on macOS 14 or later.
-- An iOS app that integrates [LookinServer](https://github.com/QMUI/LookinServer), running on a simulator or a USB-connected device and opened in Supa Lookin.
+- An iOS app that integrates [SPLKServer](../README.md#integrating-splkserver), running on a simulator or a USB-connected device and opened in Supa Lookin.
 
 ## Quick start
 
@@ -69,7 +69,7 @@ Get the token from the command that **Copy Command** copies. The snippets below 
 | Change the port | `defaults write icu.retrouvailles.supalookin mcpPort -int 47201`, then turn the server off and on again in Preferences. The default port is 47200. |
 | Create a new token | Quit Supa Lookin, run `defaults delete icu.retrouvailles.supalookin mcpToken`, and open Supa Lookin again. Clients that used the old token must be updated. |
 
-The default port is chosen to stay clear of the ports LookinServer itself uses (47164–47169 for simulators, 47175–47179 for USB devices).
+The default port is chosen to stay clear of the ports SPLKServer uses (47264–47269 for simulators, 47275–47279 for USB devices).
 
 ## Tools
 
@@ -121,7 +121,7 @@ When no app is being inspected, it returns `{"inspecting": false, "hint": "…"}
 
 ### `list_apps`
 
-The inspectable apps found right now on simulators and USB devices, looked up the same way as the App popover in Supa Lookin's toolbar. The one being inspected has `"inspecting": true`. An app whose LookinServer version is not supported carries an `error` instead.
+The inspectable apps found right now on simulators and USB devices, looked up the same way as the App popover in Supa Lookin's toolbar. The one being inspected has `"inspecting": true`. An app whose SPLKServer version is not supported carries an `error` instead.
 
 ```json
 {

@@ -57,3 +57,7 @@ All tools carry `readOnlyHint: true`. Items are identified by `oid`, the item's 
 - Anything that changes the iOS app (attribute edits, method calls, gesture toggles) or drives the Mac UI (selection, focus, expansion).
 - MCP resources and prompts.
 - `.lookin` documents opened in read windows.
+
+## Update: SPLKServer ports (see `20261109-splk-server.md`)
+
+The iOS-side library is now SPLKServer, listening on 47264–47269 (simulator) and 47275–47279 (USB). Port 47200 stays clear of both these and stock LookinServer's.

@@ -7,13 +7,13 @@
 
 import Cocoa
 import Testing
-import LookinShared
+import SPLKServer
 @testable import SupaLookin
 
 struct DashboardParityTests {
 
     @Test func enumRegistryMatchesLookin() throws {
-        let registry = LKEnumListRegistry.sharedInstance
+        let registry = SPLKEnumListRegistry.sharedInstance
         #expect(registry.desc(forEnumName: "NSTextAlignment", value: 1) == "NSTextAlignmentCenter")
         #expect(registry.desc(forEnumName: "UIViewContentMode", value: 12) == "UIViewContentModeBottomRight")
         #expect(registry.desc(forEnumName: "UIBlurEffectStyle", value: 3) == nil)
@@ -28,7 +28,7 @@ struct DashboardParityTests {
         let json = """
         [{"title": "a", "desc": "1", "details": [{"title": "b", "details": [{"title": "c"}]}]}, {"title": "d"}, "ignored"]
         """
-        let roots = try #require(LKJSONAttributeItem.rootItems(fromJSON: json))
+        let roots = try #require(SPLKJSONAttributeItem.rootItems(fromJSON: json))
         #expect(roots.count == 2)
 
         let flat = roots.flatMap { $0.flatItems() }
@@ -39,28 +39,28 @@ struct DashboardParityTests {
         roots[0].expanded = false
         #expect(roots.flatMap { $0.flatItems() }.map { $0.titleText } == ["a", "d"])
 
-        #expect(LKJSONAttributeItem.rootItems(fromJSON: "{}") == nil)
+        #expect(SPLKJSONAttributeItem.rootItems(fromJSON: "{}") == nil)
     }
 
     @Test func exportedDocumentReadsBack() throws {
-        let item = LookinDisplayItem()
+        let item = SPLKDisplayItem()
         item.frame = CGRect(x: 1, y: 2, width: 3, height: 4)
-        let info = LookinHierarchyInfo()
+        let info = SPLKHierarchyInfo()
         info.displayItems = [item]
-        info.serverVersion = LOOKIN_SERVER_VERSION
-        let appInfo = LookinAppInfo()
+        info.serverVersion = SPLK_SERVER_VERSION
+        let appInfo = SPLKAppInfo()
         appInfo.appName = "Demo"
         appInfo.osDescription = "17.2"
         info.appInfo = appInfo
 
-        let (data, fileName) = LKExportManager.sharedInstance.data(from: info, imageCompression: 0.5)
+        let (data, fileName) = SPLKExportManager.sharedInstance.data(from: info, imageCompression: 0.5)
         #expect(fileName?.hasPrefix("Demo_ios17_") == true)
-        #expect(fileName?.hasSuffix(".lookin") == true)
+        #expect(fileName?.hasSuffix(".supalookin") == true)
 
-        let document = LookinDocument()
-        try document.read(from: try #require(data), ofType: "com.lookin.lookin")
+        let document = SPLKDocument()
+        try document.read(from: try #require(data), ofType: SPLKDocument.typeIdentifier)
         let file = try #require(document.hierarchyFile)
-        #expect(file.serverVersion == LOOKIN_SERVER_VERSION)
+        #expect(file.serverVersion == SPLK_SERVER_VERSION)
         #expect(file.hierarchyInfo?.displayItems?.first?.frame == item.frame)
     }
 }

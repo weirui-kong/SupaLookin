@@ -7,17 +7,17 @@
 
 import Cocoa
 import Testing
-import LookinShared
+import SPLKServer
 @testable import SupaLookin
 
 struct MCPPayloadTests {
 
-    private func makeItem(_ className: String, oid: UInt, children: [LookinDisplayItem] = []) -> LookinDisplayItem {
-        let layer = LookinObject()
+    private func makeItem(_ className: String, oid: UInt, children: [SPLKDisplayItem] = []) -> SPLKDisplayItem {
+        let layer = SPLKObject()
         layer.oid = oid
         layer.classChainList = [className]
         layer.memoryAddress = String(format: "0x%llx", oid)
-        let item = LookinDisplayItem()
+        let item = SPLKDisplayItem()
         item.layerObject = layer
         item.frame = CGRect(x: 1, y: 2, width: 30, height: 40)
         item.alpha = 0.5
@@ -25,7 +25,7 @@ struct MCPPayloadTests {
         return item
     }
 
-    private func makeTree() -> LookinDisplayItem {
+    private func makeTree() -> SPLKDisplayItem {
         makeItem("UIWindow", oid: 1, children: [
             makeItem("UILabel", oid: 2),
             makeItem("UIButton", oid: 3, children: [makeItem("UIImageView", oid: 4)]),
@@ -33,7 +33,7 @@ struct MCPPayloadTests {
     }
 
     @Test func hierarchyNodes() throws {
-        let result = LKMCPPayload.hierarchy(roots: [makeTree()], maxDepth: nil, limit: 500)
+        let result = SPLKMCPPayload.hierarchy(roots: [makeTree()], maxDepth: nil, limit: 500)
         #expect(result["node_count"] as? Int == 4)
         #expect(result["truncated"] as? Bool == false)
 
@@ -48,13 +48,13 @@ struct MCPPayloadTests {
     }
 
     @Test func hierarchyLimitAndDepth() throws {
-        let limited = LKMCPPayload.hierarchy(roots: [makeTree()], maxDepth: nil, limit: 2)
+        let limited = SPLKMCPPayload.hierarchy(roots: [makeTree()], maxDepth: nil, limit: 2)
         #expect(limited["node_count"] as? Int == 2)
         #expect(limited["truncated"] as? Bool == true)
         let limitedWindow = try #require((limited["items"] as? [[String: Any]])?.first)
         #expect(limitedWindow["children_count"] as? Int == 2)
 
-        let shallow = LKMCPPayload.hierarchy(roots: [makeTree()], maxDepth: 0, limit: 500)
+        let shallow = SPLKMCPPayload.hierarchy(roots: [makeTree()], maxDepth: 0, limit: 500)
         let shallowWindow = try #require((shallow["items"] as? [[String: Any]])?.first)
         #expect(shallowWindow["children"] == nil)
         #expect(shallowWindow["children_count"] as? Int == 2)
@@ -62,36 +62,36 @@ struct MCPPayloadTests {
 
     @Test func searchMatchesTitlesLikeTheHierarchyPanel() throws {
         let tree = makeTree()
-        let flatItems = LookinDisplayItem.flatItems(fromHierarchicalItems: [tree]) ?? []
+        let flatItems = SPLKDisplayItem.flatItems(fromHierarchicalItems: [tree]) ?? []
 
-        let result = LKMCPPayload.search(" label ", in: flatItems, limit: 50)
+        let result = SPLKMCPPayload.search(" label ", in: flatItems, limit: 50)
         let items = try #require(result["items"] as? [[String: Any]])
         #expect(items.map { $0["oid"] as? UInt } == [2])
 
-        let limited = LKMCPPayload.search("UI", in: flatItems, limit: 3)
+        let limited = SPLKMCPPayload.search("UI", in: flatItems, limit: 3)
         #expect((limited["items"] as? [[String: Any]])?.count == 3)
         #expect(limited["truncated"] as? Bool == true)
     }
 
     @Test func attributeValuesAreJSON() throws {
-        let rect = LookinAttribute()
+        let rect = SPLKAttribute()
         rect.attrType = .cgRect
         rect.value = NSValue(rect: CGRect(x: 1, y: 2, width: 3, height: 4))
-        let rectValue = try #require(LKMCPPayload.value(of: rect) as? [String: Any])
+        let rectValue = try #require(SPLKMCPPayload.value(of: rect) as? [String: Any])
         #expect(rectValue["height"] as? CGFloat == 4)
 
-        let color = LookinAttribute()
+        let color = SPLKAttribute()
         color.attrType = .uiColor
         color.value = [1, 0, 0, 0.5] as [NSNumber]
-        #expect(LKMCPPayload.value(of: color) as? String == "(255, 0, 0, 0.50)")
+        #expect(SPLKMCPPayload.value(of: color) as? String == "(255, 0, 0, 0.50)")
 
-        let enumAttribute = LookinAttribute()
+        let enumAttribute = SPLKAttribute()
         enumAttribute.attrType = .enumInt
-        enumAttribute.identifier = LookinAttr_UILabel_Alignment_Alignment
+        enumAttribute.identifier = SPLKAttr_UILabel_Alignment_Alignment
         enumAttribute.value = NSNumber(value: 1)
-        #expect(LKMCPPayload.value(of: enumAttribute) as? String == "NSTextAlignmentCenter")
+        #expect(SPLKMCPPayload.value(of: enumAttribute) as? String == "NSTextAlignmentCenter")
 
-        #expect(JSONSerialization.isValidJSONObject(["v": LKMCPPayload.value(of: rect)]))
+        #expect(JSONSerialization.isValidJSONObject(["v": SPLKMCPPayload.value(of: rect)]))
     }
 }
 
@@ -100,14 +100,14 @@ struct MCPServerTests {
 
     private static let port = 47299
 
-    private func makeServer() throws -> (LKMCPServer, UserDefaults, String) {
+    private func makeServer() throws -> (SPLKMCPServer, UserDefaults, String) {
         let suiteName = "SupaLookinTests.mcp.\(UUID().uuidString)"
         let userDefaults = try #require(UserDefaults(suiteName: suiteName))
         userDefaults.set(MCPServerTests.port, forKey: "mcpPort")
-        return (LKMCPServer(userDefaults: userDefaults), userDefaults, suiteName)
+        return (SPLKMCPServer(userDefaults: userDefaults), userDefaults, suiteName)
     }
 
-    private func waitUntilRunning(_ server: LKMCPServer) async throws {
+    private func waitUntilRunning(_ server: SPLKMCPServer) async throws {
         for _ in 0..<50 {
             if case .running = server.status {
                 return
@@ -177,7 +177,7 @@ struct MCPServerTests {
     @Test func tokenPersists() throws {
         let (server, userDefaults, suiteName) = try makeServer()
         defer { userDefaults.removePersistentDomain(forName: suiteName) }
-        #expect(LKMCPServer(userDefaults: userDefaults).token == server.token)
+        #expect(SPLKMCPServer(userDefaults: userDefaults).token == server.token)
         #expect(server.isEnabled)
     }
 }
@@ -185,7 +185,7 @@ struct MCPServerTests {
 struct MCPPreferencesTests {
 
     @Test func preferencesWindowBuildsWithTheMCPRow() throws {
-        let windowController = LKPreferenceWindowController()
+        let windowController = SPLKPreferenceWindowController()
         let view = try #require(windowController.window?.contentView)
         view.layoutSubtreeIfNeeded()
         #expect(view.subviews.contains { ($0 as? NSButton)?.title == NSLocalizedString("Copy Command", comment: "") })
@@ -195,22 +195,22 @@ struct MCPPreferencesTests {
 struct MCPRobustnessTests {
 
     @Test func integerArgumentsNeverTrap() {
-        #expect(LKMCPToolHandler.integer(.int(7)) == 7)
-        #expect(LKMCPToolHandler.integer(.double(3.9)) == 3)
-        #expect(LKMCPToolHandler.integer(.double(1e300)) == nil)
-        #expect(LKMCPToolHandler.integer(.double(.nan)) == nil)
-        #expect(LKMCPToolHandler.integer(.double(-.infinity)) == nil)
-        #expect(LKMCPToolHandler.integer(.string("5")) == nil)
+        #expect(SPLKMCPToolHandler.integer(.int(7)) == 7)
+        #expect(SPLKMCPToolHandler.integer(.double(3.9)) == 3)
+        #expect(SPLKMCPToolHandler.integer(.double(1e300)) == nil)
+        #expect(SPLKMCPToolHandler.integer(.double(.nan)) == nil)
+        #expect(SPLKMCPToolHandler.integer(.double(-.infinity)) == nil)
+        #expect(SPLKMCPToolHandler.integer(.string("5")) == nil)
     }
 
     @Test func nonFiniteGeometryStillEncodes() throws {
-        let layer = LookinObject()
+        let layer = SPLKObject()
         layer.oid = 9
-        let item = LookinDisplayItem()
+        let item = SPLKDisplayItem()
         item.layerObject = layer
         item.frame = CGRect(x: CGFloat.nan, y: 0, width: .infinity, height: 1)
 
-        let safe = LKMCPPayload.jsonSafe(LKMCPPayload.hierarchy(roots: [item], maxDepth: nil, limit: 10))
+        let safe = SPLKMCPPayload.jsonSafe(SPLKMCPPayload.hierarchy(roots: [item], maxDepth: nil, limit: 10))
         let data = try JSONSerialization.data(withJSONObject: safe)
         let text = String(decoding: data, as: UTF8.self)
         #expect(text.contains(#""x":null"#))
@@ -223,14 +223,14 @@ struct MCPLifecycleTests {
 
     private static let port = 47298
 
-    private func makeServer() throws -> (LKMCPServer, () -> Void) {
+    private func makeServer() throws -> (SPLKMCPServer, () -> Void) {
         let suiteName = "SupaLookinTests.mcp.\(UUID().uuidString)"
         let userDefaults = try #require(UserDefaults(suiteName: suiteName))
         userDefaults.set(MCPLifecycleTests.port, forKey: "mcpPort")
-        return (LKMCPServer(userDefaults: userDefaults), { userDefaults.removePersistentDomain(forName: suiteName) })
+        return (SPLKMCPServer(userDefaults: userDefaults), { userDefaults.removePersistentDomain(forName: suiteName) })
     }
 
-    private func wait(for server: LKMCPServer, _ condition: (LKMCPServerStatus) -> Bool) async throws {
+    private func wait(for server: SPLKMCPServer, _ condition: (SPLKMCPServerStatus) -> Bool) async throws {
         for _ in 0..<80 {
             if condition(server.status) {
                 return
@@ -240,7 +240,7 @@ struct MCPLifecycleTests {
         Issue.record("Timed out at \(server.status)")
     }
 
-    private func isRunning(_ status: LKMCPServerStatus) -> Bool {
+    private func isRunning(_ status: SPLKMCPServerStatus) -> Bool {
         if case .running = status { return true }
         return false
     }
@@ -294,7 +294,7 @@ struct MCPToolErrorTests {
 
     @Test func errorsCarryTheirRecoverySuggestion() async {
         // The test host inspects no app
-        let result = await LKMCPToolHandler.call(name: "get_item", arguments: ["oid": .int(1)])
+        let result = await SPLKMCPToolHandler.call(name: "get_item", arguments: ["oid": .int(1)])
         #expect(result.isError == true)
         guard case .text(let text, _, _) = result.content.first else {
             Issue.record("Expected text content")

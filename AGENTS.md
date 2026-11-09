@@ -6,14 +6,15 @@ Shared instructions for any coding agent working in this repository (Claude Code
 
 1. **Never commit, push, or perform any other git write/publish operation unless the user has explicitly authorized it for that specific action.** Do not assume a prior approval carries over to a later change. When in doubt, stop and ask instead of acting.
 2. **Work in spec mode.** Every non-trivial change is driven by a spec document under [`spec/`](spec/README.md) before implementation starts. Read `spec/README.md` for the full rules on how specs are named, versioned, and maintained.
-3. **Keep 1:1 parity with Lookin; write the new app in idiomatic Swift.** The app layer is being rewritten in Swift as a new target, alongside the original Objective-C app (see [`spec/20261025-swift-rewrite.md`](spec/20261025-swift-rewrite.md)).
+3. **Keep Lookin's behavior; write new code in idiomatic Swift.** The macOS app was rewritten in Swift from Lookin's Objective-C client (see [`spec/20261025-swift-rewrite.md`](spec/20261025-swift-rewrite.md)). SupaLookin ships its own iOS-side library, SPLKServer, and no longer talks to stock LookinServer (see [`spec/20261109-splk-server.md`](spec/20261109-splk-server.md)).
 
-   - **Behavior is 1:1.** Logic, data flow, UI layout, interactions, user-facing strings and localization keys match the Objective-C app (`LookinClient/`). Don't redesign, "improve", or drop behavior while porting; any intentional behavior change goes through its own spec.
-   - **Names map 1:1.** A ported type keeps its original name, `LK` prefix included (`LKConnectionManager` stays `LKConnectionManager`), so every Swift type can be traced back to its Objective-C counterpart. Members take the name the Swift importer would give the original selector.
+   - **Behavior follows Lookin.** Logic, data flow, UI layout, interactions, user-facing strings and localization keys match the original Lookin and LookinServer. Don't redesign, "improve", or drop behavior in passing; any intentional behavior change goes through its own spec.
+   - **Every name uses the `SPLK` prefix.** Lookin's `LK`, `LKS` and `Lookin` prefixes all became `SPLK` (`LKConnectionManager` → `SPLKConnectionManager`, `LookinDisplayItem` → `SPLKDisplayItem`, `lks_oid` → `splk_oid`). Swap the prefix back to trace a type to its Lookin counterpart. New types take the `SPLK` prefix too. Stored keys (`NSCoder` keys, `UserDefaults` keys) keep their original values.
+   - **New code is Swift where possible.** Existing Objective-C stays Objective-C. An SPM target is either Swift or Objective-C, and target dependencies can't form a cycle, so new Swift for the library goes in a Swift target that the Objective-C target depends on, or one that depends on the Objective-C target, never both.
    - **Language-level optimizations are allowed; behavior is not negotiable.** Swift-specific improvements (types, safety, concurrency, simpler data flow) are welcome, but business logic, UI presentation and interaction logic must match the original exactly.
    - **Code style is Swift's, not transliterated Objective-C.** Use the Swift API Design Guidelines and native Swift constructs (value types, optionals, enums with associated values, `async`/`await`, Combine) wherever they express the same behavior. Don't reproduce Objective-C-only patterns such as ReactiveObjC signals or ShortCocoa's `$()` syntax.
-   - **No Objective-C in the Swift target.** It has no `.h` / `.m` files and no bridging header. `@objc` appears only where AppKit's runtime leaves no Swift route (nib-instantiated classes, selector-based target-action, KVO on AppKit-owned properties). Objective-C lives only under `Packages/`.
-   - **Objective-C code keeps Lookin's style.** When touching the Objective-C app or the vendored packages under `Packages/`, match the existing code's conventions as before.
+   - **No Objective-C in the app target.** It has no `.h` / `.m` files and no bridging header. `@objc` appears only where AppKit's runtime leaves no Swift route (nib-instantiated classes, selector-based target-action, KVO on AppKit-owned properties). Objective-C lives only under `Sources/`.
+   - **Objective-C code keeps Lookin's style.** When touching the Objective-C under `Sources/`, match the existing code's conventions.
 
    **File header, new files only:** every newly created source file uses this header (matches the original Lookin comment-header shape, with the new author line):
 
@@ -32,10 +33,12 @@ Shared instructions for any coding agent working in this repository (Claude Code
 
 ## Project context
 
-SupaLookin is an independent, long-term continuation of the unmaintained `hughkli/Lookin` (macOS UI inspector) and `QMUI/LookinServer` (iOS-side instrumentation library). See `.private/LICENSE_REVIEW.md` (local-only, not committed) for the licensing audit behind this fork: the macOS client is GPLv3, the iOS-side/shared library is MIT, and they're independent works connected over network/USB rather than one statically-linked binary.
+SupaLookin is an independent, long-term continuation of the unmaintained `hughkli/Lookin` (macOS UI inspector) and `QMUI/LookinServer` (iOS-side instrumentation library), and no longer interoperates with either. See `.private/LICENSE_REVIEW.md` (local-only, not committed) for the licensing audit behind this fork: the macOS client is GPLv3, the iOS-side/shared library under `Sources/` is MIT, and they're independent works connected over network/USB rather than one statically-linked binary.
 
 - App name: **Supa Lookin**
 - Bundle ID: `icu.retrouvailles.supalookin`
 - Xcode project/target: `SupaLookin.xcodeproj` / target `SupaLookin`
-- Swift rewrite: target `SupaLookinNext`, sources under `SupaLookin/`; it replaces the Objective-C target at cutover (see the rewrite spec)
-- Dependency management: Swift Package Manager — local packages `Packages/LookinShared` and `Packages/ReactiveObjC` (vendored, see each `UPSTREAM.md`), plus Sparkle 2
+- App sources: `SupaLookin/` (Swift); tests: `SupaLookinTests/`
+- iOS-side library: the `SPLKServer` product of the root `Package.swift`, sources under `Sources/` (targets `SPLKServer`, `SPLKServerSwift`, `SPLKServerBase`). The macOS app links the same product as a local package for the shared protocol code.
+- Ports: SPLKServer listens on 47264–47269 (simulator) and 47275–47279 (USB device), clear of stock LookinServer's
+- Dependency management: Swift Package Manager — the root package, plus Sparkle 2, the MCP swift-sdk and FlyingFox

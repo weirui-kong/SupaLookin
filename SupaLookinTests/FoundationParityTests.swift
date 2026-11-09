@@ -7,7 +7,7 @@
 
 import Cocoa
 import Testing
-import LookinShared
+import SPLKServer
 @testable import SupaLookin
 
 // Expected values were produced by running the Objective-C sources in LookinClient/.
@@ -22,8 +22,8 @@ struct FoundationParityTests {
         ("1.2.3", "1.2.10", true),
     ])
     func versionComparer(expected: String, real: String, result: Bool) {
-        #expect(LKVersionComparer.compare(withNewest: expected, user: real) == result)
-        #expect(LKVersionComparer.compare(withExpectedVersion: expected, realVersion: real) == result)
+        #expect(SPLKVersionComparer.compare(withNewest: expected, user: real) == result)
+        #expect(SPLKVersionComparer.compare(withExpectedVersion: expected, realVersion: real) == result)
     }
 
     @Test(arguments: [
@@ -48,7 +48,7 @@ struct FoundationParityTests {
     ])
     func bestMatches(input: String, expected: [String]) {
         let candidates = ["layoutSubviews", "setNeedsLayout", "layoutIfNeeded", "removeFromSuperview", "sizeToFit", "setNeedsDisplay", "description", "debugDescription", "superview", "subviews"]
-        #expect(LKHelper.bestMatches(in: candidates, input: input, maxResultsCount: 3) == expected)
+        #expect(SPLKHelper.bestMatches(in: candidates, input: input, maxResultsCount: 3) == expected)
     }
 
     @Test(arguments: [
@@ -76,7 +76,7 @@ struct FoundationParityTests {
         let userDefaults = try #require(UserDefaults(suiteName: suiteName))
         defer { userDefaults.removePersistentDomain(forName: suiteName) }
 
-        let manager = LKPreferenceManager(userDefaults: userDefaults)
+        let manager = SPLKPreferenceManager(userDefaults: userDefaults)
 
         #expect(manager.showOutline.currentBOOLValue == true)
         #expect(manager.showHiddenItems.currentBOOLValue == false)
@@ -89,11 +89,11 @@ struct FoundationParityTests {
         #expect(manager.syncConsoleTarget == true)
         #expect(manager.freeRotation.currentBOOLValue == true)
         #expect(manager.fastMode.currentBOOLValue == false)
-        #expect(manager.collapsedAttrGroups == [LookinAttrGroup_Class])
+        #expect(manager.collapsedAttrGroups == [SPLKAttrGroup_Class])
         #expect(manager.preferredExportCompression == 0.5)
-        #expect(manager.previewDimension.currentIntegerValue == LookinPreviewDimension.dimension3D.rawValue)
-        #expect(manager.previewScale.currentDoubleValue == Double(LKInitialPreviewScale))
-        #expect(manager.measureState.currentIntegerValue == LookinMeasureState.no.rawValue)
+        #expect(manager.previewDimension.currentIntegerValue == SPLKPreviewDimension.dimension3D.rawValue)
+        #expect(manager.previewScale.currentDoubleValue == Double(SPLKInitialPreviewScale))
+        #expect(manager.measureState.currentIntegerValue == SPLKMeasureState.no.rawValue)
 
         // The same keys and values Lookin writes when they are missing
         #expect(userDefaults.object(forKey: "showOutline") as? Bool == true)
@@ -108,7 +108,7 @@ struct FoundationParityTests {
         #expect(userDefaults.object(forKey: "FreeRotation") as? Bool == true)
         #expect(userDefaults.object(forKey: "fastMode") as? Bool == false)
         #expect(userDefaults.object(forKey: "preferredExportCompression") as? Double == 0.5)
-        #expect(userDefaults.integer(forKey: "preVer") == Int(LOOKIN_CLIENT_VERSION))
+        #expect(userDefaults.integer(forKey: "preVer") == Int(SPLK_CLIENT_VERSION))
     }
 
     @Test func preferenceValuesRoundTrip() throws {
@@ -116,13 +116,13 @@ struct FoundationParityTests {
         let userDefaults = try #require(UserDefaults(suiteName: suiteName))
         defer { userDefaults.removePersistentDomain(forName: suiteName) }
 
-        let manager = LKPreferenceManager(userDefaults: userDefaults)
+        let manager = SPLKPreferenceManager(userDefaults: userDefaults)
         manager.shouldStoreToLocal = true
         manager.rgbaFormat = false
         manager.appearanceType = .dark
         manager.zInterspace.setDoubleValue(0.4, ignoreSubscriber: nil)
 
-        let reloaded = LKPreferenceManager(userDefaults: userDefaults)
+        let reloaded = SPLKPreferenceManager(userDefaults: userDefaults)
         #expect(reloaded.rgbaFormat == false)
         #expect(reloaded.appearanceType == .dark)
         #expect(reloaded.zInterspace.currentDoubleValue == 0.4)
@@ -136,7 +136,7 @@ struct FoundationParityTests {
     }
 
     @Test func alignBottomRespectsFlippedSuperview() {
-        let flipped = LKBaseView(frame: NSRect(x: 0, y: 0, width: 100, height: 100))
+        let flipped = SPLKBaseView(frame: NSRect(x: 0, y: 0, width: 100, height: 100))
         let flippedChild = NSView()
         flipped.addSubview(flippedChild)
         flippedChild.setHeight(20).alignBottom(10)
@@ -151,7 +151,7 @@ struct FoundationParityTests {
 
     @Test func kvoSubjectEmitsCurrentValueThenEachNotify() {
         var value = 1
-        let subject = LKKVOSubject { value }
+        let subject = SPLKKVOSubject { value }
         var received: [Int] = []
         let cancellable = subject.publisher.sink { received.append($0) }
         value = 2

@@ -118,3 +118,7 @@ Future edits to the vendored copy have to stay wire-compatible: adding request t
 - Replacing ReactiveObjC, or any other refactor of the vendored code.
 - Adding a replacement crash-reporting or analytics service.
 - Any LookinShared protocol changes, and the MCP server itself.
+
+## Update: replaced by SPLKServer (see `20261109-splk-server.md`)
+
+`Packages/LookinShared` is gone. The shared protocol code now lives with the rest of upstream LookinServer, imported at a later commit, in the root `Package.swift`'s `SPLKServer` product, which the app links as a local package. Its names take the `SPLK` prefix, its `unsafeFlags` prefix-header workaround is replaced by explicit imports, and the wire protocol is no longer compatible with stock LookinServer, so "LookinServer protocol compatibility" above no longer applies.

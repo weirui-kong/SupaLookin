@@ -71,3 +71,7 @@ All dependencies now come from Swift Package Manager: local packages under `Pack
 ## Update: runner moved to macos-26 (see `20261025-swift-rewrite-m0-scaffold.md`)
 
 `SupaLookin.xcodeproj` now uses the Xcode 16 project format (`objectVersion = 77`), which the `macos-14` image's default Xcode can't open. The release job runs on `macos-26`, whose default Xcode is 26.x. It still builds and releases only the `SupaLookin` scheme.
+
+## Update: SPLKServer version (see `20261109-splk-server.md`)
+
+The repository also ships SPLKServer, released under the same tag as the app. The bump step sets `SPLK_SERVER_READABLE_VERSION` in `Sources/SPLKServer/include/SPLKDefines.h` to the new `MARKETING_VERSION`, fails if the replacement didn't happen, and commits that file together with the project file.

@@ -9,6 +9,24 @@
 		<dict>
 			<key>CFBundleTypeExtensions</key>
 			<array>
+				<string>supalookin</string>
+			</array>
+			<key>CFBundleTypeIconFile</key>
+			<string>lookin_icon</string>
+			<key>CFBundleTypeName</key>
+			<string>Supa Lookin Document</string>
+			<key>CFBundleTypeRole</key>
+			<string>Viewer</string>
+			<key>LSItemContentTypes</key>
+			<array>
+				<string>icu.retrouvailles.supalookin.document</string>
+			</array>
+			<key>NSDocumentClass</key>
+			<string>$(PRODUCT_MODULE_NAME).SPLKDocument</string>
+		</dict>
+		<dict>
+			<key>CFBundleTypeExtensions</key>
+			<array>
 				<string>lookin</string>
 			</array>
 			<key>CFBundleTypeIconFile</key>
@@ -22,7 +40,7 @@
 				<string>com.lookin.lookin</string>
 			</array>
 			<key>NSDocumentClass</key>
-			<string>$(PRODUCT_MODULE_NAME).LookinDocument</string>
+			<string>$(PRODUCT_MODULE_NAME).SPLKDocument</string>
 		</dict>
 	</array>
 	<key>CFBundleExecutable</key>
@@ -58,6 +76,28 @@
 	<key>SUPublicEDKey</key>
 	<string>peTjh9x+Ph3tOhWbY5iqzO2SVkdbMRtBJiYbtLlhatM=</string>
 	<key>UTExportedTypeDeclarations</key>
+	<array>
+		<dict>
+			<key>UTTypeConformsTo</key>
+			<array>
+				<string>public.data</string>
+			</array>
+			<key>UTTypeDescription</key>
+			<string>Supa Lookin Document</string>
+			<key>UTTypeIconFile</key>
+			<string>lookin_icon</string>
+			<key>UTTypeIdentifier</key>
+			<string>icu.retrouvailles.supalookin.document</string>
+			<key>UTTypeTagSpecification</key>
+			<dict>
+				<key>public.filename-extension</key>
+				<array>
+					<string>supalookin</string>
+				</array>
+			</dict>
+		</dict>
+	</array>
+	<key>UTImportedTypeDeclarations</key>
 	<array>
 		<dict>
 			<key>UTTypeConformsTo</key>

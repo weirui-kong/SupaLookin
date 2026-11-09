@@ -7,10 +7,10 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		0A509195308E0CFC00FF455C /* LookinShared in Frameworks */ = {isa = PBXBuildFile; productRef = 9AF9E3A577D1C64421C2636E /* LookinShared */; };
+		0A509195308E0CFC00FF455C /* SPLKServer in Frameworks */ = {isa = PBXBuildFile; productRef = 9AF9E3A577D1C64421C2636E /* SPLKServer */; };
 		3C63BFDDBE9BD142CB478638 /* MCP in Frameworks */ = {isa = PBXBuildFile; productRef = 1C8C88A78496326515928A64 /* MCP */; };
 		98135AABDA25211B0A6DEDAF /* FlyingFox in Frameworks */ = {isa = PBXBuildFile; productRef = 676C33EBDDF6D5A0416D27DA /* FlyingFox */; };
-		BD8B5B893F8E675250DEE87C /* LookinShared in Frameworks */ = {isa = PBXBuildFile; productRef = AE1FE787C5567D14E3724CAA /* LookinShared */; };
+		BD8B5B893F8E675250DEE87C /* SPLKServer in Frameworks */ = {isa = PBXBuildFile; productRef = AE1FE787C5567D14E3724CAA /* SPLKServer */; };
 		E87E824D120E1799D556E262 /* Sparkle in Frameworks */ = {isa = PBXBuildFile; productRef = B556E45665F72A9F522F1487 /* Sparkle */; };
 /* End PBXBuildFile section */
 
@@ -53,7 +53,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				0A509195308E0CFC00FF455C /* LookinShared in Frameworks */,
+				0A509195308E0CFC00FF455C /* SPLKServer in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -61,7 +61,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				BD8B5B893F8E675250DEE87C /* LookinShared in Frameworks */,
+				BD8B5B893F8E675250DEE87C /* SPLKServer in Frameworks */,
 				E87E824D120E1799D556E262 /* Sparkle in Frameworks */,
 				3C63BFDDBE9BD142CB478638 /* MCP in Frameworks */,
 				98135AABDA25211B0A6DEDAF /* FlyingFox in Frameworks */,
@@ -122,7 +122,7 @@
 			);
 			name = SupaLookinTests;
 			packageProductDependencies = (
-				9AF9E3A577D1C64421C2636E /* LookinShared */,
+				9AF9E3A577D1C64421C2636E /* SPLKServer */,
 			);
 			productName = SupaLookinTests;
 			productReference = 9A6984E2134C0B00870211A3 /* SupaLookinTests.xctest */;
@@ -145,7 +145,7 @@
 			);
 			name = SupaLookin;
 			packageProductDependencies = (
-				AE1FE787C5567D14E3724CAA /* LookinShared */,
+				AE1FE787C5567D14E3724CAA /* SPLKServer */,
 				B556E45665F72A9F522F1487 /* Sparkle */,
 				1C8C88A78496326515928A64 /* MCP */,
 				676C33EBDDF6D5A0416D27DA /* FlyingFox */,
@@ -174,7 +174,7 @@
 			);
 			mainGroup = AA48F29221CC0CA50032EC2C;
 			packageReferences = (
-				4FBDFB277EB465465528E113 /* XCLocalSwiftPackageReference "Packages/LookinShared" */,
+				4FBDFB277EB465465528E113 /* XCLocalSwiftPackageReference "." */,
 				468AB0D40F5FF95E206ECC3F /* XCRemoteSwiftPackageReference "Sparkle" */,
 				5C1422732D12323FF91BD29E /* XCRemoteSwiftPackageReference "swift-sdk" */,
 				FAE4EF2CCA080FEB901B5C57 /* XCRemoteSwiftPackageReference "FlyingFox" */,
@@ -252,7 +252,7 @@
 				);
 				MACOSX_DEPLOYMENT_TARGET = 14.0;
 				MARKETING_VERSION = 1.0.14;
-				OTHER_SWIFT_FLAGS = "$(inherited) -Xcc -DSHOULD_COMPILE_LOOKIN_SERVER=1";
+				OTHER_SWIFT_FLAGS = "$(inherited) -Xcc -DSHOULD_COMPILE_SPLK_SHARED=1";
 				PRODUCT_BUNDLE_IDENTIFIER = icu.retrouvailles.supalookin;
 				PRODUCT_MODULE_NAME = SupaLookin;
 				PRODUCT_NAME = "Supa Lookin";
@@ -401,7 +401,7 @@
 				);
 				MACOSX_DEPLOYMENT_TARGET = 14.0;
 				MARKETING_VERSION = 1.0.14;
-				OTHER_SWIFT_FLAGS = "$(inherited) -Xcc -DSHOULD_COMPILE_LOOKIN_SERVER=1";
+				OTHER_SWIFT_FLAGS = "$(inherited) -Xcc -DSHOULD_COMPILE_SPLK_SHARED=1";
 				PRODUCT_BUNDLE_IDENTIFIER = icu.retrouvailles.supalookin;
 				PRODUCT_MODULE_NAME = SupaLookin;
 				PRODUCT_NAME = "Supa Lookin";
@@ -422,7 +422,7 @@
 				GENERATE_INFOPLIST_FILE = YES;
 				MACOSX_DEPLOYMENT_TARGET = 14.0;
 				MARKETING_VERSION = 1.0.14;
-				OTHER_SWIFT_FLAGS = "$(inherited) -Xcc -DSHOULD_COMPILE_LOOKIN_SERVER=1";
+				OTHER_SWIFT_FLAGS = "$(inherited) -Xcc -DSHOULD_COMPILE_SPLK_SHARED=1";
 				PRODUCT_BUNDLE_IDENTIFIER = icu.retrouvailles.supalookin.tests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = macosx;
@@ -442,7 +442,7 @@
 				GENERATE_INFOPLIST_FILE = YES;
 				MACOSX_DEPLOYMENT_TARGET = 14.0;
 				MARKETING_VERSION = 1.0.14;
-				OTHER_SWIFT_FLAGS = "$(inherited) -Xcc -DSHOULD_COMPILE_LOOKIN_SERVER=1";
+				OTHER_SWIFT_FLAGS = "$(inherited) -Xcc -DSHOULD_COMPILE_SPLK_SHARED=1";
 				PRODUCT_BUNDLE_IDENTIFIER = icu.retrouvailles.supalookin.tests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = macosx;
@@ -485,9 +485,9 @@
 /* End XCConfigurationList section */
 
 /* Begin XCLocalSwiftPackageReference section */
-		4FBDFB277EB465465528E113 /* XCLocalSwiftPackageReference "Packages/LookinShared" */ = {
+		4FBDFB277EB465465528E113 /* XCLocalSwiftPackageReference "." */ = {
 			isa = XCLocalSwiftPackageReference;
-			relativePath = Packages/LookinShared;
+			relativePath = .;
 		};
 /* End XCLocalSwiftPackageReference section */
 
@@ -529,15 +529,15 @@
 			package = FAE4EF2CCA080FEB901B5C57 /* XCRemoteSwiftPackageReference "FlyingFox" */;
 			productName = FlyingFox;
 		};
-		9AF9E3A577D1C64421C2636E /* LookinShared */ = {
+		9AF9E3A577D1C64421C2636E /* SPLKServer */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = 4FBDFB277EB465465528E113 /* XCLocalSwiftPackageReference "Packages/LookinShared" */;
-			productName = LookinShared;
+			package = 4FBDFB277EB465465528E113 /* XCLocalSwiftPackageReference "." */;
+			productName = SPLKServer;
 		};
-		AE1FE787C5567D14E3724CAA /* LookinShared */ = {
+		AE1FE787C5567D14E3724CAA /* SPLKServer */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = 4FBDFB277EB465465528E113 /* XCLocalSwiftPackageReference "Packages/LookinShared" */;
-			productName = LookinShared;
+			package = 4FBDFB277EB465465528E113 /* XCLocalSwiftPackageReference "." */;
+			productName = SPLKServer;
 		};
 		B556E45665F72A9F522F1487 /* Sparkle */ = {
 			isa = XCSwiftPackageProductDependency;

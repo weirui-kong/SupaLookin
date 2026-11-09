@@ -23,11 +23,14 @@ jobs:
         run: |
           set -euo pipefail
           PBXPROJ="SupaLookin.xcodeproj/project.pbxproj"
+          DEFINES="Sources/SPLKServer/include/SPLKDefines.h"
           OLD_VERSION=$(xcodebuild -project SupaLookin.xcodeproj -target SupaLookin -showBuildSettings \
             | awk -F' = ' '/^ *MARKETING_VERSION = / { print $2; exit }')
           IFS='.' read -r MAJOR MINOR PATCH <<< "$OLD_VERSION"
           NEW_VERSION="${MAJOR}.${MINOR}.$((PATCH + 1))"
           sed -i '' "s/MARKETING_VERSION = ${OLD_VERSION};/MARKETING_VERSION = ${NEW_VERSION};/g" "$PBXPROJ"
+          sed -i '' "s/SPLK_SERVER_READABLE_VERSION = @\"${OLD_VERSION}\";/SPLK_SERVER_READABLE_VERSION = @\"${NEW_VERSION}\";/" "$DEFINES"
+          grep -q "SPLK_SERVER_READABLE_VERSION = @\"${NEW_VERSION}\";" "$DEFINES"
           echo "new_version=${NEW_VERSION}" >> "$GITHUB_OUTPUT"
 
       - name: Commit and tag
@@ -35,7 +38,7 @@ jobs:
           set -euo pipefail
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add SupaLookin.xcodeproj/project.pbxproj
+          git add SupaLookin.xcodeproj/project.pbxproj Sources/SPLKServer/include/SPLKDefines.h
           git commit -m "Bump version to ${{ steps.bump.outputs.new_version }}"
           git tag "v${{ steps.bump.outputs.new_version }}"
           git push origin HEAD:master
