@@ -1,5 +1,3 @@
-#ifdef SHOULD_COMPILE_SPLK_SHARED 
-
 //
 //  SPLKHierarchyFile.h
 //  Lookin
@@ -28,5 +26,3 @@
 + (NSError *)verifyHierarchyFile:(SPLKHierarchyFile *)file;
 
 @end
-
-#endif /* SHOULD_COMPILE_SPLK_SHARED */

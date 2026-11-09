@@ -12,8 +12,8 @@ import SPLKServer
 
 struct SPLKServerImportTests {
 
-    @Test func clientVersionIsVisible() {
-        #expect(SPLK_CLIENT_VERSION == 1)
+    @Test func documentVersionIsVisible() {
+        #expect(SPLK_DOCUMENT_VERSION == 1)
     }
 
     @Test func portsStayClearOfStockLookinServer() {

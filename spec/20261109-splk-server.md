@@ -163,3 +163,7 @@ SPM always builds `SPLKServerSwift`, so `SPLKTraceManager` imports it unconditio
 - A demo iOS app in this repository.
 - Splitting the shared code and the server into separate targets.
 - Moving Sparkle updates off `lookin.work` (still pending from `20261025-spm-migration.md`), and the other `lookin.work` help links.
+
+## Update: e2e demo (see `20261110-protocol-v2-m2-server.md`)
+
+The repository now holds a demo app's sources under `Scripts/e2e/` for end-to-end tests. It is a Swift file and an `Info.plist` built by `Scripts/e2e-sim.sh`, not an Xcode project. "A demo iOS app in this repository" under Out of scope no longer applies.

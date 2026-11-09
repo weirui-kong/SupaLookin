@@ -1,5 +1,3 @@
-#ifdef SHOULD_COMPILE_SPLK_SHARED 
-
 //
 //  SPLKAutoLayoutConstraint.h
 //  Lookin
@@ -47,5 +45,3 @@ typedef NS_ENUM(NSInteger, SPLKConstraintItemType) {
 @property(nonatomic, copy) NSString *identifier;
 
 @end
-
-#endif /* SHOULD_COMPILE_SPLK_SHARED */

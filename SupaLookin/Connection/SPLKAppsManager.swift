@@ -52,9 +52,9 @@ final class SPLKAppsManager {
     private var cancellables = Set<AnyCancellable>()
 
     private init() {
-        SPLKConnectionManager.sharedInstance.channelWillEnd
-            .filter { [unowned self] channel in
-                channel === self.inspectingApp?.channel
+        SPLKConnectionManager.sharedInstance.sessionDidEnd
+            .filter { [unowned self] session in
+                session === self.inspectingApp?.session
             }
             .sink { [unowned self] _ in
                 NSLog("current connection end")
@@ -107,59 +107,50 @@ final class SPLKAppsManager {
             Date().timeIntervalSince1970 - info.cachedTimestamp <= 8
         }
 
-        let localInfoIdentifiers = validAppInfos.map { NSNumber(value: $0.appInfoIdentifier) }
-        let params: NSDictionary = ["needImages": NSNumber(value: needImages), "local": localInfoIdentifiers]
+        let localInfoIdentifiers = validAppInfos.map(\.appInfoIdentifier)
 
-        let connectedChannels = await SPLKConnectionManager.sharedInstance.tryToConnectAllPorts()
-        if connectedChannels.isEmpty {
+        let discoveries = await SPLKConnectionManager.sharedInstance.tryToConnectAllPorts()
+        if discoveries.isEmpty {
             // 没有任何 channel
             return []
         }
 
-        // Requests go out to every channel at once; results keep channel order, as RAC's zip did.
-        let streams = connectedChannels.map { channel in
-            SPLKConnectionManager.sharedInstance.request(type: UInt32(SPLKRequestTypeApp), data: params, channel: channel)
-        }
-        var apps: [SPLKInspectableApp] = []
-        for stream in streams {
-            do {
-                // for-await stays on the main actor, where a hand-held iterator would have to be sent off it
-                var firstElement: (SPLKConnectionResponseAttachment?, SPLK_PTChannel)?
-                for try await element in stream {
-                    firstElement = element
-                    break
-                }
-                guard let (response, relatedChannel) = firstElement else {
-                    continue
-                }
-                if response?.error != nil {
-                    assertionFailure()
-                    continue
-                }
-                guard var receivedInfo = response?.data as? SPLKAppInfo else {
-                    continue
-                }
-                receivedInfo.cachedTimestamp = Date().timeIntervalSince1970
-                if receivedInfo.shouldUseCache {
-                    // 使用之前拉取的旧 info
-                    if let localInfo = validAppInfos.first(where: { $0.appInfoIdentifier == receivedInfo.appInfoIdentifier }) {
-                        receivedInfo = localInfo
-                    }
-                }
-
-                let app = SPLKInspectableApp()
-                app.appInfo = receivedInfo
-                app.channel = relatedChannel
-                apps.append(app)
-            } catch {
-                let code = (error as NSError).code
-                if code == SPLKErrCode_ServerVersionTooHigh || code == SPLKErrCode_ServerVersionTooLow {
+        // Requests go out to every app at once; results keep port order, as RAC's zip did.
+        let lookups = discoveries.map { discovery in
+            Task { () -> SPLKInspectableApp? in
+                switch discovery {
+                case .versionError(let error):
                     // 这些 Lookin 版本不匹配的错误应该被保留，因为业务需要显示这些错误
                     let app = SPLKInspectableApp()
-                    app.serverVersionError = error as NSError
-                    apps.append(app)
+                    app.serverVersionError = error
+                    return app
+                case .app(let session):
+                    do {
+                        guard var receivedInfo = try await session.appInfo(withImages: needImages, cachedIdentifiers: localInfoIdentifiers) else {
+                            return nil
+                        }
+                        receivedInfo.cachedTimestamp = Date().timeIntervalSince1970
+                        if receivedInfo.shouldUseCache {
+                            // 使用之前拉取的旧 info
+                            if let localInfo = validAppInfos.first(where: { $0.appInfoIdentifier == receivedInfo.appInfoIdentifier }) {
+                                receivedInfo = localInfo
+                            }
+                        }
+                        let app = SPLKInspectableApp()
+                        app.appInfo = receivedInfo
+                        app.session = session
+                        return app
+                    } catch {
+                        // 位于后台无法执行代码的 app 会走到这里，应该过滤掉
+                        return nil
+                    }
                 }
-                // 位于后台无法执行代码的 channel 会走到这里，应该过滤掉这些 channel
+            }
+        }
+        var apps: [SPLKInspectableApp] = []
+        for lookup in lookups {
+            if let app = await lookup.value {
+                apps.append(app)
             }
         }
         return apps

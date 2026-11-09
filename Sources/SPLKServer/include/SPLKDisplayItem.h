@@ -1,5 +1,3 @@
-#ifdef SHOULD_COMPILE_SPLK_SHARED 
-
 //
 //  SPLKDisplayItem.h
 //  qmuidemo
@@ -182,5 +180,3 @@ typedef NS_ENUM(NSUInteger, SPLKDisplayItemProperty) {
 @property(nonatomic, copy) NSString *highlightedSearchString;
 
 @end
-
-#endif /* SHOULD_COMPILE_SPLK_SHARED */

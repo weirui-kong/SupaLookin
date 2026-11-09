@@ -12,7 +12,6 @@
 #import "SPLKHierarchyDisplayItemsMaker.h"
 #import "SPLKDisplayItem.h"
 #import <objc/runtime.h>
-#import "SPLKConnectionManager.h"
 #import "SPLKIvarTrace.h"
 #import "SPLKServerDefines.h"
 #import "UIColor+SPLKServer.h"

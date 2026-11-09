@@ -7,6 +7,7 @@
 
 import Cocoa
 import Testing
+import SPLKProtocol
 import SPLKServer
 @testable import SupaLookin
 
@@ -108,7 +109,7 @@ struct FoundationParityTests {
         #expect(userDefaults.object(forKey: "FreeRotation") as? Bool == true)
         #expect(userDefaults.object(forKey: "fastMode") as? Bool == false)
         #expect(userDefaults.object(forKey: "preferredExportCompression") as? Double == 0.5)
-        #expect(userDefaults.integer(forKey: "preVer") == Int(SPLK_CLIENT_VERSION))
+        #expect(userDefaults.integer(forKey: "preVer") == Int(SPLKProtocolInfo.generation))
     }
 
     @Test func preferenceValuesRoundTrip() throws {

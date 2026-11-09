@@ -47,7 +47,7 @@ struct DashboardParityTests {
         item.frame = CGRect(x: 1, y: 2, width: 3, height: 4)
         let info = SPLKHierarchyInfo()
         info.displayItems = [item]
-        info.serverVersion = SPLK_SERVER_VERSION
+        info.serverVersion = SPLK_DOCUMENT_VERSION
         let appInfo = SPLKAppInfo()
         appInfo.appName = "Demo"
         appInfo.osDescription = "17.2"
@@ -60,7 +60,7 @@ struct DashboardParityTests {
         let document = SPLKDocument()
         try document.read(from: try #require(data), ofType: SPLKDocument.typeIdentifier)
         let file = try #require(document.hierarchyFile)
-        #expect(file.serverVersion == SPLK_SERVER_VERSION)
+        #expect(file.serverVersion == SPLK_DOCUMENT_VERSION)
         #expect(file.hierarchyInfo?.displayItems?.first?.frame == item.frame)
     }
 }

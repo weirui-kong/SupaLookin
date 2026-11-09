@@ -1,5 +1,3 @@
-#ifdef SHOULD_COMPILE_SPLK_SHARED 
-
 //
 //  SPLKAttributesGroup.h
 //  Lookin
@@ -37,5 +35,3 @@
 - (BOOL)isUserCustom;
 
 @end
-
-#endif /* SHOULD_COMPILE_SPLK_SHARED */

@@ -1,0 +1,427 @@
+//
+//  splk.proto
+//  SPLKProtocol
+//
+//  Created by Weirui Kong on 2026/11/10.
+//
+
+syntax = "proto3";
+package splk.v2;
+
+option swift_prefix = "SPLKV2";
+
+enum ChannelRole {
+  CHANNEL_ROLE_UNSPECIFIED = 0;
+  CHANNEL_ROLE_CONTROL = 1;
+  CHANNEL_ROLE_BULK = 2;
+  CHANNEL_ROLE_VIDEO = 3;
+}
+
+message ClientHello {
+  uint32 protocol_generation = 1;   // 2
+  string client_name = 2;
+  string client_version = 3;
+  repeated string capabilities = 4;
+  ChannelRole role = 5;
+  bytes session_id = 6;             // empty on CONTROL; the ServerHello's id on the others
+}
+
+message ServerHello {
+  Status status = 1;
+  uint32 protocol_generation = 2;
+  string server_version = 3;        // SPLK_SERVER_READABLE_VERSION
+  bytes session_id = 4;
+  repeated string capabilities = 5;
+  AppSummary app = 6;
+}
+
+message Envelope {
+  uint64 id = 1;
+  oneof body {
+    Request request = 2;
+    Response response = 3;
+    StreamItem stream_item = 4;
+    StreamEnd stream_end = 5;
+    Cancel cancel = 6;
+    Event event = 7;
+    Heartbeat heartbeat = 8;
+  }
+}
+
+message Request {
+  uint32 deadline_ms = 1;
+  bytes lease_id = 2;
+  bool oneway = 3;
+  oneof call {
+    GetAppInfo get_app_info = 10;
+    GetHierarchy get_hierarchy = 11;
+    FetchDetails fetch_details = 12;
+    ModifyAttribute modify_attribute = 13;
+    FetchModificationPatch fetch_modification_patch = 14;
+    InvokeMethod invoke_method = 15;
+    GetObject get_object = 16;
+    GetImageViewImage get_image_view_image = 17;
+    SetGestureRecognizerEnabled set_gesture_recognizer_enabled = 18;
+    GetAttributeGroups get_attribute_groups = 19;
+    ListSelectors list_selectors = 20;
+    ModifyCustomAttribute modify_custom_attribute = 21;
+
+    AcquireControl acquire_control = 40;
+    ReleaseControl release_control = 41;
+    Subscribe subscribe = 42;
+    InjectInput inject_input = 43;
+    PerformAction perform_action = 44;
+    WaitForIdle wait_for_idle = 45;
+  }
+}
+
+message Response {
+  Status status = 1;
+  oneof result {
+    AppInfo app_info = 10;
+    HierarchySnapshot hierarchy = 11;
+    NodeDetail node_detail = 13;
+    InvokeResult invoke_result = 15;
+    ObjectRef object = 16;
+    EncodedImage image = 17;
+    bool gesture_enabled = 18;
+    AttributeGroupList attribute_groups = 19;
+    StringList selectors = 20;
+    Empty empty = 21;
+
+    ControlLease lease = 40;
+    ActionResult action_result = 44;
+  }
+}
+
+message StreamItem {
+  oneof item {
+    NodeDetail node_detail = 1;     // FetchDetails, FetchModificationPatch
+    Event event = 2;                // Subscribe
+  }
+}
+
+message StreamEnd { Status status = 1; }
+message Cancel {}
+message Heartbeat {}
+message Empty {}
+message StringList { repeated string values = 1; }
+
+message Status {
+  enum Code {
+    OK = 0;
+    CANCELLED = 1;
+    INVALID_ARGUMENT = 2;
+    NOT_FOUND = 3;
+    DEADLINE_EXCEEDED = 4;
+    UNIMPLEMENTED = 5;
+    FAILED_PRECONDITION = 6;
+    PERMISSION_DENIED = 7;
+    RESOURCE_EXHAUSTED = 8;
+    INTERNAL = 9;
+  }
+  Code code = 1;
+  string reason = 2;
+  string title = 3;
+  string detail = 4;
+}
+message Point { double x = 1; double y = 2; }
+message Size { double width = 1; double height = 2; }
+message Rect { Point origin = 1; Size size = 2; }
+message Insets { double top = 1; double left = 2; double bottom = 3; double right = 4; }
+message Color { float r = 1; float g = 2; float b = 3; float a = 4; }   // 0–1, sRGB
+
+message EncodedImage {
+  enum Format { FORMAT_UNSPECIFIED = 0; PNG = 1; JPEG = 2; HEIC = 3; }
+  Format format = 1;
+  bytes data = 2;
+  double scale = 3;
+}
+
+message ScreenInfo {
+  Size size = 1;                    // points, current orientation
+  double scale = 2;
+  enum Orientation { ORIENTATION_UNSPECIFIED = 0; PORTRAIT = 1; PORTRAIT_UPSIDE_DOWN = 2; LANDSCAPE_LEFT = 3; LANDSCAPE_RIGHT = 4; }
+  Orientation orientation = 3;
+  Insets safe_area = 4;
+}
+
+message AppSummary {                // SPLKAppInfo without images
+  uint64 identifier = 1;            // appInfoIdentifier
+  string name = 2;
+  string bundle_identifier = 3;
+  string device_description = 4;
+  string os_description = 5;
+  uint32 os_main_version = 6;
+  enum DeviceType { DEVICE_TYPE_UNSPECIFIED = 0; SIMULATOR = 1; IPAD = 2; OTHERS = 3; }
+  DeviceType device_type = 7;
+  ScreenInfo screen = 8;
+}
+
+message GetAppInfo {
+  bool need_images = 1;
+  repeated uint64 cached_identifiers = 2;   // v1 "local"
+}
+
+message AppInfo {
+  AppSummary summary = 1;
+  bool should_use_cache = 2;
+  EncodedImage screenshot = 3;
+  EncodedImage icon = 4;
+}
+
+message ObjectRef {                 // SPLKObject
+  uint64 oid = 1;
+  string memory_address = 2;
+  repeated string class_chain = 3;
+  string special_trace = 4;
+  repeated IvarTrace ivar_traces = 5;
+}
+
+message IvarTrace {
+  string relation = 1;
+  string host_class_name = 2;
+  string ivar_name = 3;
+}
+
+message Node {                      // SPLKDisplayItem
+  ObjectRef view = 1;
+  ObjectRef layer = 2;
+  ObjectRef host_view_controller = 3;
+  Rect frame = 4;
+  Rect bounds = 5;
+  bool hidden = 6;
+  float alpha = 7;
+  Color background_color = 8;
+  bool represented_as_key_window = 9;
+  bool should_capture_image = 10;
+  string custom_display_title = 11;
+  string danceui_source = 12;
+  CustomNodeInfo custom_info = 13;
+  repeated AttributeGroup attribute_groups = 14;
+  repeated AttributeGroup custom_attribute_groups = 15;
+  repeated EventHandler event_handlers = 16;
+  reserved 17;
+  uint32 depth = 18;                // 0 for a root, or for a direct child in NodeDetail.children
+}
+
+message CustomNodeInfo {            // SPLKCustomDisplayItemInfo
+  Rect frame_in_window = 1;
+  string title = 2;
+  string subtitle = 3;
+  string danceui_source = 4;
+}
+
+message EventHandler {
+  enum Kind { KIND_UNSPECIFIED = 0; TARGET_ACTION = 1; GESTURE = 2; }
+  Kind kind = 1;
+  string event_name = 2;
+  repeated StringPair target_actions = 3;
+  string inherited_recognizer_name = 4;
+  bool gesture_enabled = 5;
+  string gesture_delegator = 6;
+  repeated string recognizer_ivar_traces = 7;
+  uint64 recognizer_oid = 8;
+}
+
+message StringPair { string first = 1; string second = 2; }
+
+message HierarchySnapshot {         // SPLKHierarchyInfo
+  uint64 version = 1;
+  repeated Node nodes = 2;         // pre-order, nesting given by Node.depth
+  map<string, ColorAlias> color_alias = 3;
+  repeated string collapsed_class_list = 4;
+  AppSummary app = 5;
+}
+
+message ColorAlias {                // a color's name, or nested names, as SPLKHierarchyInfo.colorAlias allows
+  oneof value {
+    Color color = 1;
+    ColorAliasGroup group = 2;
+  }
+}
+
+message ColorAliasGroup { map<string, ColorAlias> entries = 1; }
+
+message AttributeGroup {
+  string identifier = 1;            // SPLKAttrGroupIdentifier
+  string custom_title = 2;
+  repeated AttributeSection sections = 3;
+}
+
+message AttributeSection {
+  string identifier = 1;
+  repeated Attribute attributes = 2;
+}
+
+message Attribute {
+  string identifier = 1;            // SPLKAttrIdentifier
+  string display_title = 2;
+  AttrType type = 3;
+  Value value = 4;
+  repeated string enum_cases = 5;   // v1 extraValue for EnumString
+  string custom_setter_id = 6;
+}
+
+enum AttrType {                     // SPLKAttrType, same order
+  ATTR_NONE = 0; ATTR_VOID = 1; ATTR_CHAR = 2; ATTR_INT = 3; ATTR_SHORT = 4; ATTR_LONG = 5;
+  ATTR_LONG_LONG = 6; ATTR_UNSIGNED_CHAR = 7; ATTR_UNSIGNED_INT = 8; ATTR_UNSIGNED_SHORT = 9;
+  ATTR_UNSIGNED_LONG = 10; ATTR_UNSIGNED_LONG_LONG = 11; ATTR_FLOAT = 12; ATTR_DOUBLE = 13;
+  ATTR_BOOL = 14; ATTR_SEL = 15; ATTR_CLASS = 16; ATTR_CG_POINT = 17; ATTR_CG_VECTOR = 18;
+  ATTR_CG_SIZE = 19; ATTR_CG_RECT = 20; ATTR_CG_AFFINE_TRANSFORM = 21; ATTR_UI_EDGE_INSETS = 22;
+  ATTR_UI_OFFSET = 23; ATTR_STRING = 24; ATTR_ENUM_INT = 25; ATTR_ENUM_LONG = 26; ATTR_UI_COLOR = 27;
+  ATTR_CUSTOM_OBJ = 28; ATTR_ENUM_STRING = 29; ATTR_SHADOW = 30; ATTR_JSON = 31;
+}
+
+message Value {
+  oneof kind {
+    sint64 int_value = 1;
+    uint64 uint_value = 2;
+    double double_value = 3;
+    bool bool_value = 4;
+    string string_value = 5;        // NSString, SEL, Class, EnumString, JSON text
+    Point point = 6;                // CGPoint, CGVector, UIOffset
+    Size size = 7;
+    Rect rect = 8;
+    Insets insets = 9;
+    AffineTransform transform = 10;
+    Color color = 11;
+    Shadow shadow = 12;
+    ValueList list = 13;            // arrays of strings and nested arrays (class chains, constraints' labels)
+    Constraint constraint = 14;
+    Empty null_value = 15;          // v1 nil, distinct from "not set"
+  }
+}
+
+message AffineTransform { double a = 1; double b = 2; double c = 3; double d = 4; double tx = 5; double ty = 6; }
+message Shadow { Color color = 1; Size offset = 2; double radius = 3; double opacity = 4; }
+message ValueList { repeated Value values = 1; }
+
+message Constraint {                // SPLKAutoLayoutConstraint
+  bool effective = 1;
+  bool active = 2;
+  ObjectRef first_item = 3;
+  ConstraintItemType first_item_type = 4;
+  int32 first_attribute = 5;
+  int32 relation = 6;
+  ObjectRef second_item = 7;
+  ConstraintItemType second_item_type = 8;
+  int32 second_attribute = 9;
+  double multiplier = 10;
+  double constant = 11;
+  double priority = 12;
+  string identifier = 13;
+}
+
+enum ConstraintItemType { ITEM_UNKNOWN = 0; ITEM_NIL = 1; ITEM_VIEW = 2; ITEM_SELF = 3; ITEM_SUPER = 4; ITEM_LAYOUT_GUIDE = 5; }
+
+message GetHierarchy { uint64 since_version = 1; }
+
+message DetailTask {                // SPLKStaticAsyncUpdateTask
+  uint64 oid = 1;
+  enum Screenshot { SCREENSHOT_NONE = 0; SCREENSHOT_SOLO = 1; SCREENSHOT_GROUP = 2; }
+  Screenshot screenshot = 2;
+  enum AttrRequest { ATTR_AUTOMATIC = 0; ATTR_NEED = 1; ATTR_NOT_NEED = 2; }
+  AttrRequest attr_request = 3;
+  bool need_basic_visual_info = 4;
+  bool need_subitems = 5;
+  Size frame_size = 6;
+}
+
+message DetailTaskPackage { repeated DetailTask tasks = 1; }
+
+message FetchDetails { repeated DetailTaskPackage packages = 1; }
+message FetchModificationPatch { repeated DetailTask tasks = 1; }
+
+message NodeDetail {                // SPLKDisplayItemDetail
+  uint64 oid = 1;
+  EncodedImage group_screenshot = 2;
+  EncodedImage solo_screenshot = 3;
+  Rect frame = 4;                   // set fields only; absence means unchanged
+  Rect bounds = 5;
+  optional bool hidden = 6;
+  optional float alpha = 7;
+  optional string custom_display_title = 8;
+  optional string danceui_source = 9;
+  repeated AttributeGroup attribute_groups = 10;
+  repeated AttributeGroup custom_attribute_groups = 11;
+  repeated Node children = 12;      // the whole subtree in pre-order, nesting given by Node.depth
+  bool children_set = 13;           // distinguishes "no children" from "not requested"
+  int32 failure_code = 14;
+}
+
+message ModifyAttribute {           // SPLKAttributeModification
+  uint64 target_oid = 1;
+  string setter = 2;
+  string getter = 3;
+  AttrType type = 4;
+  Value value = 5;
+}
+
+message ModifyCustomAttribute {     // SPLKCustomAttrModification
+  string custom_setter_id = 1;
+  AttrType type = 2;
+  Value value = 3;
+}
+
+message InvokeMethod { uint64 oid = 1; string text = 2; }
+message InvokeResult { string description = 1; ObjectRef object = 2; bool returns_void = 3; }
+
+message GetObject { uint64 oid = 1; }
+message GetImageViewImage { uint64 oid = 1; }
+message SetGestureRecognizerEnabled { uint64 oid = 1; bool enabled = 2; }
+message GetAttributeGroups { uint64 oid = 1; }
+message AttributeGroupList { repeated AttributeGroup groups = 1; }
+message ListSelectors { string class_name = 1; bool has_arg = 2; }
+message AcquireControl {
+  enum Kind { KIND_UNSPECIFIED = 0; LIVE_CONTROL = 1; TAKEOVER = 2; }
+  Kind kind = 1;
+  string holder_label = 2;
+  bool preempt = 3;
+}
+message ReleaseControl { bytes lease_id = 1; }
+message ControlLease { bytes lease_id = 1; AcquireControl.Kind kind = 2; string holder_label = 3; }
+
+message Subscribe { repeated string topics = 1; }
+message Event {
+  oneof kind {
+    bool app_in_foreground = 1;
+    ScreenInfo screen = 2;
+    ControlLease lease_acquired = 3;
+    ControlLease lease_released = 4;
+    uint64 hierarchy_changed_version = 5;
+    Empty idle = 6;
+  }
+}
+
+message InjectInput { repeated InputEvent events = 1; }
+message InputEvent {
+  double timestamp = 1;             // client seconds, for ordering and pacing
+  oneof kind {
+    Touch touch = 2;
+    Motion motion = 3;
+    TextInput text = 4;
+    Key key = 5;
+  }
+}
+message Touch {
+  uint32 touch_id = 1;
+  enum Phase { PHASE_UNSPECIFIED = 0; BEGAN = 1; MOVED = 2; STATIONARY = 3; ENDED = 4; CANCELLED = 5; }
+  Phase phase = 2;
+  Point location = 3;               // normalized 0–1 in the current orientation
+  float force = 4;
+}
+message Motion { enum Kind { MOTION_UNSPECIFIED = 0; SHAKE = 1; } Kind kind = 1; }
+message TextInput { string text = 1; }
+message Key { enum Code { KEY_UNSPECIFIED = 0; RETURN = 1; DELETE = 2; LEFT = 3; RIGHT = 4; UP = 5; DOWN = 6; TAB = 7; ESCAPE = 8; } Code code = 1; }
+
+message PerformAction {
+  uint64 oid = 1;
+  enum Action { ACTION_UNSPECIFIED = 0; TAP = 1; LONG_PRESS = 2; SET_TEXT = 3; SCROLL_TO_VISIBLE = 4; SCROLL_BY = 5; SWIPE = 6; GO_BACK = 7; }
+  Action action = 2;
+  string text = 3;                  // SET_TEXT
+  Point delta = 4;                  // SCROLL_BY, SWIPE; points
+  uint32 settle_timeout_ms = 5;
+}
+message ActionResult { bool settled = 1; uint64 hierarchy_version = 2; }
+message WaitForIdle { uint32 timeout_ms = 1; }   // answered with ActionResult; settled is false on timeout

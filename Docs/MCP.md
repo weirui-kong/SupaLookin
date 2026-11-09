@@ -1,10 +1,10 @@
 # Supa Lookin MCP Server
 
-Supa Lookin includes a built-in [Model Context Protocol](https://modelcontextprotocol.io) (MCP) server. It lets AI agents such as Claude Code, Cursor or VS Code read the UI of the iOS app you are inspecting: its view hierarchy, the attributes of every view and layer, and their screenshots.
+Supa Lookin includes a built-in [Model Context Protocol](https://modelcontextprotocol.io) (MCP) server. It lets AI agents such as Claude Code, Cursor or VS Code read the UI of the iOS app you are inspecting: its view hierarchy, the attributes of every view and layer, and their screenshots. After taking over the app, an agent can also operate it: tap, type, scroll and go back.
 
 The server shares Supa Lookin's current session. The agent sees the same app, hierarchy and selection as the Supa Lookin window, and the tools read what the window has already loaded instead of fetching the hierarchy again.
 
-> **Phase 1 is read-only.** No tool changes the iOS app. The one tool that affects Supa Lookin is `reload`, which reloads the hierarchy the same way as the Reload menu item. Tools that operate on the app, such as editing attributes, will be added in a later phase.
+> **Reading needs nothing; changing needs takeover.** The read tools never change the iOS app. The write tools (see [Operating the app](#operating-the-app)) only work for the agent that called `take_control`, and only until it calls `release_control` or stops calling tools for 30 seconds.
 
 ## Requirements
 
@@ -234,6 +234,46 @@ Reloads the hierarchy from the iOS app, the same way as Supa Lookin's Reload men
 ```
 
 While Supa Lookin is still syncing screenshots and details, `reload` returns an error instead of interrupting the sync. Try again once the sync finishes.
+
+### `wait_for_idle`
+
+Waits until the app's UI stops changing and has no running animations (endless ones, such as a text caret's blink, don't count).
+
+| Argument | Type | Default | |
+|---|---|---|---|
+| `timeout_ms` | integer | 2000 | How long to wait |
+
+```json
+{ "settled": true, "hierarchy_version": 24 }
+```
+
+`hierarchy_version` goes up whenever the app's view tree changes.
+
+## Operating the app
+
+An agent must take over the app before changing it. Only one agent can hold takeover at a time, and the person at the Mac can always take control back.
+
+| Tool | Arguments | Does |
+|---|---|---|
+| `take_control` | `label` (optional) | Takes over the app. `label` names the agent to the person at the Mac. |
+| `release_control` | — | Gives control back |
+| `tap` | `oid` | Taps the item: its accessibility action, its control action, or a synthesized tap at its center |
+| `long_press` | `oid` | Holds a finger on the item's center for 0.6 s |
+| `set_text` | `oid`, `text` | Replaces the text of a text field or text view, as typing would |
+| `scroll` | `oid`, `dx`, `dy` | Scrolls the item, or the scroll view around it, by points |
+| `scroll_to_visible` | `oid` | Scrolls the item into view |
+| `swipe` | `oid`, `dx`, `dy` | Drags one finger from the item's center by points |
+| `go_back` | `oid` (optional) | Pops the navigation stack, or dismisses the presented screen |
+| `tap_at` | `x`, `y` | Taps a point given as fractions of the screen, 0–1 from the top left |
+| `type_text` | `text` | Types into the focused text input |
+
+Every write tool renews takeover and returns once the UI settles:
+
+```json
+{ "settled": true, "hierarchy_version": 31, "hint": "The UI changed. Call reload before reading items again." }
+```
+
+The hint appears when the view tree changed since the agent's previous call: the items `get_hierarchy` and `get_item` return are from before the change until `reload` runs.
 
 ## Errors
 

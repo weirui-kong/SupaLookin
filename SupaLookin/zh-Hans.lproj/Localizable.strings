@@ -223,3 +223,8 @@
 "Starting…" = "正在启动…";
 "Running at %@" = "运行中：%@";
 "Port %@ is unavailable." = "端口 %@ 无法使用。";
+"Another agent is controlling this app." = "另一个 agent 正在操控这个 App。";
+"Wait until it releases control, or take back control in Supa Lookin." = "请等它释放控制权，或在 Supa Lookin 中收回控制权。";
+"An agent is controlling this app." = "一个 agent 正在操控这个 App。";
+"Take back control in Supa Lookin to make changes." = "在 Supa Lookin 中收回控制权后才能修改。";
+"Take over the app before changing it." = "请先接管这个 App，再进行修改。";

@@ -1,5 +1,3 @@
-#ifdef SHOULD_COMPILE_SPLK_SHARED 
-
 //
 //  SPLKCodingValueType.h
 //  Lookin
@@ -26,5 +24,3 @@ typedef NS_ENUM(NSInteger, SPLKCodingValueType) {
 //    SPLKCodingValueTypeRange,
     SPLKCodingValueTypeImage
 };
-
-#endif /* SHOULD_COMPILE_SPLK_SHARED */

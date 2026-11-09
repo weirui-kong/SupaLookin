@@ -1,5 +1,3 @@
-#ifdef SHOULD_COMPILE_SPLK_SHARED 
-
 //
 //  Color+SPLK.h
 //  SPLKServer
@@ -22,6 +20,3 @@
 @end
 
 #endif
-
-
-#endif /* SHOULD_COMPILE_SPLK_SHARED */

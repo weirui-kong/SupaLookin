@@ -10,6 +10,7 @@
 
 import Cocoa
 import Combine
+import SPLKProtocol
 import SPLKServer
 
 let SPLKWindowSizeName_Dynamic = "LKWindowSizeName_Dynamic"
@@ -215,8 +216,8 @@ final class SPLKPreferenceManager {
         isQuickSelecting = SPLKBOOLMsgAttribute(bool: false)
 
         let prevClientVersion = userDefaults.integer(forKey: Key_PreviousClientVersion)
-        if prevClientVersion != Int(SPLK_CLIENT_VERSION) {
-            userDefaults.set(Int(SPLK_CLIENT_VERSION), forKey: Key_PreviousClientVersion)
+        if prevClientVersion != Int(SPLKProtocolInfo.generation) {
+            userDefaults.set(Int(SPLKProtocolInfo.generation), forKey: Key_PreviousClientVersion)
         }
 
         if let value = userDefaults.object(forKey: Key_ShowOutline) as? NSNumber {

@@ -39,6 +39,12 @@ SupaLookin is an independent, long-term continuation of the unmaintained `hughkl
 - Bundle ID: `icu.retrouvailles.supalookin`
 - Xcode project/target: `SupaLookin.xcodeproj` / target `SupaLookin`
 - App sources: `SupaLookin/` (Swift); tests: `SupaLookinTests/`
-- iOS-side library: the `SPLKServer` product of the root `Package.swift`, sources under `Sources/` (targets `SPLKServer`, `SPLKServerSwift`, `SPLKServerBase`). The macOS app links the same product as a local package for the shared protocol code.
+- iOS-side library: the `SPLKServer` product of the root `Package.swift`, sources under `Sources/`:
+  - `SPLKServer`, `SPLKServerSwift`, `SPLKServerBase`: Lookin's models and builders (Objective-C, plus upstream's Swift ivar tracing)
+  - `SPLKProtocol`: protocol v2, shared by both ends (Swift, generated from `Sources/SPLKProtocol/Schema/splk.proto` by `Scripts/generate-protocol.sh`)
+  - `SPLKModelBridge`: converts between the models and v2 messages (Swift)
+  - `SPLKServerSession`: the iOS server runtime (Swift)
+
+  The macOS app links the `SPLKServer` and `SPLKModelBridge` products as a local package. `Scripts/e2e-sim.sh` runs the end-to-end tests against a demo app on the simulator.
 - Ports: SPLKServer listens on 47264–47269 (simulator) and 47275–47279 (USB device), clear of stock LookinServer's
 - Dependency management: Swift Package Manager — the root package, plus Sparkle 2, the MCP swift-sdk and FlyingFox

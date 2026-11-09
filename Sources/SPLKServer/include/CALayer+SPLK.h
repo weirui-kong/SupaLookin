@@ -1,5 +1,3 @@
-#ifdef SHOULD_COMPILE_SPLK_SHARED 
-
 //
 //  CALayer+SPLK.h
 //  Lookin
@@ -19,5 +17,3 @@
 - (void)splk_removeImplicitAnimations;
 
 @end
-
-#endif /* SHOULD_COMPILE_SPLK_SHARED */

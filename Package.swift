@@ -1,4 +1,4 @@
-// swift-tools-version:5.9
+// swift-tools-version:6.2
 
 import PackageDescription
 
@@ -10,6 +10,15 @@ let sharedDefines: [CSetting] = [
     .define("SHOULD_COMPILE_SPLK_SERVER", to: "1", .when(platforms: serverPlatforms, configuration: .debug)),
 ]
 
+let sharedSwiftDefines: [SwiftSetting] = [
+    .define("SHOULD_COMPILE_SPLK_SHARED", .when(platforms: [.macOS])),
+    .define("SHOULD_COMPILE_SPLK_SHARED", .when(platforms: serverPlatforms, configuration: .debug)),
+]
+
+let serverSwiftDefines: [SwiftSetting] = [
+    .define("SHOULD_COMPILE_SPLK_SERVER", .when(platforms: serverPlatforms, configuration: .debug)),
+]
+
 let package = Package(
     name: "SupaLookin",
     platforms: [
@@ -19,7 +28,11 @@ let package = Package(
         .visionOS(.v1),
     ],
     products: [
-        .library(name: "SPLKServer", targets: ["SPLKServer"]),
+        .library(name: "SPLKServer", targets: ["SPLKServer", "SPLKServerSession"]),
+        .library(name: "SPLKModelBridge", targets: ["SPLKModelBridge"]),
+    ],
+    dependencies: [
+        .package(url: "https://github.com/apple/swift-protobuf", from: "1.39.0"),
     ],
     targets: [
         .target(
@@ -33,6 +46,7 @@ let package = Package(
             path: "Sources/SPLKServerSwift",
             swiftSettings: [
                 .define("SHOULD_COMPILE_SPLK_SERVER", .when(platforms: serverPlatforms, configuration: .debug)),
+                .swiftLanguageMode(.v5),
             ]
         ),
         .target(
@@ -45,6 +59,40 @@ let package = Package(
                 .headerSearchPath("Server/Connection/RequestHandler"),
                 .headerSearchPath("Server/Others"),
             ]
+        ),
+        .target(
+            name: "SPLKProtocol",
+            dependencies: [.product(name: "SwiftProtobuf", package: "swift-protobuf")],
+            path: "Sources/SPLKProtocol",
+            exclude: ["Schema"],
+            swiftSettings: sharedSwiftDefines
+        ),
+        .target(
+            name: "SPLKModelBridge",
+            dependencies: ["SPLKProtocol", "SPLKServer"],
+            path: "Sources/SPLKModelBridge",
+            swiftSettings: sharedSwiftDefines
+        ),
+        .target(
+            name: "SPLKServerSession",
+            dependencies: ["SPLKProtocol", "SPLKModelBridge", "SPLKServer"],
+            path: "Sources/SPLKServerSession",
+            swiftSettings: serverSwiftDefines
+        ),
+        .testTarget(
+            name: "SPLKProtocolTests",
+            dependencies: ["SPLKProtocol"],
+            path: "Tests/SPLKProtocolTests"
+        ),
+        .testTarget(
+            name: "SPLKModelBridgeTests",
+            dependencies: ["SPLKModelBridge"],
+            path: "Tests/SPLKModelBridgeTests"
+        ),
+        .testTarget(
+            name: "SPLKEndToEndTests",
+            dependencies: ["SPLKProtocol", "SPLKServer"],
+            path: "Tests/SPLKEndToEndTests"
         ),
     ]
 )

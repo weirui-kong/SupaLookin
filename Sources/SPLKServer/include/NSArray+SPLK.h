@@ -1,5 +1,3 @@
-#ifdef SHOULD_COMPILE_SPLK_SHARED 
-
 //
 //  NSArray+SPLK.h
 //  Lookin
@@ -68,5 +66,3 @@
 - (void)splk_removeObjectsPassingTest:(BOOL (^)(NSUInteger idx, ValueType obj))block;
 
 @end
-
-#endif /* SHOULD_COMPILE_SPLK_SHARED */

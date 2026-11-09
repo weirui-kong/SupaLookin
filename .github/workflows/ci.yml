@@ -11,6 +11,9 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Test the package
+        run: swift test --skip SPLKEndToEndTests
+
       - name: Build and test SupaLookin
         run: |
           set -euo pipefail
