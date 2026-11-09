@@ -23,7 +23,7 @@
 static const int SPLK_SERVER_VERSION = 1;
 
 /// current release version of SPLKServer
-static NSString * const SPLK_SERVER_READABLE_VERSION = @"1.0.14";
+static NSString * const SPLK_SERVER_READABLE_VERSION = @"1.0.15";
 
 /// current connection protocol version of SPLKClient
 static const int SPLK_CLIENT_VERSION = 1;
