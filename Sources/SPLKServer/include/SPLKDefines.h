@@ -18,7 +18,7 @@
 #pragma mark - Version
 
 /// current release version of SPLKServer
-static NSString * const SPLK_SERVER_READABLE_VERSION = @"1.0.15";
+static NSString * const SPLK_SERVER_READABLE_VERSION = @"1.0.16";
 
 // The version of .supalookin documents, kept in SPLKHierarchyFile.serverVersion; connections use SPLKProtocol's generation.
 static const int SPLK_DOCUMENT_VERSION = 1;
