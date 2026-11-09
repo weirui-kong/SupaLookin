@@ -1,5 +1,3 @@
-#ifdef SHOULD_COMPILE_SPLK_SHARED 
-
 //
 //  SPLKDisplayInfo.h
 //  WeRead
@@ -43,5 +41,3 @@
 @property(nonatomic, assign) int serverVersion;
 
 @end
-
-#endif /* SHOULD_COMPILE_SPLK_SHARED */

@@ -1,4 +1,3 @@
-#ifdef SHOULD_COMPILE_SPLK_SHARED
 //
 //  SPLKCustomDisplayItemInfo.h
 //  SPLKServer
@@ -17,5 +16,3 @@
 @property(nonatomic, copy) NSString *danceuiSource;
 
 @end
-
-#endif /* SHOULD_COMPILE_SPLK_SHARED */

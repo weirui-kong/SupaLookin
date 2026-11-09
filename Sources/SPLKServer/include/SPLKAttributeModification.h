@@ -1,5 +1,3 @@
-#ifdef SHOULD_COMPILE_SPLK_SHARED 
-
 //
 //  SPLKAttributeModification.h
 //  Lookin
@@ -27,5 +25,3 @@
 @property(nonatomic, copy) NSString *clientReadableVersion;
 
 @end
-
-#endif /* SHOULD_COMPILE_SPLK_SHARED */

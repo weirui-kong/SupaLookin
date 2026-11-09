@@ -1,5 +1,3 @@
-#ifdef SHOULD_COMPILE_SPLK_SHARED 
-
 //
 //  SPLKDisplayItemDetail.h
 //  Lookin
@@ -47,5 +45,3 @@
 @property(nonatomic, assign) NSInteger failureCode;
 
 @end
-
-#endif /* SHOULD_COMPILE_SPLK_SHARED */

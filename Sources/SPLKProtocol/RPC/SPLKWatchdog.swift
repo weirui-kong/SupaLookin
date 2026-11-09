@@ -5,6 +5,8 @@
 //  Created by Weirui Kong on 2026/11/10.
 //
 
+#if SHOULD_COMPILE_SPLK_SHARED
+
 import Foundation
 
 // Fires once unless touched within `timeout`. Dispatch timers instead of Task.sleep keep it usable on iOS 13.
@@ -62,3 +64,5 @@ public final class SPLKRequestIDAllocator: Sendable {
         }
     }
 }
+
+#endif

@@ -1,5 +1,3 @@
-#ifdef SHOULD_COMPILE_SPLK_SHARED 
-
 //
 //  SPLKDashboardBlueprint.h
 //  Lookin
@@ -73,5 +71,3 @@
 + (NSInteger)minAvailableOSVersionWithAttrID:(SPLKAttrIdentifier)attrID;
 
 @end
-
-#endif /* SHOULD_COMPILE_SPLK_SHARED */

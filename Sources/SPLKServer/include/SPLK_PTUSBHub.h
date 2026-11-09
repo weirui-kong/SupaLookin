@@ -1,7 +1,3 @@
-#ifdef SHOULD_COMPILE_SPLK_SHARED 
-
-
-
 #include <dispatch/dispatch.h>
 #import <Foundation/Foundation.h>
 
@@ -84,5 +80,3 @@ typedef enum {
                 onEnd:(void(^)(NSError*))onEnd;
 
 @end
-
-#endif /* SHOULD_COMPILE_SPLK_SHARED */

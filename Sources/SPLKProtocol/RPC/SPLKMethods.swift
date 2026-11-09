@@ -5,6 +5,8 @@
 //  Created by Weirui Kong on 2026/11/10.
 //
 
+#if SHOULD_COMPILE_SPLK_SHARED
+
 import Foundation
 
 public enum SPLKProtocolInfo {
@@ -41,6 +43,30 @@ public enum SPLKCapability {
 }
 
 extension SPLKV2Request.OneOf_Call {
+
+    // The method's name in the v2 spec's Methods table.
+    public var methodName: String {
+        switch self {
+        case .getAppInfo: return "GetAppInfo"
+        case .getHierarchy: return "GetHierarchy"
+        case .fetchDetails: return "FetchDetails"
+        case .modifyAttribute: return "ModifyAttribute"
+        case .fetchModificationPatch: return "FetchModificationPatch"
+        case .invokeMethod: return "InvokeMethod"
+        case .getObject: return "GetObject"
+        case .getImageViewImage: return "GetImageViewImage"
+        case .setGestureRecognizerEnabled: return "SetGestureRecognizerEnabled"
+        case .getAttributeGroups: return "GetAttributeGroups"
+        case .listSelectors: return "ListSelectors"
+        case .modifyCustomAttribute: return "ModifyCustomAttribute"
+        case .acquireControl: return "AcquireControl"
+        case .releaseControl: return "ReleaseControl"
+        case .subscribe: return "Subscribe"
+        case .injectInput: return "InjectInput"
+        case .performAction: return "PerformAction"
+        case .waitForIdle: return "WaitForIdle"
+        }
+    }
 
     public var channel: SPLKV2ChannelRole {
         switch self {
@@ -89,3 +115,5 @@ extension SPLKV2Request.OneOf_Call {
         }
     }
 }
+
+#endif

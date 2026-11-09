@@ -5,6 +5,8 @@
 //  Created by Weirui Kong on 2026/11/10.
 //
 
+#if SHOULD_COMPILE_SPLK_SHARED
+
 import Foundation
 
 public final class SPLKDispatchIOByteStream: SPLKByteStream {
@@ -62,3 +64,5 @@ public final class SPLKDispatchIOByteStream: SPLKByteStream {
         continuation.finish()
     }
 }
+
+#endif

@@ -5,6 +5,8 @@
 //  Created by Weirui Kong on 2026/11/10.
 //
 
+#if SHOULD_COMPILE_SPLK_SHARED
+
 import Foundation
 import SwiftProtobuf
 
@@ -12,6 +14,7 @@ public struct SPLKRequestContext: Sendable {
     public let sessionID: Data
     public let channel: SPLKV2ChannelRole
     public let requestID: UInt64
+    public let clientVersion: String
 }
 
 public enum SPLKHandlerResult: Sendable {
@@ -21,6 +24,11 @@ public enum SPLKHandlerResult: Sendable {
 
 public protocol SPLKRequestHandler: Sendable {
     func handle(_ request: SPLKV2Request, context: SPLKRequestContext) async throws -> SPLKHandlerResult
+    func sessionDidEnd(_ sessionID: Data) async
+}
+
+extension SPLKRequestHandler {
+    public func sessionDidEnd(_ sessionID: Data) async {}
 }
 
 public struct SPLKOnewayFailure: Sendable {
@@ -84,6 +92,7 @@ public actor SPLKRPCConnection {
     private var handler: (any SPLKRequestHandler)?
     private var sessionID = Data()
     private var channel = SPLKV2ChannelRole.unspecified
+    private var clientVersion = ""
     private var activityObserver: (@Sendable () -> Void)?
     private var onewayFailureObserver: (@Sendable (SPLKOnewayFailure) -> Void)?
 
@@ -144,6 +153,7 @@ public actor SPLKRPCConnection {
         handler: (any SPLKRequestHandler)?,
         sessionID: Data,
         channel: SPLKV2ChannelRole,
+        clientVersion: String = "",
         activity: (@Sendable () -> Void)? = nil,
         onewayFailure: (@Sendable (SPLKOnewayFailure) -> Void)? = nil
     ) {
@@ -151,6 +161,7 @@ public actor SPLKRPCConnection {
         self.handler = handler
         self.sessionID = sessionID
         self.channel = channel
+        self.clientVersion = clientVersion
         activityObserver = activity
         onewayFailureObserver = onewayFailure
         phase = .running
@@ -342,7 +353,7 @@ public actor SPLKRPCConnection {
         call.watchdog = SPLKWatchdog(timeout: Self.deadline(of: request)) { [weak self] in
             Task { await self?.expireInbound(id) }
         }
-        let context = SPLKRequestContext(sessionID: sessionID, channel: channel, requestID: id)
+        let context = SPLKRequestContext(sessionID: sessionID, channel: channel, requestID: id, clientVersion: clientVersion)
         call.task = Task {
             await self.runInbound(request, id: id, call: call, handler: handler, context: context)
         }
@@ -470,3 +481,5 @@ public actor SPLKRPCConnection {
         request.deadlineMs == 0 ? SPLKProtocolInfo.defaultDeadline : TimeInterval(request.deadlineMs) / 1000
     }
 }
+
+#endif

@@ -36,7 +36,7 @@
     [[SPLKCustomAttrSetterManager sharedInstance] removeAll];
     
     SPLKHierarchyInfo *info = [SPLKHierarchyInfo new];
-    info.serverVersion = SPLK_SERVER_VERSION;
+    info.serverVersion = SPLK_DOCUMENT_VERSION;
     info.displayItems = [SPLKHierarchyDisplayItemsMaker itemsWithScreenshots:NO attrList:NO lowImageQuality:NO readCustomInfo:readCustomInfo saveCustomSetter:YES];
     info.appInfo = [SPLKAppInfo currentInfoWithScreenshot:NO icon:YES localIdentifiers:nil];
     info.collapsedClassList = [SPLKConfigManager collapsedClassList];
@@ -46,7 +46,7 @@
 
 + (instancetype)exportedInfo {
     SPLKHierarchyInfo *info = [SPLKHierarchyInfo new];
-    info.serverVersion = SPLK_SERVER_VERSION;
+    info.serverVersion = SPLK_DOCUMENT_VERSION;
     info.displayItems = [SPLKHierarchyDisplayItemsMaker itemsWithScreenshots:YES attrList:YES lowImageQuality:YES readCustomInfo:YES saveCustomSetter:NO];
     info.appInfo = [SPLKAppInfo currentInfoWithScreenshot:NO icon:YES localIdentifiers:nil];
     info.collapsedClassList = [SPLKConfigManager collapsedClassList];

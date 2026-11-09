@@ -1,5 +1,3 @@
-#ifdef SHOULD_COMPILE_SPLK_SHARED 
-
 //
 //  SPLKStaticAsyncUpdateTask.h
 //  Lookin
@@ -63,5 +61,3 @@ typedef NS_ENUM(NSInteger, SPLKDetailUpdateTaskAttrRequest) {
 @property(nonatomic, copy) NSArray<SPLKStaticAsyncUpdateTask *> *tasks;
 
 @end
-
-#endif /* SHOULD_COMPILE_SPLK_SHARED */

@@ -1,5 +1,3 @@
-#ifdef SHOULD_COMPILE_SPLK_SHARED 
-
 //
 //  NSSet+SPLK.h
 //  Lookin
@@ -35,5 +33,3 @@
 - (BOOL)splk_any:(BOOL (^)(ValueType obj))block;
 
 @end
-
-#endif /* SHOULD_COMPILE_SPLK_SHARED */

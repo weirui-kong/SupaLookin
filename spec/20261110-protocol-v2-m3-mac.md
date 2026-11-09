@@ -112,3 +112,13 @@ For this, `SPLKClientSession` checks `protocol_generation` before the hello's st
 ## Out of scope
 
 Leases, events, Live Control and Takeover (M4 onward).
+
+## Update: implementation notes
+
+- **`SPLKDeviceSession` is a main-actor class, not an actor.** The app target isolates to the main actor by default, and the window consumes the `SPLK*` models on it. The network work already runs in `SPLKClientSession`'s actors, so the device session only converts results on the actor that uses them.
+- **App icons.** v2 hierarchies don't carry the app icon v1's did. `fetchHierarchyData` fills it from the `SPLKAppInfo` discovery fetched, as the reconnect path already copied it.
+- **Detail batches.** `fetchHierarchyDetail` hands each streamed detail to `next` as a one-element array, the shape v1's batches had.
+- **Public headers.** Swift targets of the package see the Objective-C headers through the Clang importer, which doesn't get the package's C macros. So the headers under `include/` have no compile gates; their implementations keep them. The app's `-Xcc -DSHOULD_COMPILE_SPLK_SHARED=1` is removed.
+- **v1 constants.** The request type, push and parameter constants in `SPLKDefines.h`, used only by v1's wire format, are removed. `SPLKStringFlag_VoidReturn` stays, for the window's invoke result.
+- **Verified** on the simulator: discovery, hierarchy sync, details, attributes and screenshots through the MCP tools, plus a silent server on a scanned port (a v1 SPLKServer's behavior) reported as "version too low".
+- **Not verified**: a USB device, and the 20 MB transfer timing against a live app. The latter is covered over loopback by `SPLKProtocolTests`.

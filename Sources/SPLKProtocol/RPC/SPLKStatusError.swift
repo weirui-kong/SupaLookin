@@ -5,6 +5,8 @@
 //  Created by Weirui Kong on 2026/11/10.
 //
 
+#if SHOULD_COMPILE_SPLK_SHARED
+
 import Foundation
 
 public struct SPLKStatusError: Error, Sendable, Equatable {
@@ -86,3 +88,5 @@ public struct SPLKStatusError: Error, Sendable, Equatable {
 extension SPLKV2Status {
     static let ok = SPLKV2Status()
 }
+
+#endif

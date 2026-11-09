@@ -42,17 +42,17 @@
         return SPLKErr_Inner;
     }
     
-    if (hierarchyFile.serverVersion < SPLK_SUPPORTED_SERVER_MIN) {
+    if (hierarchyFile.serverVersion < SPLK_DOCUMENT_VERSION) {
         // 文件版本太旧
         // 如果不存在 serverVersion 这个字段，说明版本是 6
         int fileVersion = hierarchyFile.serverVersion ? : 6;
-        NSString *detail = [NSString stringWithFormat:NSLocalizedString(@"The document was created by a Lookin app with too old version. Current Lookin app version is %@, but the document version is %@.", nil), @(SPLK_CLIENT_VERSION), @(fileVersion)];
+        NSString *detail = [NSString stringWithFormat:NSLocalizedString(@"The document was created by a Lookin app with too old version. Current Lookin app version is %@, but the document version is %@.", nil), @(SPLK_DOCUMENT_VERSION), @(fileVersion)];
         return [NSError errorWithDomain:SPLKErrorDomain code:SPLKErrCode_ServerVersionTooLow userInfo:@{NSLocalizedDescriptionKey:NSLocalizedString(@"Failed to open the document.", nil), NSLocalizedRecoverySuggestionErrorKey:detail}];
     }
     
-    if (hierarchyFile.serverVersion > SPLK_SUPPORTED_SERVER_MAX) {
+    if (hierarchyFile.serverVersion > SPLK_DOCUMENT_VERSION) {
         // 文件版本太新
-        NSString *detail = [NSString stringWithFormat:NSLocalizedString(@"Current Lookin app is too old to open this document. Current Lookin app version is %@, but the document version is %@.", nil), @(SPLK_CLIENT_VERSION), @(hierarchyFile.serverVersion)];
+        NSString *detail = [NSString stringWithFormat:NSLocalizedString(@"Current Lookin app is too old to open this document. Current Lookin app version is %@, but the document version is %@.", nil), @(SPLK_DOCUMENT_VERSION), @(hierarchyFile.serverVersion)];
         return [NSError errorWithDomain:SPLKErrorDomain code:SPLKErrCode_ServerVersionTooHigh userInfo:@{NSLocalizedDescriptionKey:NSLocalizedString(@"Failed to open the document.", nil), NSLocalizedRecoverySuggestionErrorKey:detail}];
     }
     

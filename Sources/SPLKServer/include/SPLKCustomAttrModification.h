@@ -1,4 +1,3 @@
-#ifdef SHOULD_COMPILE_SPLK_SHARED
 //
 //  SPLKCustomAttrModification.h
 //  SPLKServer
@@ -16,5 +15,3 @@
 @property(nonatomic, strong) id value;
 
 @end
-
-#endif /* SHOULD_COMPILE_SPLK_SHARED */

@@ -5,6 +5,8 @@
 //  Created by Weirui Kong on 2026/11/10.
 //
 
+#if SHOULD_COMPILE_SPLK_SHARED
+
 import Foundation
 
 // `incoming` has a single consumer: the connection that reads frames from it.
@@ -89,3 +91,5 @@ public final class SPLKMemoryByteStream: SPLKByteStream {
         link.close()
     }
 }
+
+#endif

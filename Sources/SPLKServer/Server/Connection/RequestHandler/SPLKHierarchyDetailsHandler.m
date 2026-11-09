@@ -12,7 +12,6 @@
 #import "SPLKDisplayItemDetail.h"
 #import "SPLKAttrGroupsMaker.h"
 #import "SPLKStaticAsyncUpdateTask.h"
-#import "SPLKConnectionManager.h"
 #import "SPLKServerDefines.h"
 #import "SPLKCustomAttrGroupsMaker.h"
 #import "SPLKHierarchyDisplayItemsMaker.h"
@@ -32,8 +31,6 @@
 
 - (instancetype)init {
     if (self = [super init]) {
-        [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(_handleConnectionDidEnd:) name:SPLKConnectionDidEndNotificationName object:nil];
-        
         self.attrGroupsSyncedOids = [NSMutableSet set];
     }
     return self;
@@ -137,10 +134,6 @@
     }
     NSAssert(NO, @"");
     return YES;
-}
-
-- (void)_handleConnectionDidEnd:(id)obj {
-    [self cancel];
 }
 
 @end

@@ -225,3 +225,8 @@
 "Starting…" = "Starting…";
 "Running at %@" = "Running at %@";
 "Port %@ is unavailable." = "Port %@ is unavailable.";
+"Another agent is controlling this app." = "Another agent is controlling this app.";
+"Wait until it releases control, or take back control in Supa Lookin." = "Wait until it releases control, or take back control in Supa Lookin.";
+"An agent is controlling this app." = "An agent is controlling this app.";
+"Take back control in Supa Lookin to make changes." = "Take back control in Supa Lookin to make changes.";
+"Take over the app before changing it." = "Take over the app before changing it.";

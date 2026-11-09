@@ -1,5 +1,3 @@
-#ifdef SHOULD_COMPILE_SPLK_SHARED 
-
 //
 //  SPLKObject.h
 //  Lookin
@@ -38,5 +36,3 @@
 - (NSString *)rawClassName;
 
 @end
-
-#endif /* SHOULD_COMPILE_SPLK_SHARED */

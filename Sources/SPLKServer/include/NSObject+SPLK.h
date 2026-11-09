@@ -1,5 +1,3 @@
-#ifdef SHOULD_COMPILE_SPLK_SHARED 
-
 //
 //  NSObject+SPLK.h
 //  Lookin
@@ -104,5 +102,3 @@
 - (id)splk_decodedObjectWithType:(SPLKCodingValueType)type;
 
 @end
-
-#endif /* SHOULD_COMPILE_SPLK_SHARED */

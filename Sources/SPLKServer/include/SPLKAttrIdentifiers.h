@@ -1,5 +1,3 @@
-#ifdef SHOULD_COMPILE_SPLK_SHARED 
-
 //
 //  SPLKAttrIdentifiers.h
 //  Lookin
@@ -253,5 +251,3 @@ extern SPLKAttrIdentifier const SPLKAttr_UIStackView_Axis_Axis;
 extern SPLKAttrIdentifier const SPLKAttr_UIStackView_Distribution_Distribution;
 extern SPLKAttrIdentifier const SPLKAttr_UIStackView_Alignment_Alignment;
 extern SPLKAttrIdentifier const SPLKAttr_UIStackView_Spacing_Spacing;
-
-#endif /* SHOULD_COMPILE_SPLK_SHARED */

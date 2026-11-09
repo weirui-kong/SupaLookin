@@ -27,3 +27,9 @@ protoc \
     --swift_out="$OUT_DIR" \
     --swift_opt=Visibility=Public \
     "$SCHEMA_DIR"/*.proto
+
+# Like every SPLKProtocol source, generated code compiles only where SHOULD_COMPILE_SPLK_SHARED is set.
+for file in "$OUT_DIR"/*.pb.swift; do
+    { echo "#if SHOULD_COMPILE_SPLK_SHARED"; echo; cat "$file"; echo; echo "#endif"; } > "$file.tmp"
+    mv "$file.tmp" "$file"
+done

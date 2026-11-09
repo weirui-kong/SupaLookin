@@ -1,5 +1,3 @@
-#ifdef SHOULD_COMPILE_SPLK_SHARED 
-
 //
 //  SPLKAttrIdentifiers.h
 //  Lookin
@@ -46,5 +44,3 @@ typedef NS_ENUM(NSInteger, SPLKAttrType) {
     SPLKAttrTypeShadow,
     SPLKAttrTypeJson
 };
-
-#endif /* SHOULD_COMPILE_SPLK_SHARED */

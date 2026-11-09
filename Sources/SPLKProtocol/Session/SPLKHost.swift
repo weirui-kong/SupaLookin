@@ -5,6 +5,8 @@
 //  Created by Weirui Kong on 2026/11/10.
 //
 
+#if SHOULD_COMPILE_SPLK_SHARED
+
 import Foundation
 import SwiftProtobuf
 
@@ -87,7 +89,7 @@ public actor SPLKHost {
         }
         switch clientHello.role {
         case .control:
-            await openSession(on: connection)
+            await openSession(on: connection, clientVersion: clientHello.clientVersion)
         case .bulk:
             guard let session, session.id == clientHello.sessionID else {
                 await reject(connection, SPLKStatusError(.notFound, reason: "unknown_session"))
@@ -95,13 +97,13 @@ public actor SPLKHost {
             }
             try? await connection.sendHello(await serverHello(sessionID: session.id))
             session.bulk.append(connection)
-            await connection.startDispatching(handler: handler, sessionID: session.id, channel: .bulk)
+            await connection.startDispatching(handler: handler, sessionID: session.id, channel: .bulk, clientVersion: clientHello.clientVersion)
         case .video, .unspecified, .UNRECOGNIZED:
             await reject(connection, SPLKStatusError(.unimplemented, reason: "channel_unsupported"))
         }
     }
 
-    private func openSession(on connection: SPLKRPCConnection) async {
+    private func openSession(on connection: SPLKRPCConnection, clientVersion: String) async {
         await closeSession()
         let id = Data((0..<16).map { _ in UInt8.random(in: .min ... .max) })
         let newSession = Session(id: id, control: connection)
@@ -117,7 +119,7 @@ public actor SPLKHost {
             Task { await self?.closeSession(id) }
         }
         newSession.liveness = liveness
-        await connection.startDispatching(handler: handler, sessionID: id, channel: .control, activity: { liveness.touch() })
+        await connection.startDispatching(handler: handler, sessionID: id, channel: .control, clientVersion: clientVersion, activity: { liveness.touch() })
         Task {
             await connection.waitUntilClosed()
             await self.closeSession(id)
@@ -152,6 +154,7 @@ public actor SPLKHost {
         for connection in current.bulk {
             await connection.close()
         }
+        await handler.sessionDidEnd(current.id)
     }
 
     public func close() async {
@@ -160,3 +163,5 @@ public actor SPLKHost {
         await closeSession()
     }
 }
+
+#endif

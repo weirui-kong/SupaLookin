@@ -1,5 +1,3 @@
-#ifdef SHOULD_COMPILE_SPLK_SHARED 
-
 //
 //  SPLKAppInfo.h
 //  qmuidemo
@@ -68,5 +66,3 @@ typedef NS_ENUM(NSInteger, SPLKAppInfoDevice) {
 #endif
 
 @end
-
-#endif /* SHOULD_COMPILE_SPLK_SHARED */

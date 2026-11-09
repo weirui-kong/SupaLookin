@@ -14,8 +14,7 @@ extension SPLKHierarchyFile {
     private nonisolated static var legacyArchivedClasses: [AnyClass] {
         [
             SPLKAppInfo.self, SPLKAttribute.self, SPLKAttributeModification.self, SPLKAttributesGroup.self,
-            SPLKAttributesSection.self, SPLKAutoLayoutConstraint.self, SPLKConnectionAttachment.self,
-            SPLKConnectionResponseAttachment.self, SPLKCustomAttrModification.self, SPLKCustomDisplayItemInfo.self,
+            SPLKAttributesSection.self, SPLKAutoLayoutConstraint.self, SPLKCustomAttrModification.self, SPLKCustomDisplayItemInfo.self,
             SPLKDisplayItem.self, SPLKDisplayItemDetail.self, SPLKEventHandler.self, SPLKHierarchyFile.self,
             SPLKHierarchyInfo.self, SPLKIvarTrace.self, SPLKObject.self, SPLKStaticAsyncUpdateTask.self,
             SPLKStaticAsyncUpdateTasksPackage.self, SPLKStringTwoTuple.self, SPLKTwoTuple.self,

@@ -1,5 +1,3 @@
-#ifdef SHOULD_COMPILE_SPLK_SHARED 
-
 //
 //  SPLKAttribute.h
 //  qmuidemo
@@ -44,5 +42,3 @@
 - (BOOL)isUserCustom;
 
 @end
-
-#endif /* SHOULD_COMPILE_SPLK_SHARED */

@@ -1,5 +1,3 @@
-#ifdef SHOULD_COMPILE_SPLK_SHARED 
-
 //
 //  SPLKMessageProtocol.h
 //  Lookin
@@ -19,19 +17,11 @@
 
 #pragma mark - Version
 
-/// current connection protocol version of SPLKServer
-static const int SPLK_SERVER_VERSION = 1;
-
 /// current release version of SPLKServer
 static NSString * const SPLK_SERVER_READABLE_VERSION = @"1.0.14";
 
-/// current connection protocol version of SPLKClient
-static const int SPLK_CLIENT_VERSION = 1;
-
-/// the minimum connection protocol version supported by current SPLKClient
-static const int SPLK_SUPPORTED_SERVER_MIN = 1;
-/// the maximum connection protocol version supported by current SPLKClient
-static const int SPLK_SUPPORTED_SERVER_MAX = 1;
+// The version of .supalookin documents, kept in SPLKHierarchyFile.serverVersion; connections use SPLKProtocol's generation.
+static const int SPLK_DOCUMENT_VERSION = 1;
 
 #pragma mark - Connection
 
@@ -42,53 +32,6 @@ static const int SPLKUSBDeviceIPv4PortNumberEnd = 47279;
 /// SPLKServer 在模拟器中会依次尝试监听 47264 ~ 47269 这几个端口
 static const int SPLKSimulatorIPv4PortNumberStart = 47264;
 static const int SPLKSimulatorIPv4PortNumberEnd = 47269;
-
-enum {
-    /// 确认两端是否可以响应通讯
-    SPLKRequestTypePing = 200,
-    /// 请求 App 的截图、设备型号等信息
-    SPLKRequestTypeApp = 201,
-    /// 请求 Hierarchy 信息
-    SPLKRequestTypeHierarchy = 202,
-    /// 请求 screenshots 和 attrGroups 信息
-    SPLKRequestTypeHierarchyDetails = 203,
-    /// 请求修改某个内置的 Attribute 的值
-    SPLKRequestTypeInbuiltAttrModification = 204,
-    /// 修改某个 attr 后，请求一系列最新的 Screenshots、属性值等信息
-    SPLKRequestTypeAttrModificationPatch = 205,
-    /// 执行某个方法
-    SPLKRequestTypeInvokeMethod = 206,
-    /**
-     @request: @{@"oid":}
-     @response: SPLKObject *
-     */
-    SPLKRequestTypeFetchObject = 207,
-    
-    SPLKRequestTypeFetchImageViewImage = 208,
-    
-    SPLKRequestTypeModifyRecognizerEnable = 209,
-    
-    /// 请求 attribute group list
-    SPLKRequestTypeAllAttrGroups = 210,
-    
-    /// 请求 iOS App 里某个 class 的所有 selector 名字列表（包括 superclass）
-    SPLKRequestTypeAllSelectorNames = 213,
-    
-    /// 请求修改某个自定义 Attribute 的值
-    SPLKRequestTypeCustomAttrModification = 214,
-    
-    /// 从 SPLKServer 1.2.7 & Lookin 1.0.7 开始，该属性被废弃、不再使用
-    SPLKPush_BringForwardScreenshotTask = 303,
-    
-    // 用户在 Lookin 客户端取消了之前 HierarchyDetails 的拉取
-    SPLKPush_CanceHierarchyDetails = 304,
-};
-
-static NSString * const SPLKParam_ViewLayerTag = @"tag";
-
-static NSString * const SPLKParam_SelectorName = @"sn";
-static NSString * const SPLKParam_MethodType = @"mt";
-static NSString * const SPLKParam_SelectorClassName = @"scn";
 
 static NSString * const SPLKStringFlag_VoidReturn = @"SPLK_TAG_RETURN_VALUE_VOID";
 
@@ -168,5 +111,3 @@ typedef NS_OPTIONS(NSUInteger, SPLKPreviewBitMask) {
     SPLKPreviewBitMask_HasLight = 1 << 3,
     SPLKPreviewBitMask_NoLight = 1 << 4
 };
-
-#endif /* SHOULD_COMPILE_SPLK_SHARED */

@@ -1,5 +1,3 @@
-#ifdef SHOULD_COMPILE_SPLK_SHARED 
-
 //
 //  SPLKEventHandler.h
 //  Lookin
@@ -39,5 +37,3 @@ typedef NS_ENUM(NSInteger, SPLKEventHandlerType) {
 @property(nonatomic, assign) unsigned long long recognizerOid;
 
 @end
-
-#endif /* SHOULD_COMPILE_SPLK_SHARED */

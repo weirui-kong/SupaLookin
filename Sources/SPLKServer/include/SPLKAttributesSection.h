@@ -1,5 +1,3 @@
-#ifdef SHOULD_COMPILE_SPLK_SHARED 
-
 //
 //  SPLKAttributesSection.h
 //  Lookin
@@ -31,5 +29,3 @@ typedef NS_ENUM (NSInteger, SPLKAttributesSectionStyle) {
 - (BOOL)isUserCustom;
 
 @end
-
-#endif /* SHOULD_COMPILE_SPLK_SHARED */

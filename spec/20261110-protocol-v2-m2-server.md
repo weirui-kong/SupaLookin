@@ -196,3 +196,21 @@ This reverses `20261109-splk-server.md`'s "A demo iOS app in this repository" be
 
 - The Mac side (M3), leases and events (M4).
 - `Subscribe`, `InjectInput`, `PerformAction` and `WaitForIdle`, which the host answers `UNIMPLEMENTED` since it doesn't list their capabilities.
+
+## Update: implementation notes
+
+- **Client version for v1's builders.** The hierarchy, details and modification builders enable custom info only for a v1 client version of at least 1.0.4, parsed by `splk_numbericOSVersion`, which asserts on anything but `x.y.z`.
+  - Every v2 client supports custom info, so `SPLKServerSession` always passes `1.0.4` where v1 passed `clientVersion` or `clientReadableVersion`.
+  - A peer's version string never reaches that parser.
+  - `SPLKRequestContext` still carries `ClientHello.client_version`, for future use.
+- **Custom attributes come with details**, as in v1. `GetHierarchy` nodes carry none; `FetchDetails` with `ATTR_NEED` does, including their `custom_setter_id`.
+- **Deep `SPLK*` graphs.** The converter rebuilds a flattened tree top-down, since `setSubitems:` refreshes the subtree it attaches. The bridge test uses 300 levels instead of 2,000: releasing a deeper Objective-C graph recurses past a test task's stack. The app holds and releases these models on the main thread, as v1 did.
+- **Release size.** Release builds have no `SPLK` Objective-C classes and no `SPLKV2` types. Measured on the e2e demo (iOS Simulator, `-O`, dead-stripped, symbols stripped):
+
+  | Build | Size |
+  |---|---|
+  | demo alone | 92,904 bytes |
+  | demo with SPLKServer, Release | 1,840,376 bytes |
+  | demo with SPLKServer, Release, without `SwiftProtobuf.o` | 92,904 bytes |
+
+  The increase, about 1.7 MB, is all swift-protobuf. Its Swift metadata and conformance records survive dead stripping even though nothing references them.

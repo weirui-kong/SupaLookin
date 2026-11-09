@@ -1,5 +1,3 @@
-#ifdef SHOULD_COMPILE_SPLK_SHARED 
-
 //
 //  NSString+SPLK.h
 //  Lookin
@@ -38,5 +36,3 @@
 - (NSInteger)splk_numbericOSVersion;
 
 @end
-
-#endif /* SHOULD_COMPILE_SPLK_SHARED */

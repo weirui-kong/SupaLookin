@@ -1,5 +1,3 @@
-#ifdef SHOULD_COMPILE_SPLK_SHARED 
-
 //
 //  SPLKWeakContainer.h
 //  Lookin
@@ -19,5 +17,3 @@
 @property (nonatomic, weak) id object;
 
 @end
-
-#endif /* SHOULD_COMPILE_SPLK_SHARED */

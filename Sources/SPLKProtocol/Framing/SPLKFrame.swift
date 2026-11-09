@@ -5,6 +5,8 @@
 //  Created by Weirui Kong on 2026/11/10.
 //
 
+#if SHOULD_COMPILE_SPLK_SHARED
+
 import Foundation
 
 public enum SPLKFrameKind: UInt8, Sendable {
@@ -144,3 +146,5 @@ public struct SPLKFrameDecoder: Sendable {
         (0..<4).reduce(UInt32(0)) { $0 << 8 | UInt32(buffer[index + $1]) }
     }
 }
+
+#endif

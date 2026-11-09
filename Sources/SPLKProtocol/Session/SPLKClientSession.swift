@@ -5,6 +5,8 @@
 //  Created by Weirui Kong on 2026/11/10.
 //
 
+#if SHOULD_COMPILE_SPLK_SHARED
+
 import Foundation
 import SwiftProtobuf
 
@@ -103,11 +105,12 @@ public actor SPLKClientSession {
         guard let hello = try? SPLKV2ServerHello(serializedBytes: payload) else {
             throw SPLKHandshakeError.noServerHello
         }
-        if let error = SPLKStatusError(status: hello.status) {
-            throw SPLKHandshakeError.rejected(error)
-        }
+        // Before the status: a host rejecting another generation still reports its own, telling older from newer.
         guard hello.protocolGeneration == SPLKProtocolInfo.generation else {
             throw SPLKHandshakeError.generationMismatch(hello.protocolGeneration)
+        }
+        if let error = SPLKStatusError(status: hello.status) {
+            throw SPLKHandshakeError.rejected(error)
         }
         return hello
     }
@@ -177,3 +180,5 @@ public actor SPLKClientSession {
         await bulk.waitUntilClosed()
     }
 }
+
+#endif
