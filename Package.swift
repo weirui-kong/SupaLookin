@@ -1,4 +1,4 @@
-// swift-tools-version:5.9
+// swift-tools-version:6.2
 
 import PackageDescription
 
@@ -21,6 +21,9 @@ let package = Package(
     products: [
         .library(name: "SPLKServer", targets: ["SPLKServer"]),
     ],
+    dependencies: [
+        .package(url: "https://github.com/apple/swift-protobuf", from: "1.39.0"),
+    ],
     targets: [
         .target(
             name: "SPLKServerBase",
@@ -33,6 +36,7 @@ let package = Package(
             path: "Sources/SPLKServerSwift",
             swiftSettings: [
                 .define("SHOULD_COMPILE_SPLK_SERVER", .when(platforms: serverPlatforms, configuration: .debug)),
+                .swiftLanguageMode(.v5),
             ]
         ),
         .target(
@@ -45,6 +49,17 @@ let package = Package(
                 .headerSearchPath("Server/Connection/RequestHandler"),
                 .headerSearchPath("Server/Others"),
             ]
+        ),
+        .target(
+            name: "SPLKProtocol",
+            dependencies: [.product(name: "SwiftProtobuf", package: "swift-protobuf")],
+            path: "Sources/SPLKProtocol",
+            exclude: ["Schema"]
+        ),
+        .testTarget(
+            name: "SPLKProtocolTests",
+            dependencies: ["SPLKProtocol"],
+            path: "Tests/SPLKProtocolTests"
         ),
     ]
 )

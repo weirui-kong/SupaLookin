@@ -11,6 +11,9 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Test SPLKProtocol
+        run: swift test --filter SPLKProtocolTests
+
       - name: Build and test SupaLookin
         run: |
           set -euo pipefail
