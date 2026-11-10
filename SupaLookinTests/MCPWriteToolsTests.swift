@@ -13,7 +13,7 @@ import MCP
 struct MCPWriteToolsTests {
 
     @Test func writeToolsAreMarkedAsWriting() {
-        let writeTools: Set<String> = ["take_control", "release_control", "tap", "long_press", "set_text", "scroll", "scroll_to_visible", "swipe", "go_back", "tap_at", "type_text"]
+        let writeTools: Set<String> = ["take_control", "release_control", "tap", "long_press", "set_text", "scroll", "scroll_to_visible", "swipe", "go_back", "tap_at", "type_text", "press_button"]
         let tools = Dictionary(uniqueKeysWithValues: SPLKMCPTools.tools.map { ($0.name, $0) })
         for name in writeTools {
             #expect(tools[name]?.annotations.readOnlyHint == false, "\(name)")

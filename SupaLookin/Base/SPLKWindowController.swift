@@ -22,12 +22,19 @@ enum SPLKAppMenuAction: CaseIterable {
     case filter
     case export
     case openInNewWindow
+    case inspectMode
+    case liveControlMode
+    case endTakeover
+    case shake
+    case home
+    case lock
 }
 
 /// The Objective-C protocol's methods were optional, and a menu item was enabled when the key window's controller implemented
 /// its method. Here a controller lists the actions it handles in `supportedAppMenuActions` and overrides the matching methods.
 protocol SPLKAppMenuManagerDelegate: AnyObject {
     var supportedAppMenuActions: Set<SPLKAppMenuAction> { get }
+    var checkedAppMenuActions: Set<SPLKAppMenuAction> { get }
     func appMenuManagerDidSelectReload()
     func appMenuManagerDidSelectDimension()
     func appMenuManagerDidSelectZoomIn()
@@ -38,6 +45,7 @@ protocol SPLKAppMenuManagerDelegate: AnyObject {
     func appMenuManagerDidSelectFilter()
     func appMenuManagerDidSelectExport()
     func appMenuManagerDidSelectOpenInNewWindow()
+    func appMenuManagerDidSelectModeAction(_ action: SPLKAppMenuAction)
 }
 
 class SPLKWindowController: NSWindowController, SPLKAppMenuManagerDelegate {
@@ -47,6 +55,10 @@ class SPLKWindowController: NSWindowController, SPLKAppMenuManagerDelegate {
     }
 
     var supportedAppMenuActions: Set<SPLKAppMenuAction> {
+        []
+    }
+
+    var checkedAppMenuActions: Set<SPLKAppMenuAction> {
         []
     }
 
@@ -60,4 +72,5 @@ class SPLKWindowController: NSWindowController, SPLKAppMenuManagerDelegate {
     func appMenuManagerDidSelectFilter() {}
     func appMenuManagerDidSelectExport() {}
     func appMenuManagerDidSelectOpenInNewWindow() {}
+    func appMenuManagerDidSelectModeAction(_ action: SPLKAppMenuAction) {}
 }

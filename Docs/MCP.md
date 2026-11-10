@@ -263,7 +263,7 @@ Waits until the app's UI stops changing and has no running animations (endless o
 
 ## Operating the app
 
-An agent must take over the app before changing it. Only one agent can hold takeover at a time, and the person at the Mac can always take control back.
+An agent must take over the app before changing it. Only one agent can hold takeover at a time, and the person at the Mac can always take control back. While an agent holds takeover, Supa Lookin's window shows the phone's live video, and the person ends it with **End Takeover** in the mode menu left of Reload, or **View › Mode › End Takeover** (⌃⌘.).
 
 | Tool | Arguments | Does |
 |---|---|---|
@@ -276,7 +276,8 @@ An agent must take over the app before changing it. Only one agent can hold take
 | `scroll_to_visible` | `oid` | Scrolls the item into view |
 | `swipe` | `oid`, `dx`, `dy` | Drags one finger from the item's center by points |
 | `go_back` | `oid` (optional) | Pops the navigation stack, or dismisses the presented screen |
-| `tap_at` | `x`, `y` | Taps a point given as fractions of the screen, 0–1 from the top left |
+| `tap_at` | `x`, `y` | Taps a point given as fractions of the screen, 0–1 from the top left. On a simulator the tap goes through the simulator itself, so it also reaches the software keyboard, system alerts and the home screen; the result's `input` is `simulator`, or `app` when only the app could be reached |
+| `press_button` | `button`: `home` or `lock` | Presses the simulator's Home or Lock button. Simulators only (Xcode 27 or later) |
 | `type_text` | `text` | Types into the focused text input |
 
 Every write tool renews takeover and returns once the UI settles:

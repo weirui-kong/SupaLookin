@@ -30,6 +30,8 @@ enum SPLKMCPToolHandler {
                 return json(try await performAction(name, arguments: arguments, agent: agent))
             case "tap_at", "type_text":
                 return json(try await inject(name, arguments: arguments, agent: agent))
+            case "press_button":
+                return json(try await pressButton(arguments, agent: agent))
             case "get_status":
                 return json(status())
             case "list_apps":
@@ -198,8 +200,28 @@ enum SPLKMCPToolHandler {
             event.text.text = text
             events.append(event)
         }
-        try await session.injectInput(events, as: .mcp(agent))
-        return actionResult(try await session.waitForIdle(timeout: 2), agent: agent)
+        let screen = (try? await session.screenInfo()) ?? session.client.serverHello.app.screen
+        let backend = try await session.deliverInput(events, as: .mcp(agent), screen: screen)
+        var result = actionResult(try await session.waitForIdle(timeout: 2), agent: agent)
+        if name == "tap_at" {
+            // Host-side taps reach the keyboard and system UI too; device-side ones only the app.
+            result["input"] = backend == .host ? "simulator" : "app"
+        }
+        return result
+    }
+
+    private static func pressButton(_ arguments: [String: Value], agent: String) async throws -> [String: Any] {
+        let session = try controlledSession(agent: agent)
+        let button: SPLKSimulatorHIDInput.Button
+        switch arguments["button"]?.stringValue {
+        case "home": button = .home
+        case "lock": button = .lock
+        default: throw SPLKError.make("button must be home or lock.", "")
+        }
+        try await session.press(button, as: .mcp(agent))
+        // Waiting for idle would fail once the app is in the background, which Home usually puts it in.
+        try await Task.sleep(for: .milliseconds(600))
+        return ["pressed": true]
     }
 
     // Video shows what the user sees, system UI included; the app's own screenshot is the fallback.

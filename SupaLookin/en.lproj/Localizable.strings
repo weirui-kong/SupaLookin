@@ -246,3 +246,23 @@
 "The device's screen didn't appear." = "The device's screen didn't appear.";
 "Unlock the device and make sure it trusts this Mac." = "Unlock the device and make sure it trusts this Mac.";
 "Failed to capture the device's screen." = "Failed to capture the device's screen.";
+
+"Inspect" = "Inspect";
+"Live Control" = "Live Control";
+"Takeover" = "Takeover";
+"End Takeover" = "End Takeover";
+"End Takeover by %@" = "End Takeover by %@";
+"An agent starts Takeover by calling take_control." = "An agent starts Takeover by calling take_control.";
+"Mode" = "Mode";
+"Device" = "Device";
+"Shake" = "Shake";
+"%@ is controlling the app" = "%@ is controlling the app";
+"Try Again" = "Try Again";
+
+"Home" = "Home";
+"Lock" = "Lock";
+"Buttons need a simulator." = "Buttons need a simulator.";
+"Home and Lock are pressed through Xcode's simulator, so they don't work on USB devices." = "Home and Lock are pressed through Xcode's simulator, so they don't work on USB devices.";
+"The simulator's input service didn't answer." = "The simulator's input service didn't answer.";
+"This macOS can't send input into simulators." = "This macOS can't send input into simulators.";
+"This Xcode can't send input into simulators." = "This Xcode can't send input into simulators.";

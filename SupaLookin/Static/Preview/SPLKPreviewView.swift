@@ -353,6 +353,18 @@ final class SPLKPreviewView: SCNView {
         }
     }
 
+    // Where the app's screen appears in this view, from the stage's current pose. Exact once the stage faces the camera.
+    func projectedScreenRect() -> CGRect? {
+        guard appScreenSize.width > 0, appScreenSize.height > 0 else { return nil }
+        let halfWidth = appScreenSize.width * 0.01 / 2, halfHeight = appScreenSize.height * 0.01 / 2
+        let corners = [(-halfWidth, -halfHeight), (halfWidth, -halfHeight), (-halfWidth, halfHeight), (halfWidth, halfHeight)].map { x, y in
+            projectPoint(stageNode.presentation.convertPosition(SCNVector3(x, y, 0), to: nil))
+        }
+        let xs = corners.map(\.x), ys = corners.map(\.y)
+        guard let minX = xs.min(), let maxX = xs.max(), let minY = ys.min(), let maxY = ys.max() else { return nil }
+        return CGRect(x: minX, y: minY, width: maxX - minX, height: maxY - minY)
+    }
+
     func setDimension(_ dimension: SPLKPreviewDimension, animated: Bool) {
         self.dimension = dimension
 

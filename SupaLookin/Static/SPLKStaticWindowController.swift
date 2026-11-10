@@ -35,6 +35,14 @@ final class SPLKStaticWindowController: SPLKWindowController, NSToolbarDelegate,
 
     private var cancellables = Set<AnyCancellable>()
 
+    private let modeItem = SPLKModeToolbarItem()
+    private weak var modeSession: SPLKDeviceSession?
+    private var arbiterSubscription: AnyCancellable?
+
+    private var isShowingVideo: Bool {
+        viewController.modeTransition.displayedMode.showsVideo
+    }
+
     init() {
         let screenSize = NSScreen.main?.frame.size ?? .zero
         let window = SPLKWindow(contentRect: NSRect(x: 0, y: 0, width: screenSize.width * 0.7, height: screenSize.height * 0.7), styleMask: [.titled, .closable, .miniaturizable, .resizable, .fullSizeContentView], backing: .buffered, defer: true)
@@ -63,7 +71,6 @@ final class SPLKStaticWindowController: SPLKWindowController, NSToolbarDelegate,
         toolbar.delegate = self
         window.toolbar = toolbar
 
-        let reloadItem = toolbarItemsMap[SPLKToolBarIdentifier_Reload]
         let updateManager = SPLKStaticAsyncUpdateManager.sharedInstance
         updateManager.delegate = self
 
@@ -72,31 +79,111 @@ final class SPLKStaticWindowController: SPLKWindowController, NSToolbarDelegate,
             .removeDuplicates { $0 == $1 }
             .sink { [weak self] _ in
                 guard let self else { return }
-                for identifier in [SPLKToolBarIdentifier_App, SPLKToolBarIdentifier_Console, SPLKToolBarIdentifier_FastMode] {
-                    let item = self.toolbarItemsMap[identifier]
-                    if self.isFetchingHierarchy || self.isFetchingDetails {
-                        item?.isEnabled = false
-                    } else {
-                        item?.isEnabled = true
-                    }
-                }
-            }
-            .store(in: &cancellables)
-        isFetchingHierarchyObservation.publisher
-            .removeDuplicates()
-            .sink { isFetching in
-                reloadItem?.isEnabled = !isFetching
+                self.updateToolbarEnablement()
             }
             .store(in: &cancellables)
 
         SPLKStaticHierarchyDataSource.sharedInstance.selectedItemPublisher
-            .sink { [weak self] item in
-                guard let self else { return }
-                let measureButton = self.toolbarItemsMap[SPLKToolBarIdentifier_Measure]?.view as? NSButton
-                let canMeasure = item != nil
-                measureButton?.isEnabled = canMeasure
+            .sink { [weak self] _ in
+                self?.updateToolbarEnablement()
             }
             .store(in: &cancellables)
+
+        setUpModes()
+    }
+
+    // MARK: - Modes
+
+    private func setUpModes() {
+        let transition = viewController.modeTransition
+        transition.onModeChange = { [weak self] _ in
+            self?.updateToolbarEnablement()
+        }
+        transition.reloadHierarchy = { [weak self] in
+            guard let self, let app = SPLKAppsManager.sharedInstance.inspectingApp, !self.isFetchingHierarchy else { return nil }
+            self.isFetchingHierarchy = true
+            self.viewController.progressView.animate(toProgress: InitialIndicatorProgressWhenFetchHierarchy)
+            let error = await self.fetchHierarchy(from: app)
+            if let error, let window = self.window {
+                NSAlert(error: error).beginSheetModal(for: window, completionHandler: nil)
+            }
+            return error
+        }
+        modeItem.onSelect = { [weak self] choice in
+            self?.select(choice)
+        }
+        SPLKAppsManager.sharedInstance.inspectingAppPublisher
+            .sink { [weak self] app in
+                self?.inspectingSessionDidChange(app?.session)
+            }
+            .store(in: &cancellables)
+    }
+
+    private func inspectingSessionDidChange(_ session: SPLKDeviceSession?) {
+        guard session !== modeSession else { return }
+        if modeSession != nil, viewController.modeTransition.displayedMode.showsVideo {
+            // The app went away or was replaced; there's nothing to animate back from.
+            viewController.modeTransition.show(.inspect, session: nil, animated: false)
+        }
+        modeSession = session
+        arbiterSubscription = session?.arbiter.modeSubject
+            .removeDuplicates()
+            .sink { [weak self, weak session] mode in
+                self?.arbiterModeDidChange(SPLKWindowMode(mode), session: session)
+            }
+        updateModeItem()
+    }
+
+    private func arbiterModeDidChange(_ mode: SPLKWindowMode, session: SPLKDeviceSession?) {
+        viewController.modeTransition.show(mode, session: session, animated: true)
+        updateModeItem()
+    }
+
+    private func updateModeItem() {
+        let mode = modeSession.map { SPLKWindowMode($0.arbiter.mode) } ?? .inspect
+        modeItem.update(mode: mode, hasApp: modeSession != nil)
+    }
+
+    private func select(_ choice: SPLKModeToolbarItem.Choice) {
+        guard let arbiter = modeSession?.arbiter else { return }
+        Task { [weak self] in
+            switch choice {
+            case .inspect:
+                await arbiter.stopLiveControl()
+            case .liveControl:
+                do {
+                    try await arbiter.startLiveControl()
+                } catch {
+                    SPLKHelper.alertError(SPLKDeviceSession.translate(error), window: self?.window)
+                }
+            case .endTakeover:
+                await arbiter.takeBack()
+            }
+        }
+    }
+
+    // Video modes leave only the mode menu; Inspect's items follow the sync state as before.
+    private func updateToolbarEnablement() {
+        let video = isShowingVideo
+        let isFetching = isFetchingHierarchy || isFetchingDetails
+        for (identifier, item) in toolbarItemsMap where identifier != SPLKToolBarIdentifier_Mode {
+            let enabled: Bool
+            switch identifier {
+            case SPLKToolBarIdentifier_App, SPLKToolBarIdentifier_Console, SPLKToolBarIdentifier_FastMode:
+                enabled = !video && !isFetching
+            case SPLKToolBarIdentifier_Reload:
+                enabled = !video && !isFetchingHierarchy
+            case SPLKToolBarIdentifier_Measure:
+                enabled = !video && SPLKStaticHierarchyDataSource.sharedInstance.selectedItem != nil
+            default:
+                enabled = !video
+            }
+            item.isEnabled = enabled
+            (item.view as? NSControl)?.isEnabled = enabled
+            if let scaleView = item.view as? SPLKWindowToolbarScaleView {
+                scaleView.slider.isEnabled = enabled
+            }
+        }
     }
 
     @available(*, unavailable)
@@ -159,7 +246,7 @@ final class SPLKStaticWindowController: SPLKWindowController, NSToolbarDelegate,
     }
 
     func toolbarDefaultItemIdentifiers(_ toolbar: NSToolbar) -> [NSToolbarItem.Identifier] {
-        var ret = [SPLKToolBarIdentifier_Reload, SPLKToolBarIdentifier_FastMode, SPLKToolBarIdentifier_App, .flexibleSpace, SPLKToolBarIdentifier_Dimension, SPLKToolBarIdentifier_Rotation, SPLKToolBarIdentifier_Setting, .flexibleSpace, SPLKToolBarIdentifier_Scale, .flexibleSpace, SPLKToolBarIdentifier_Measure, SPLKToolBarIdentifier_Console]
+        var ret = [SPLKToolBarIdentifier_Mode, SPLKToolBarIdentifier_Reload, SPLKToolBarIdentifier_FastMode, SPLKToolBarIdentifier_App, .flexibleSpace, SPLKToolBarIdentifier_Dimension, SPLKToolBarIdentifier_Rotation, SPLKToolBarIdentifier_Setting, .flexibleSpace, SPLKToolBarIdentifier_Scale, .flexibleSpace, SPLKToolBarIdentifier_Measure, SPLKToolBarIdentifier_Console]
         if !SPLKMessageManager.sharedInstance.queryMessages().isEmpty {
             ret.append(SPLKToolBarIdentifier_Message)
         }
@@ -169,6 +256,10 @@ final class SPLKStaticWindowController: SPLKWindowController, NSToolbarDelegate,
     func toolbar(_ toolbar: NSToolbar, itemForItemIdentifier itemIdentifier: NSToolbarItem.Identifier, willBeInsertedIntoToolbar flag: Bool) -> NSToolbarItem? {
         if let item = toolbarItemsMap[itemIdentifier] {
             return item
+        }
+        if itemIdentifier == SPLKToolBarIdentifier_Mode {
+            toolbarItemsMap[itemIdentifier] = modeItem
+            return modeItem
         }
         guard let item = SPLKWindowToolbarHelper.sharedInstance.makeToolBarItem(withIdentifier: itemIdentifier, preferenceManager: SPLKPreferenceManager.mainManager) else {
             return nil
@@ -375,7 +466,42 @@ final class SPLKStaticWindowController: SPLKWindowController, NSToolbarDelegate,
     // MARK: - SPLKAppMenuManagerDelegate
 
     override var supportedAppMenuActions: Set<SPLKAppMenuAction> {
-        Set(SPLKAppMenuAction.allCases)
+        let modeActions: Set<SPLKAppMenuAction> = [.inspectMode, .liveControlMode, .endTakeover, .shake, .home, .lock]
+        var actions = isShowingVideo ? [] : Set(SPLKAppMenuAction.allCases).subtracting(modeActions)
+        switch modeSession?.arbiter.mode {
+        case .inspect:
+            actions.formUnion([.inspectMode, .liveControlMode])
+        case .liveControl:
+            actions.formUnion([.inspectMode, .liveControlMode, .shake])
+            if modeSession?.simulatorInput != nil {
+                actions.formUnion([.home, .lock])
+            }
+        case .takeover:
+            actions.insert(.endTakeover)
+        case nil:
+            break
+        }
+        return actions
+    }
+
+    override var checkedAppMenuActions: Set<SPLKAppMenuAction> {
+        switch modeSession?.arbiter.mode {
+        case .inspect: return [.inspectMode]
+        case .liveControl: return [.liveControlMode]
+        default: return []
+        }
+    }
+
+    override func appMenuManagerDidSelectModeAction(_ action: SPLKAppMenuAction) {
+        switch action {
+        case .inspectMode: select(.inspect)
+        case .liveControlMode: select(.liveControl)
+        case .endTakeover: select(.endTakeover)
+        case .shake: viewController.liveController.shake()
+        case .home: viewController.liveController.press(.home)
+        case .lock: viewController.liveController.press(.lock)
+        default: break
+        }
     }
 
     override func appMenuManagerDidSelectReload() {

@@ -186,6 +186,80 @@ final class SPLKDeviceSession: SPLKControlChannel {
         }
     }
 
+    // MARK: - Host-side input
+
+    enum InputBackend: String {
+        case host, device
+    }
+
+    // dtuhidd input into this app's simulator, when the Xcode has it.
+    private(set) lazy var simulatorInput: SPLKSimulatorHIDInput? = {
+        guard case .simulator(let udid) = target, SPLKSimulatorHIDInput.isSupported else { return nil }
+        return SPLKSimulatorHIDInput(udid: udid)
+    }()
+
+    private var hostInputConnected: Bool?
+
+    // Whether touches can go host-side; connects on first use and remembers a failure for the session.
+    func hostInputAvailable() async -> Bool {
+        if let hostInputConnected {
+            return hostInputConnected
+        }
+        guard let simulatorInput else {
+            hostInputConnected = false
+            return false
+        }
+        do {
+            try await simulatorInput.connect()
+            hostInputConnected = true
+        } catch {
+            NSLog("SupaLookin - host-side input unavailable: %@", String(describing: error))
+            hostInputConnected = false
+        }
+        return hostInputConnected ?? false
+    }
+
+    // Touches go into the simulator itself when they can, so they reach the keyboard and system UI;
+    // text, keys and shakes always go to the app.
+    @discardableResult
+    func deliverInput(_ events: [SPLKV2InputEvent], as actor: SPLKControlArbiter.Actor = .window, screen: SPLKV2ScreenInfo) async throws -> InputBackend {
+        let touches = events.filter { if case .touch = $0.kind { return true } else { return false } }
+        let others = events.filter { if case .touch = $0.kind { return false } else { return true } }
+        guard !touches.isEmpty, await hostInputAvailable(), let simulatorInput else {
+            try await injectInput(events, as: actor)
+            return .device
+        }
+        try checkHostInput(as: actor)
+        do {
+            try await simulatorInput.send(touches, orientation: screen.orientation)
+        } catch {
+            // Connect afresh, with every retry, before the next input.
+            hostInputConnected = nil
+            throw error
+        }
+        if !others.isEmpty {
+            try await injectInput(others, as: actor)
+        }
+        return .host
+    }
+
+    func press(_ button: SPLKSimulatorHIDInput.Button, as actor: SPLKControlArbiter.Actor = .window) async throws {
+        guard await hostInputAvailable(), let simulatorInput else {
+            throw SPLKError.make(NSLocalizedString("Buttons need a simulator.", comment: ""), NSLocalizedString("Home and Lock are pressed through Xcode's simulator, so they don't work on USB devices.", comment: ""))
+        }
+        try checkHostInput(as: actor)
+        try await simulatorInput.press(button)
+    }
+
+    // Host-side input never reaches the phone's lease check, so the arbiter decides here.
+    private func checkHostInput(as actor: SPLKControlArbiter.Actor) throws {
+        do {
+            _ = try arbiter.leaseID(for: actor, method: SPLKV2Request.OneOf_Call.injectInput(SPLKV2InjectInput()).methodName)
+        } catch {
+            throw Self.translate(error)
+        }
+    }
+
     // MARK: - Control
 
     func acquireControl(kind: SPLKV2AcquireControl.Kind, holderLabel: String, preempt: Bool) async throws -> SPLKV2ControlLease {

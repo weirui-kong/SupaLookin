@@ -11,6 +11,7 @@
 import Cocoa
 import Combine
 import SPLKServer
+import SceneKit
 
 final class SPLKPreviewController: SPLKBaseViewController, NSGestureRecognizerDelegate, SPLKPreviewStageViewDelegate, NSMenuDelegate {
 
@@ -345,6 +346,46 @@ final class SPLKPreviewController: SPLKBaseViewController, NSGestureRecognizerDe
 
             previewView.setRotation(rotation, animated: true)
         }
+    }
+
+    // MARK: - Modes
+
+    // Turns the preview face-on and flat for a change of mode, without changing the user's 2D/3D preference for good.
+    func flattenForModeChange(duration: CGFloat) -> SPLKPreviewDimension {
+        let manager = dataSource.preferenceManager
+        let dimension = SPLKPreviewDimension(rawValue: manager.previewDimension.currentIntegerValue) ?? .dimension2D
+        if previewView.dimension == .dimension3D {
+            prevRotation = previewView.rotation
+        }
+        SCNTransaction.begin()
+        SCNTransaction.animationDuration = duration
+        SCNTransaction.animationTimingFunction = CAMediaTimingFunction(name: .easeInEaseOut)
+        previewView.setDimension(.dimension2D, animated: true)
+        SCNTransaction.commit()
+        manager.previewDimension.setIntegerValue(SPLKPreviewDimension.dimension2D.rawValue, ignoreSubscriber: self)
+        return dimension
+    }
+
+    func restoreDimension(_ dimension: SPLKPreviewDimension) {
+        if dimension == .dimension3D {
+            dataSource.preferenceManager.previewDimension.setIntegerValue(dimension.rawValue, ignoreSubscriber: nil)
+        }
+    }
+
+    func screenRect(in view: NSView) -> NSRect? {
+        guard let rect = previewView.projectedScreenRect(), rect.width > 1, rect.height > 1 else { return nil }
+        return previewView.convert(rect, to: view)
+    }
+
+    // The app's screen as the preview draws it now.
+    func screenSnapshot() -> CGImage? {
+        guard let rect = previewView.projectedScreenRect(), previewView.bounds.width > 0,
+              let image = previewView.snapshot().cgImage(forProposedRect: nil, context: nil, hints: nil) else {
+            return nil
+        }
+        let scale = CGFloat(image.width) / previewView.bounds.width
+        let crop = CGRect(x: rect.minX * scale, y: (previewView.bounds.height - rect.maxY) * scale, width: rect.width * scale, height: rect.height * scale).integral
+        return image.cropping(to: crop)
     }
 
     private func handlePanGesture(_ recognizer: SPLKPreviewPanGestureRecognizer) {

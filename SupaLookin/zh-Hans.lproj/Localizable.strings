@@ -244,3 +244,23 @@
 "The device's screen didn't appear." = "设备的屏幕没有出现。";
 "Unlock the device and make sure it trusts this Mac." = "请解锁设备，并确认它信任这台 Mac。";
 "Failed to capture the device's screen." = "无法采集设备的屏幕。";
+
+"Inspect" = "检查";
+"Live Control" = "实时操控";
+"Takeover" = "接管";
+"End Takeover" = "结束接管";
+"End Takeover by %@" = "结束 %@ 的接管";
+"An agent starts Takeover by calling take_control." = "接管由 agent 调用 take_control 发起。";
+"Mode" = "模式";
+"Device" = "设备";
+"Shake" = "摇一摇";
+"%@ is controlling the app" = "%@ 正在操控这个 App";
+"Try Again" = "重试";
+
+"Home" = "主屏幕";
+"Lock" = "锁定";
+"Buttons need a simulator." = "按键只能在模拟器上使用。";
+"Home and Lock are pressed through Xcode's simulator, so they don't work on USB devices." = "主屏幕和锁定按键经由 Xcode 的模拟器按下，因此在 USB 设备上无法使用。";
+"The simulator's input service didn't answer." = "模拟器的输入服务没有响应。";
+"This macOS can't send input into simulators." = "此 macOS 无法向模拟器发送输入。";
+"This Xcode can't send input into simulators." = "此 Xcode 无法向模拟器发送输入。";

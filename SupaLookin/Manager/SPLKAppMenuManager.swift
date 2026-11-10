@@ -25,6 +25,13 @@ private let kTag_Expansion = 27
 private let kTag_Filter = 28
 private let kTag_OpenInNewWindow = 31
 private let kTag_Export = 32
+private let kTag_Mode = 33
+private let kTag_InspectMode = 34
+private let kTag_LiveControlMode = 35
+private let kTag_EndTakeover = 36
+private let kTag_Shake = 37
+private let kTag_Home = 38
+private let kTag_Lock = 39
 
 private let kTag_CocoaPods = 51
 private let kTag_ShowWebsite = 52
@@ -62,6 +69,12 @@ final class SPLKAppMenuManager: NSObject, NSMenuDelegate {
         kTag_Export: .export,
         kTag_OpenInNewWindow: .openInNewWindow,
         kTag_Filter: .filter,
+        kTag_InspectMode: .inspectMode,
+        kTag_LiveControlMode: .liveControlMode,
+        kTag_EndTakeover: .endTakeover,
+        kTag_Shake: .shake,
+        kTag_Home: .home,
+        kTag_Lock: .lock,
     ]
 
     private var updaterController: SPUStandardUpdaterController?
@@ -107,6 +120,8 @@ final class SPLKAppMenuManager: NSObject, NSMenuDelegate {
 
         // 帮助
         let menu_help = menu.item(at: 5)?.submenu
+
+        let modeActions = addModeMenus(to: menu, viewMenu: menu_view)
         menu_help?.autoenablesItems = true
         menu_help?.delegate = self
 
@@ -168,7 +183,7 @@ final class SPLKAppMenuManager: NSObject, NSMenuDelegate {
             Self.open("https://qxh1ndiez2w.feishu.cn/docx/YIFjdE4gIolp3hxn1tGckiBxnWf")
         }
 
-        let itemArray = (menu_file?.items ?? []) + (menu_view?.items ?? [])
+        let itemArray = (menu_file?.items ?? []) + (menu_view?.items ?? []) + modeActions
         for item in itemArray {
             guard let action = delegatingTagToAction[item.tag] else {
                 continue
@@ -196,10 +211,54 @@ final class SPLKAppMenuManager: NSObject, NSMenuDelegate {
         for item in menu.items {
             if let action = delegatingTagToAction[item.tag] {
                 item.isEnabled = wc?.supportedAppMenuActions.contains(action) ?? false
+                item.state = (wc?.checkedAppMenuActions.contains(action) ?? false) ? .on : .off
             } else {
                 item.isEnabled = true
             }
         }
+    }
+
+    // View › Mode and the Device menu, built here since the menu bar comes from Lookin's xib.
+    private func addModeMenus(to menu: NSMenu, viewMenu: NSMenu?) -> [NSMenuItem] {
+        let controlCommand: NSEvent.ModifierFlags = [.control, .command]
+        func item(_ title: String, _ key: String, _ tag: Int) -> NSMenuItem {
+            let item = NSMenuItem(title: title, action: nil, keyEquivalent: key)
+            item.keyEquivalentModifierMask = controlCommand
+            item.tag = tag
+            return item
+        }
+
+        let modeMenu = NSMenu(title: NSLocalizedString("Mode", comment: ""))
+        modeMenu.autoenablesItems = false
+        modeMenu.delegate = self
+        let modeItems = [
+            item(NSLocalizedString("Inspect", comment: ""), "i", kTag_InspectMode),
+            item(NSLocalizedString("Live Control", comment: ""), "l", kTag_LiveControlMode),
+            item(NSLocalizedString("End Takeover", comment: ""), ".", kTag_EndTakeover),
+        ]
+        modeItems.forEach(modeMenu.addItem)
+        modeMenu.insertItem(.separator(), at: 2)
+        let modeItem = NSMenuItem(title: NSLocalizedString("Mode", comment: ""), action: nil, keyEquivalent: "")
+        modeItem.tag = kTag_Mode
+        modeItem.submenu = modeMenu
+        viewMenu?.addItem(.separator())
+        viewMenu?.addItem(modeItem)
+
+        let deviceMenu = NSMenu(title: NSLocalizedString("Device", comment: ""))
+        deviceMenu.autoenablesItems = false
+        deviceMenu.delegate = self
+        let shakeItem = item(NSLocalizedString("Shake", comment: ""), "z", kTag_Shake)
+        let homeItem = item(NSLocalizedString("Home", comment: ""), "h", kTag_Home)
+        homeItem.keyEquivalentModifierMask = [.shift, .command]
+        let lockItem = item(NSLocalizedString("Lock", comment: ""), "l", kTag_Lock)
+        lockItem.keyEquivalentModifierMask = [.command]
+        [homeItem, lockItem, shakeItem].forEach(deviceMenu.addItem)
+        let deviceItem = NSMenuItem(title: NSLocalizedString("Device", comment: ""), action: nil, keyEquivalent: "")
+        deviceItem.submenu = deviceMenu
+        // Between View and Window.
+        menu.insertItem(deviceItem, at: 4)
+
+        return modeItems + [homeItem, lockItem, shakeItem]
     }
 
     private func handleDelegateItem(_ action: SPLKAppMenuAction) {
@@ -226,6 +285,8 @@ final class SPLKAppMenuManager: NSObject, NSMenuDelegate {
             wc.appMenuManagerDidSelectExport()
         case .openInNewWindow:
             wc.appMenuManagerDidSelectOpenInNewWindow()
+        case .inspectMode, .liveControlMode, .endTakeover, .shake, .home, .lock:
+            wc.appMenuManagerDidSelectModeAction(action)
         case .expansion:
             assertionFailure()
         }

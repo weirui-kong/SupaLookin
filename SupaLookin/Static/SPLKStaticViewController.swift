@@ -46,6 +46,10 @@ final class SPLKStaticViewController: SPLKBaseViewController, NSSplitViewDelegat
     private let focusTipView = SPLKYellowTipsView()
     private let fastModeTipView = SPLKTipsView()
 
+    let liveController = SPLKLiveViewController()
+    let transitionOverlay = SPLKTransitionOverlayView()
+    private(set) lazy var modeTransition = SPLKModeTransition(host: self)
+
     private var dashboardController: SPLKDashboardViewController!
     private var hierarchyController: SPLKStaticHierarchyController!
     private var consoleController: SPLKConsoleViewController?
@@ -236,6 +240,8 @@ final class SPLKStaticViewController: SPLKBaseViewController, NSSplitViewDelegat
             target.handleFastModeChange(param)
         }
 
+        view.addSubview(transitionOverlay)
+
         // Lookin registered this observer on every layout pass, so one notification submitted to the console several
         // times; it is registered once here.
         NotificationCenter.default.publisher(for: SPLKAppShowConsoleNotificationName)
@@ -266,6 +272,10 @@ final class SPLKStaticViewController: SPLKBaseViewController, NSSplitViewDelegat
         let windowTitleHeight = SPLKNavigationManager.sharedInstance.windowTitleBarHeight
 
         progressView.fillWidth().setHeight(3).setY(windowTitleHeight)
+        transitionOverlay.frame = view.bounds
+        if liveController.isViewLoaded, liveController.view.superview != nil {
+            liveController.view.frame = view.bounds
+        }
 
         var tipsY = windowTitleHeight + 10
         let tipsViews: [SPLKTipsView?] = [connectionTipsView, imageSyncTipsView, tooLargeToSyncScreenshotTipsView, noPreviewTipView, focusTipView, userConfigNoPreviewTipsView, tutorialTipView, customViewTipView, fastModeTipView]
@@ -302,6 +312,74 @@ final class SPLKStaticViewController: SPLKBaseViewController, NSSplitViewDelegat
         }
 
         consoleController?.isControllerShowing = showConsole
+    }
+
+    // MARK: - Modes
+
+    func installLiveView() {
+        guard liveController.view.superview == nil else { return }
+        addChild(liveController)
+        liveController.view.alphaValue = 0
+        liveController.view.frame = view.bounds
+        view.addSubview(liveController.view, positioned: .below, relativeTo: transitionOverlay)
+        liveController.view.layoutSubtreeIfNeeded()
+    }
+
+    func removeLiveView() {
+        guard liveController.isViewLoaded, liveController.view.superview != nil else { return }
+        liveController.view.removeFromSuperview()
+        liveController.removeFromParent()
+    }
+
+    // The hierarchy leaves to the left and the dashboard to the right, while the preview's area fades under the video.
+    func slidePanels(out: Bool, duration: TimeInterval) {
+        slide(hierarchyController.view, offset: -hierarchyController.view.bounds.width, out: out, duration: duration)
+        slide(dashboardController.view, offset: dashboardController.view.bounds.width, out: out, duration: duration)
+        setPanelsAlpha(out ? 0 : 1, animated: true)
+    }
+
+    func preparePanelSlideIn() {
+        setTransform(hierarchyController.view, CATransform3DMakeTranslation(-hierarchyController.view.bounds.width, 0, 0))
+        setTransform(dashboardController.view, CATransform3DMakeTranslation(dashboardController.view.bounds.width, 0, 0))
+    }
+
+    func finishPanelSlide(visible: Bool) {
+        setTransform(hierarchyController.view, CATransform3DIdentity)
+        setTransform(dashboardController.view, CATransform3DIdentity)
+        setPanelsAlpha(visible ? 1 : 0)
+    }
+
+    var arePanelsVisible: Bool {
+        hierarchyController.view.alphaValue > 0 && rightSplitView.alphaValue > 0
+    }
+
+    func setPanelsAlpha(_ alpha: CGFloat, animated: Bool = false) {
+        for panel in [hierarchyController.view, rightSplitView!] as [NSView] {
+            if animated {
+                panel.animator().alphaValue = alpha
+            } else {
+                panel.alphaValue = alpha
+            }
+        }
+    }
+
+    private func slide(_ view: NSView, offset: CGFloat, out: Bool, duration: TimeInterval) {
+        guard let layer = view.layer else { return }
+        let target = out ? CATransform3DMakeTranslation(offset, 0, 0) : CATransform3DIdentity
+        let animation = CABasicAnimation(keyPath: "transform")
+        animation.fromValue = layer.presentation()?.transform ?? layer.transform
+        animation.toValue = target
+        animation.duration = duration
+        animation.timingFunction = CAMediaTimingFunction(name: .easeInEaseOut)
+        setTransform(view, target)
+        layer.add(animation, forKey: "SPLKModeSlide")
+    }
+
+    private func setTransform(_ view: NSView, _ transform: CATransform3D) {
+        CATransaction.begin()
+        CATransaction.setDisableActions(true)
+        view.layer?.transform = transform
+        CATransaction.commit()
     }
 
     /// 获取当前的 hierarchyView

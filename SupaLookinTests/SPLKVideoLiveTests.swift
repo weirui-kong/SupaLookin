@@ -12,7 +12,7 @@ import SPLKProtocol
 import SPLKServer
 @testable import SupaLookin
 
-// Runs against the e2e demo on a booted simulator. Run with TEST_RUNNER_SPLK_VIDEO_E2E=1; TEST_RUNNER_SPLK_VIDEO_OUT names a PNG to write.
+// Runs against the e2e demo on a booted simulator. Run with TEST_RUNNER_SPLK_VIDEO_E2E=1, apart from SPLKModesLiveTests since the demo serves one session at a time; TEST_RUNNER_SPLK_VIDEO_OUT names a PNG to write.
 @Suite(.enabled(if: ProcessInfo.processInfo.environment["SPLK_VIDEO_E2E"] == "1"))
 struct SPLKVideoLiveTests {
 

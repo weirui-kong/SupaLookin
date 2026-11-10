@@ -150,7 +150,13 @@ nonisolated final class SPLKSimulatorDisplay: @unchecked Sendable {
 
     // MARK: - CoreSimulator
 
-    private static func bootedDevice(udid: String?) throws -> NSObject {
+    // The loaded CoreSimulator's CFBundleVersion, such as "1174.21".
+    static var coreSimulatorVersion: String? {
+        guard (try? serviceContext()) != nil, let deviceClass = NSClassFromString("SimDevice") else { return nil }
+        return Bundle(for: deviceClass).infoDictionary?["CFBundleVersion"] as? String
+    }
+
+    static func bootedDevice(udid: String?) throws -> NSObject {
         let context = try serviceContext()
         var error: NSError?
         typealias DeviceSet = @convention(c) (NSObject, Selector, UnsafeMutablePointer<NSError?>?) -> NSObject?
@@ -215,7 +221,7 @@ nonisolated final class SPLKSimulatorDisplay: @unchecked Sendable {
         return path.isEmpty ? "/Applications/Xcode.app/Contents/Developer" : path
     }
 
-    private static func object(_ target: NSObject, _ name: String) -> NSObject? {
+    static func object(_ target: NSObject, _ name: String) -> NSObject? {
         let selector = NSSelectorFromString(name)
         guard target.responds(to: selector) else {
             return nil
