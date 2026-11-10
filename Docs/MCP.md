@@ -73,7 +73,7 @@ The default port is chosen to stay clear of the ports SPLKServer uses (47264–4
 
 ## Tools
 
-In Phase 1, every tool is annotated `readOnlyHint: true`. Results are returned as JSON text, except `get_screenshot`, which returns a PNG image.
+In Phase 1, every tool is annotated `readOnlyHint: true`. Results are returned as JSON text, except `get_screenshot` and `get_screen`, which return a PNG image.
 
 ### Identifying items
 
@@ -209,6 +209,18 @@ The item's screenshot as a PNG image, scaled down so that its longer side is at 
 | `include_subviews` | boolean | `true` | `false` returns the item alone, without its sublayers and subviews |
 
 Screenshots arrive after the hierarchy, while Supa Lookin syncs them, and **Fast Mode** limits them to expanded items in the same way as attributes. If an item has none yet, the tool returns an error saying so.
+
+### `get_screen`
+
+The whole screen as the person at the device sees it, system UI such as alerts and the keyboard included, as a PNG image whose longer side is at most 1024 px. It is turned to the app's current orientation.
+
+Supa Lookin reads it from the screen's video: a simulator's framebuffer, or a USB device's screen the way QuickTime mirrors it. The first time it captures a USB device, macOS asks to allow Supa Lookin to use the camera. Next to the image, the tool returns which source it used:
+
+```json
+{ "source": "video" }
+```
+
+When the video can't be read, it falls back to a screenshot the app takes of itself, which lacks system UI, and says why: `"source": "app"` with `video_error`.
 
 ### `search`
 

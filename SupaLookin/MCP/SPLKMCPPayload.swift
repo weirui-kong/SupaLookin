@@ -99,11 +99,18 @@ enum SPLKMCPPayload {
     }
 
     static func png(of item: SPLKDisplayItem, includeSubviews: Bool) -> Data? {
-        guard let image = includeSubviews ? item.groupScreenshot : item.soloScreenshot,
-              image.size.width > 0, image.size.height > 0,
+        png(of: includeSubviews ? item.groupScreenshot : item.soloScreenshot)
+    }
+
+    static func png(of image: NSImage?) -> Data? {
+        guard let image, image.size.width > 0, image.size.height > 0,
               let source = image.cgImage(forProposedRect: nil, context: nil, hints: nil) else {
             return nil
         }
+        return png(of: source)
+    }
+
+    static func png(of source: CGImage) -> Data? {
         let scale = min(1, screenshotMaxLength / CGFloat(max(source.width, source.height)))
         let width = max(1, Int(CGFloat(source.width) * scale))
         let height = max(1, Int(CGFloat(source.height) * scale))

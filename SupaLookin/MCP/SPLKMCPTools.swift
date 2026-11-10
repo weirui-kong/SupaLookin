@@ -44,6 +44,7 @@ nonisolated enum SPLKMCPTools {
             "oid": integer("The item's oid (its view oid works too)."),
             "include_subviews": ["type": "boolean", "description": "Include sublayers and subviews. Defaults to true."],
         ], required: ["oid"]),
+        tool("get_screen", "The whole screen as the person at the device sees it, system UI included, as a PNG at most 1024 px on its longer side. Read from the simulator's or USB device's video; falls back to the app's own screenshot.", [:]),
         tool("search", "Items whose class name, title or memory address matches the query, like the search field of the hierarchy panel.", [
             "query": ["type": "string", "description": "Text to search for."],
             "limit": integer("Maximum number of results. Defaults to 50."),

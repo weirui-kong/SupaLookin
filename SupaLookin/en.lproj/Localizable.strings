@@ -230,3 +230,19 @@
 "An agent is controlling this app." = "An agent is controlling this app.";
 "Take back control in Supa Lookin to make changes." = "Take back control in Supa Lookin to make changes.";
 "Take over the app before changing it." = "Take over the app before changing it.";
+
+"Failed to read the video frame." = "Failed to read the video frame.";
+"The video source sent no frame." = "The video source sent no frame.";
+"The simulator's screen has no framebuffer." = "The simulator's screen has no framebuffer.";
+"Failed to read the simulator's framebuffer." = "Failed to read the simulator's framebuffer.";
+"The simulator has no displays." = "The simulator has no displays.";
+"Failed to list simulators." = "Failed to list simulators.";
+"The app's simulator isn't booted." = "The app's simulator isn't booted.";
+"CoreSimulator can't be loaded." = "CoreSimulator can't be loaded.";
+"Install Xcode and its simulator runtimes." = "Install Xcode and its simulator runtimes.";
+"The device's serial number is unknown." = "The device's serial number is unknown.";
+"Supa Lookin can't use the camera." = "Supa Lookin can't use the camera.";
+"Mirroring a device's screen counts as camera use. Allow Supa Lookin in System Settings > Privacy & Security > Camera." = "Mirroring a device's screen counts as camera use. Allow Supa Lookin in System Settings > Privacy & Security > Camera.";
+"The device's screen didn't appear." = "The device's screen didn't appear.";
+"Unlock the device and make sure it trusts this Mac." = "Unlock the device and make sure it trusts this Mac.";
+"Failed to capture the device's screen." = "Failed to capture the device's screen.";

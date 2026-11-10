@@ -156,6 +156,7 @@ message AppSummary {                // SPLKAppInfo without images
   enum DeviceType { DEVICE_TYPE_UNSPECIFIED = 0; SIMULATOR = 1; IPAD = 2; OTHERS = 3; }
   DeviceType device_type = 7;
   ScreenInfo screen = 8;
+  string simulator_udid = 9;        // SIMULATOR_UDID; empty on a device
 }
 
 message GetAppInfo {

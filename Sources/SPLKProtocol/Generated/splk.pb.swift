@@ -1205,6 +1205,9 @@ public nonisolated struct SPLKV2AppSummary: Sendable {
   /// Clears the value of `screen`. Subsequent reads from it will return its default value.
   public mutating func clearScreen() {self._screen = nil}
 
+  /// SIMULATOR_UDID; empty on a device
+  public var simulatorUdid: String = String()
+
   public var unknownFields = SwiftProtobuf.UnknownStorage()
 
   public nonisolated enum DeviceType: SwiftProtobuf.Enum, Swift.CaseIterable {
@@ -4511,7 +4514,7 @@ nonisolated extension SPLKV2ScreenInfo.Orientation: SwiftProtobuf._ProtoNameProv
 
 nonisolated extension SPLKV2AppSummary: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".AppSummary"
-  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}identifier\0\u{1}name\0\u{3}bundle_identifier\0\u{3}device_description\0\u{3}os_description\0\u{3}os_main_version\0\u{3}device_type\0\u{1}screen\0")
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}identifier\0\u{1}name\0\u{3}bundle_identifier\0\u{3}device_description\0\u{3}os_description\0\u{3}os_main_version\0\u{3}device_type\0\u{1}screen\0\u{3}simulator_udid\0")
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
@@ -4527,6 +4530,7 @@ nonisolated extension SPLKV2AppSummary: SwiftProtobuf.Message, SwiftProtobuf._Me
       case 6: try { try decoder.decodeSingularUInt32Field(value: &self.osMainVersion) }()
       case 7: try { try decoder.decodeSingularEnumField(value: &self.deviceType) }()
       case 8: try { try decoder.decodeSingularMessageField(value: &self._screen) }()
+      case 9: try { try decoder.decodeSingularStringField(value: &self.simulatorUdid) }()
       default: break
       }
     }
@@ -4561,6 +4565,9 @@ nonisolated extension SPLKV2AppSummary: SwiftProtobuf.Message, SwiftProtobuf._Me
     try { if let v = self._screen {
       try visitor.visitSingularMessageField(value: v, fieldNumber: 8)
     } }()
+    if !self.simulatorUdid.isEmpty {
+      try visitor.visitSingularStringField(value: self.simulatorUdid, fieldNumber: 9)
+    }
     try unknownFields.traverse(visitor: &visitor)
   }
 
@@ -4573,6 +4580,7 @@ nonisolated extension SPLKV2AppSummary: SwiftProtobuf.Message, SwiftProtobuf._Me
     if lhs.osMainVersion != rhs.osMainVersion {return false}
     if lhs.deviceType != rhs.deviceType {return false}
     if lhs._screen != rhs._screen {return false}
+    if lhs.simulatorUdid != rhs.simulatorUdid {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }

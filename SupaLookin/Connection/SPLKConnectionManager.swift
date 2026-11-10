@@ -47,6 +47,7 @@ final class SPLKConnectionManager {
 
     private var sessions: [Port: SPLKDeviceSession] = [:]
     private var usbDeviceIDs: [NSNumber] = []
+    private var usbSerialNumbers: [NSNumber: String] = [:]
 
     private init() {
         startListeningForUSBDevices()
@@ -72,7 +73,7 @@ final class SPLKConnectionManager {
             }
             switch await attempt?.value {
             case .client(let client):
-                let session = SPLKDeviceSession(client: client)
+                let session = SPLKDeviceSession(client: client, target: videoTarget(for: port, client: client))
                 sessions[port] = session
                 Task {
                     await session.waitUntilClosed()
@@ -86,6 +87,16 @@ final class SPLKConnectionManager {
             }
         }
         return discoveries
+    }
+
+    private func videoTarget(for port: Port, client: SPLKClientSession) -> SPLKVideoTarget {
+        switch port {
+        case .simulator:
+            let udid = client.serverHello.app.simulatorUdid
+            return .simulator(udid: udid.isEmpty ? nil : udid)
+        case .usb(let deviceID, _):
+            return .usbDevice(serialNumber: usbSerialNumbers[deviceID])
+        }
     }
 
     private func sessionEnded(_ session: SPLKDeviceSession, on port: Port) {
@@ -152,10 +163,12 @@ final class SPLKConnectionManager {
 
         nc.addObserver(forName: .SPLK_PTUSBDeviceDidAttach, object: SPLK_PTUSBHub.shared(), queue: nil) { note in
             let deviceID = note.userInfo?["DeviceID"] as? NSNumber
+            let serialNumber = (note.userInfo?["Properties"] as? [String: Any])?["SerialNumber"] as? String
             MainActor.assumeIsolated {
                 // 仅一台真机 device 上的所有 app 共享同一批端口（在 SPLKServer 里是 47275 ~ 47279 这 5 个），不同真机互不影响。比如依次启动“真机 A 的 app1”、“真机 A 的 app2”、“真机 B 的 app3”，则它们依次会占用 47275、47276、47275（注意不是 47277）这几个端口
                 if let deviceID {
                     SPLKConnectionManager.sharedInstance.usbDeviceIDs.append(deviceID)
+                    SPLKConnectionManager.sharedInstance.usbSerialNumbers[deviceID] = serialNumber
                 }
                 NSLog("Lookin - USB 设备插入，DeviceID: %@", String(describing: deviceID))
             }
@@ -165,6 +178,9 @@ final class SPLKConnectionManager {
             let deviceID = note.userInfo?["DeviceID"] as? NSNumber
             MainActor.assumeIsolated {
                 SPLKConnectionManager.sharedInstance.usbDeviceIDs.removeAll { $0 == deviceID }
+                if let deviceID {
+                    SPLKConnectionManager.sharedInstance.usbSerialNumbers[deviceID] = nil
+                }
                 NSLog("Lookin - USB 设备拔出，DeviceID: %@", String(describing: deviceID))
             }
         }

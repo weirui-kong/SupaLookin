@@ -115,6 +115,7 @@ struct EndToEndTests {
         defer { Task { await session.close() } }
         #expect(session.serverHello.protocolGeneration == 2)
         #expect(session.capabilities == allCapabilities)
+        #expect(session.serverHello.app.simulatorUdid == ProcessInfo.processInfo.environment["SPLK_E2E_UDID"])
 
         var call = SPLKV2GetAppInfo()
         call.needImages = true

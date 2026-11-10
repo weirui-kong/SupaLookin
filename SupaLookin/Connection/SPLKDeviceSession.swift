@@ -14,11 +14,23 @@ import SPLKServer
 final class SPLKDeviceSession: SPLKControlChannel {
 
     let client: SPLKClientSession
+    let target: SPLKVideoTarget
     private(set) lazy var arbiter = SPLKControlArbiter(channel: self)
 
-    init(client: SPLKClientSession) {
+    init(client: SPLKClientSession, target: SPLKVideoTarget) {
         self.client = client
+        self.target = target
     }
+
+    // The Mac-side capture of this app's screen, shared by Live Control and agents.
+    private(set) lazy var video: SPLKVideoSource = {
+        switch target {
+        case .simulator(let udid):
+            return SPLKSimulatorVideoSource(udid: udid, screen: client.serverHello.app.screen)
+        case .usbDevice(let serialNumber):
+            return SPLKDeviceVideoSource(serialNumber: serialNumber)
+        }
+    }()
 
     static let capabilities: Set<String> = [
         SPLKCapability.app, SPLKCapability.hierarchy, SPLKCapability.details,
@@ -57,6 +69,13 @@ final class SPLKDeviceSession: SPLKControlChannel {
         info.serverReadableVersion = serverVersion as NSString
         info.swiftEnabledInSPLKServer = 1
         return info
+    }
+
+    func screenInfo() async throws -> SPLKV2ScreenInfo {
+        guard case .appInfo(let message) = try await unary(.getAppInfo(SPLKV2GetAppInfo())) else {
+            throw SPLKError.inner
+        }
+        return message.summary.screen
     }
 
     func hierarchy() async throws -> SPLKHierarchyInfo? {

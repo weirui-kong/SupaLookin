@@ -125,7 +125,10 @@ final class SPLKServerRuntime {
 
     static func appSummary() -> SPLKV2AppSummary {
         let info = SPLKServerOperations.appInfo(withImages: false, localIdentifiers: [])
-        return SPLKBridge.summary(info, screen: screenInfo())
+        var summary = SPLKBridge.summary(info, screen: screenInfo())
+        // Every simulator shares the localhost ports, so the Mac needs this to find the app's framebuffer.
+        summary.simulatorUdid = ProcessInfo.processInfo.environment["SIMULATOR_UDID"] ?? ""
+        return summary
     }
 
     static func screenInfo() -> SPLKV2ScreenInfo {

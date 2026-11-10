@@ -228,3 +228,19 @@
 "An agent is controlling this app." = "一个 agent 正在操控这个 App。";
 "Take back control in Supa Lookin to make changes." = "在 Supa Lookin 中收回控制权后才能修改。";
 "Take over the app before changing it." = "请先接管这个 App，再进行修改。";
+
+"Failed to read the video frame." = "无法读取视频帧。";
+"The video source sent no frame." = "视频源没有发来画面。";
+"The simulator's screen has no framebuffer." = "模拟器屏幕没有帧缓冲。";
+"Failed to read the simulator's framebuffer." = "无法读取模拟器的帧缓冲。";
+"The simulator has no displays." = "模拟器没有可用的显示屏。";
+"Failed to list simulators." = "无法列出模拟器。";
+"The app's simulator isn't booted." = "App 所在的模拟器没有启动。";
+"CoreSimulator can't be loaded." = "无法加载 CoreSimulator。";
+"Install Xcode and its simulator runtimes." = "请安装 Xcode 及其模拟器运行时。";
+"The device's serial number is unknown." = "无法获知设备的序列号。";
+"Supa Lookin can't use the camera." = "Supa Lookin 无法使用摄像头。";
+"Mirroring a device's screen counts as camera use. Allow Supa Lookin in System Settings > Privacy & Security > Camera." = "镜像设备屏幕会被系统视为使用摄像头。请在“系统设置 > 隐私与安全性 > 摄像头”中允许 Supa Lookin。";
+"The device's screen didn't appear." = "设备的屏幕没有出现。";
+"Unlock the device and make sure it trusts this Mac." = "请解锁设备，并确认它信任这台 Mac。";
+"Failed to capture the device's screen." = "无法采集设备的屏幕。";

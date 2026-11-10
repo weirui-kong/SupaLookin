@@ -56,6 +56,8 @@ enum SPLKMCPToolHandler {
                     return failure("This item has no screenshot yet. It may still be syncing, or the iOS app doesn't capture it.")
                 }
                 return .init(content: [.image(data: png.base64EncodedString(), mimeType: "image/png", annotations: nil, _meta: nil)], isError: false)
+            case "get_screen":
+                return try await screen()
             case "search":
                 let dataSource = try loadedDataSource()
                 guard let query = arguments["query"]?.stringValue, !query.isEmpty else {
@@ -198,6 +200,29 @@ enum SPLKMCPToolHandler {
         }
         try await session.injectInput(events, as: .mcp(agent))
         return actionResult(try await session.waitForIdle(timeout: 2), agent: agent)
+    }
+
+    // Video shows what the user sees, system UI included; the app's own screenshot is the fallback.
+    private static func screen() async throws -> CallTool.Result {
+        let session = try deviceSession()
+        let screen = (try? await session.screenInfo()) ?? session.client.serverHello.app.screen
+        var payload: [String: Any]
+        let png: Data?
+        do {
+            png = SPLKMCPPayload.png(of: try await session.video.snapshot(screen: screen))
+            payload = ["source": "video"]
+        } catch {
+            png = SPLKMCPPayload.png(of: try await session.appInfo(withImages: true, cachedIdentifiers: [])?.screenshot)
+            payload = ["source": "app", "video_error": error.localizedDescription, "note": "Taken by the app itself, so system UI such as alerts and the keyboard is missing."]
+        }
+        guard let png else {
+            return failure("The screen couldn't be captured.")
+        }
+        let text = (try? JSONSerialization.data(withJSONObject: payload, options: [.sortedKeys])).map { String(decoding: $0, as: UTF8.self) } ?? ""
+        return .init(content: [
+            .image(data: png.base64EncodedString(), mimeType: "image/png", annotations: nil, _meta: nil),
+            .text(text: text, annotations: nil, _meta: nil),
+        ], isError: false)
     }
 
     private static func actionResult(_ result: SPLKV2ActionResult, agent: String) -> [String: Any] {
