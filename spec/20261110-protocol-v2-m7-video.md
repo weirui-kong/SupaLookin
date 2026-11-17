@@ -117,3 +117,14 @@ A new read-only tool, `get_screen`:
 - In-app capture and the `VIDEO` channel.
 - Host-side simulator input.
 - Audio.
+
+## Update: finding a device's screen on macOS 27 (see `20261110-protocol-v2-m10-device-input.md`)
+
+Verified on an iPhone 12 mini (iOS 27.2):
+- **The capture device's `uniqueID` is a random UUID**, not the UDID. Its `localizedName` is the device's name.
+- **Matching order** for `SPLKDeviceVideoSource`:
+  1. the UDID, as before;
+  2. the name CoreDevice reports for that UDID (`devicectl list devices`);
+  3. the only iOS screen, when just one is attached.
+- **The first frame** arrives a moment after capture starts: 1082×2340 at up to 60 fps.
+- **`SPLKDeviceVideoLiveTests`** checks this against a device given by `TEST_RUNNER_SPLK_DEVICE_SERIAL`.

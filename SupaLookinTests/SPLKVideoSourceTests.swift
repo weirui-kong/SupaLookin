@@ -57,6 +57,15 @@ struct SPLKVideoSourceTests {
         #expect(!SPLKDeviceVideoSource.matches(uniqueID: "", serialNumber: ""))
     }
 
+    @Test func screensAreChosenByUDIDThenName() {
+        let screens = [(uniqueID: "8DC3CA67-F12D-46DC-9702-330D55225B7A", name: "Pro Max"), (uniqueID: "B16D5EF4-465E-4DD5-9C67-75B28B81B532", name: "mini")]
+        #expect(SPLKDeviceVideoSource.choose(screens, serialNumber: "00008101-0011703401E8001E", deviceName: "mini") == 1)
+        #expect(SPLKDeviceVideoSource.choose(screens, serialNumber: "00008101-0011703401E8001E", deviceName: nil) == nil)
+        #expect(SPLKDeviceVideoSource.choose([screens[0]], serialNumber: "00008101-0011703401E8001E", deviceName: nil) == 0)
+        let byUDID = [(uniqueID: "000081010011703401E8001E", name: "x")] + screens
+        #expect(SPLKDeviceVideoSource.choose(byUDID, serialNumber: "00008101-0011703401E8001E", deviceName: "mini") == 0)
+    }
+
     @Test func getScreenIsReadOnly() {
         let tool = SPLKMCPTools.tools.first { $0.name == "get_screen" }
         #expect(tool?.annotations.readOnlyHint == true)
