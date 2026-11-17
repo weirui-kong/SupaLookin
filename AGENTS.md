@@ -36,7 +36,7 @@ Shared instructions for any coding agent working in this repository (Claude Code
 SupaLookin is an independent, long-term continuation of the unmaintained `hughkli/Lookin` (macOS UI inspector) and `QMUI/LookinServer` (iOS-side instrumentation library), and no longer interoperates with either. See `.private/LICENSE_REVIEW.md` (local-only, not committed) for the licensing audit behind this fork: the macOS client is GPLv3, the iOS-side/shared library under `Sources/` is MIT, and they're independent works connected over network/USB rather than one statically-linked binary.
 
 - App name: **Supa Lookin**
-- Bundle ID: `icu.retrouvailles.supalookin`
+- Bundle ID: `org.supacode.app.lookin`
 - Xcode project/target: `SupaLookin.xcodeproj` / target `SupaLookin`
 - App sources: `SupaLookin/` (Swift); tests: `SupaLookinTests/`
 - iOS-side library: the `SPLKServer` product of the root `Package.swift`, sources under `Sources/`:

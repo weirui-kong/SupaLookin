@@ -180,3 +180,15 @@ When host-side input failed on iOS 27 or later, the note gives the error's reaso
 - Element frames from `remoteAXService` for element-targeted taps.
 - Wireless devices.
 - Using the CoreDevice media stream as the video source in place of CoreMediaIO.
+
+## Update: on hold (see `20261118-control-roadmap.md`)
+
+Step 1 found neither transport ready, so M10 waits, and devices on iOS 27 or later are watch-only until it lands.
+
+| Transport | Result on the iPhone 12 mini |
+|---|---|
+| B: Supa Lookin's own RSD connection | `remotepairingd` gives the tunnel address and an assertion to an unentitled process. The device closes its services as soon as Supa Lookin's RSD connection closes. While open, that connection was evicted by `remoted` after about 7 s. |
+| `remoted`'s own C API (`remote_device_browse_present`) | Lists no devices to an unentitled process. |
+| A: CoreDevice's `createservicesocket` | Reachable only through CoreDevice's Swift API (`DeviceManager.shared`, a capability implementation, `fileHandle(toServiceNamed:)`), which has no interface file and changes with each Xcode release. |
+
+These were measured over Wi-Fi. A repeat over USB is the first step when M10 resumes.

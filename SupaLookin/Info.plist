@@ -19,7 +19,7 @@
 			<string>Viewer</string>
 			<key>LSItemContentTypes</key>
 			<array>
-				<string>icu.retrouvailles.supalookin.document</string>
+				<string>org.supacode.app.lookin.document</string>
 			</array>
 			<key>NSDocumentClass</key>
 			<string>$(PRODUCT_MODULE_NAME).SPLKDocument</string>
@@ -89,7 +89,7 @@
 			<key>UTTypeIconFile</key>
 			<string>lookin_icon</string>
 			<key>UTTypeIdentifier</key>
-			<string>icu.retrouvailles.supalookin.document</string>
+			<string>org.supacode.app.lookin.document</string>
 			<key>UTTypeTagSpecification</key>
 			<dict>
 				<key>public.filename-extension</key>

@@ -39,6 +39,11 @@ final class SPLKLiveViewController: NSViewController {
     private let pill = NSTextField(labelWithString: "")
     private let pillBackground = NSView()
     private let errorLabel = NSTextField(wrappingLabelWithString: "")
+    private let note = NSTextField(wrappingLabelWithString: "")
+    private let helpButton = NSButton()
+    private var availability = SPLKDeviceSession.InputAvailability.unknown
+    private var availabilitySubscription: AnyCancellable?
+    private var lockRetryTask: Task<Void, Never>?
     private let retryButton = NSButton(title: NSLocalizedString("Try Again", comment: ""), target: nil, action: nil)
     private var frameSubscription: AnyCancellable?
     private var screenTask: Task<Void, Never>?
@@ -58,6 +63,22 @@ final class SPLKLiveViewController: NSViewController {
         self.view = view
 
         view.addSubview(videoView)
+
+        note.font = .systemFont(ofSize: 11)
+        note.textColor = .secondaryLabelColor
+        note.isHidden = true
+        view.addSubview(note)
+
+        helpButton.attributedTitle = NSAttributedString(string: NSLocalizedString("Need help?", comment: ""), attributes: [
+            .font: NSFont.systemFont(ofSize: 13, weight: .medium),
+            .foregroundColor: NSColor.linkColor,
+        ])
+        helpButton.isBordered = false
+        helpButton.setButtonType(.momentaryChange)
+        helpButton.toolTip = NSLocalizedString("Operating Devices", comment: "")
+        helpButton.target = self
+        helpButton.action = #selector(showHelp)
+        view.addSubview(helpButton)
 
         pillBackground.wantsLayer = true
         pillBackground.layer?.cornerRadius = 11
@@ -98,6 +119,13 @@ final class SPLKLiveViewController: NSViewController {
         pillBackground.frame = NSRect(x: midX - pillSize.width / 2, y: pillY, width: pillSize.width, height: pillSize.height).integral
         pill.frame = NSRect(x: 10, y: (pillSize.height - pill.frame.height) / 2, width: pill.frame.width, height: pill.frame.height)
 
+        helpButton.sizeToFit()
+        helpButton.setFrameOrigin(NSPoint(x: 16, y: 9))
+        let noteX: CGFloat = helpButton.isHidden ? 16 : helpButton.frame.maxX + 12
+        let noteWidth = min(view.bounds.width - noteX - 16, 520)
+        let noteSize = note.sizeThatFits(NSSize(width: noteWidth, height: .greatestFiniteMagnitude))
+        note.frame = NSRect(x: noteX, y: 12, width: noteWidth, height: noteSize.height)
+
         let errorWidth = min(view.bounds.width - 80, 420)
         let errorSize = errorLabel.sizeThatFits(NSSize(width: errorWidth, height: .greatestFiniteMagnitude))
         errorLabel.frame = NSRect(x: (view.bounds.width - errorWidth) / 2, y: view.bounds.midY, width: errorWidth, height: errorSize.height)
@@ -109,11 +137,12 @@ final class SPLKLiveViewController: NSViewController {
         switch mode {
         case .inspect, .liveControl:
             pill.stringValue = NSLocalizedString("Live Control", comment: "")
-            videoView.isInputEnabled = mode == .liveControl
+            videoView.isInputEnabled = mode == .liveControl && availability.acceptsInput
         case .takeover(let label):
             pill.stringValue = String(format: NSLocalizedString("%@ is controlling the app", comment: ""), label)
             videoView.isInputEnabled = false
         }
+        helpButton.isHidden = mode != .liveControl
         if mode == .liveControl {
             view.window?.makeFirstResponder(videoView)
         }
@@ -152,8 +181,11 @@ final class SPLKLiveViewController: NSViewController {
             } catch {}
         }
 
-        // Connects host-side input now, so the first touch doesn't wait for it.
-        Task { _ = await session.hostInputAvailable() }
+        // Settles what input the session takes now, so the first touch doesn't wait for it.
+        availabilitySubscription = session.inputAvailability.removeDuplicates().sink { [weak self] availability in
+            self?.availabilityDidChange(availability)
+        }
+        Task { await session.refreshInputAvailability() }
 
         // One consumer keeps input in the order the user made it.
         let (stream, continuation) = AsyncStream.makeStream(of: [SPLKV2InputEvent].self)
@@ -186,6 +218,11 @@ final class SPLKLiveViewController: NSViewController {
         inputTask = nil
         videoView.clear()
         showError(nil)
+        availabilitySubscription = nil
+        lockRetryTask?.cancel()
+        lockRetryTask = nil
+        availability = .unknown
+        note.isHidden = true
         session = nil
     }
 
@@ -222,11 +259,50 @@ final class SPLKLiveViewController: NSViewController {
     }
 
     func shake() {
-        guard mode == .liveControl else { return }
+        guard mode == .liveControl, availability.acceptsInput else { return }
         input?.yield([SPLKLiveInputMapper.shake()])
     }
 
-    func press(_ button: SPLKSimulatorHIDInput.Button) {
+    private func availabilityDidChange(_ availability: SPLKDeviceSession.InputAvailability) {
+        self.availability = availability
+        updateMode()
+        if case .watchOnly(let reason) = availability {
+            note.stringValue = Self.note(for: reason)
+            note.isHidden = false
+        } else {
+            note.isHidden = true
+        }
+        // The helper can't announce an unlock to a client it refused, so a locked device is asked again.
+        lockRetryTask?.cancel()
+        lockRetryTask = nil
+        if availability == .watchOnly(.locked), let session {
+            lockRetryTask = Task { [weak session] in
+                while !Task.isCancelled {
+                    try? await Task.sleep(for: .seconds(3))
+                    guard !Task.isCancelled, let session, session.inputAvailability.value == .watchOnly(.locked) else { return }
+                    await session.refreshInputAvailability()
+                }
+            }
+        }
+        view.needsLayout = true
+    }
+
+    @objc private func showHelp() {
+        presentAsSheet(SPLKControlHelpViewController(session: session))
+    }
+
+    static func note(for reason: SPLKDeviceSession.WatchOnlyReason) -> String {
+        switch reason {
+        case .comingSoon:
+            return NSLocalizedString("Operating devices on iOS 27 or later is coming soon. This device can only be watched.", comment: "")
+        case .needsJailbreak:
+            return NSLocalizedString("Operating this device needs a jailbreak and the SupaLookin helper. This device can only be watched.", comment: "")
+        case .locked:
+            return NSLocalizedString("Unlock the device to operate it.", comment: "")
+        }
+    }
+
+    func press(_ button: SPLKHostButton) {
         guard mode == .liveControl, let session else { return }
         Task { [weak self] in
             do {

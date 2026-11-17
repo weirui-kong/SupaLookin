@@ -13,7 +13,7 @@ import SPLKServer
 
 final class SPLKDocument: NSDocument {
 
-    static let typeIdentifier = "icu.retrouvailles.supalookin.document"
+    static let typeIdentifier = "org.supacode.app.lookin.document"
     static let fileExtension = "supalookin"
 
     // NSDocument may call read(from:ofType:) off the main actor

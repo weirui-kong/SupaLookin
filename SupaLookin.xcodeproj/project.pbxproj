@@ -47,7 +47,7 @@
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		5316FB5CB7C97BA1A264EE72 /* SupaLookinTests */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = SupaLookinTests; sourceTree = "<group>"; };
-		DFDD3CF1D428457C2BCA30F1 /* SupaLookin */ = {isa = PBXFileSystemSynchronizedRootGroup; exceptions = (9DFA0439A169BAAB7AF391C0 /* PBXFileSystemSynchronizedBuildFileExceptionSet */, ); explicitFileTypes = {}; explicitFolders = (); path = SupaLookin; sourceTree = "<group>"; };
+		DFDD3CF1D428457C2BCA30F1 /* SupaLookin */ = {isa = PBXFileSystemSynchronizedRootGroup; exceptions = (9DFA0439A169BAAB7AF391C0 /* PBXFileSystemSynchronizedBuildFileExceptionSet */, ); explicitFileTypes = {Live/Resources/org.supacode.app.lookin.splkhid.deb = file; }; explicitFolders = (); path = SupaLookin; sourceTree = "<group>"; };
 /* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -256,9 +256,13 @@
 					"$(inherited)",
 					"@executable_path/../Frameworks",
 				);
+				LIBRARY_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(PROJECT_DIR)/SupaLookin/Live/Resources",
+				);
 				MACOSX_DEPLOYMENT_TARGET = 14.0;
 				MARKETING_VERSION = 1.0.16;
-				PRODUCT_BUNDLE_IDENTIFIER = icu.retrouvailles.supalookin;
+				PRODUCT_BUNDLE_IDENTIFIER = org.supacode.app.lookin;
 				PRODUCT_MODULE_NAME = SupaLookin;
 				PRODUCT_NAME = "Supa Lookin";
 				PROVISIONING_PROFILE_SPECIFIER = "";
@@ -404,9 +408,13 @@
 					"$(inherited)",
 					"@executable_path/../Frameworks",
 				);
+				LIBRARY_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(PROJECT_DIR)/SupaLookin/Live/Resources",
+				);
 				MACOSX_DEPLOYMENT_TARGET = 14.0;
 				MARKETING_VERSION = 1.0.16;
-				PRODUCT_BUNDLE_IDENTIFIER = icu.retrouvailles.supalookin;
+				PRODUCT_BUNDLE_IDENTIFIER = org.supacode.app.lookin;
 				PRODUCT_MODULE_NAME = SupaLookin;
 				PRODUCT_NAME = "Supa Lookin";
 				PROVISIONING_PROFILE_SPECIFIER = "";
@@ -426,7 +434,7 @@
 				GENERATE_INFOPLIST_FILE = YES;
 				MACOSX_DEPLOYMENT_TARGET = 14.0;
 				MARKETING_VERSION = 1.0.16;
-				PRODUCT_BUNDLE_IDENTIFIER = icu.retrouvailles.supalookin.tests;
+				PRODUCT_BUNDLE_IDENTIFIER = org.supacode.app.lookin.tests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = macosx;
 				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
@@ -445,7 +453,7 @@
 				GENERATE_INFOPLIST_FILE = YES;
 				MACOSX_DEPLOYMENT_TARGET = 14.0;
 				MARKETING_VERSION = 1.0.16;
-				PRODUCT_BUNDLE_IDENTIFIER = icu.retrouvailles.supalookin.tests;
+				PRODUCT_BUNDLE_IDENTIFIER = org.supacode.app.lookin.tests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = macosx;
 				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;

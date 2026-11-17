@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import Combine
 import SPLKProtocol
 import SPLKModelBridge
 import SPLKServer
@@ -15,11 +16,14 @@ final class SPLKDeviceSession: SPLKControlChannel {
 
     let client: SPLKClientSession
     let target: SPLKVideoTarget
+    // The usbmux device the session runs over, for reaching the device's other services.
+    let usbDeviceID: NSNumber?
     private(set) lazy var arbiter = SPLKControlArbiter(channel: self)
 
-    init(client: SPLKClientSession, target: SPLKVideoTarget) {
+    init(client: SPLKClientSession, target: SPLKVideoTarget, usbDeviceID: NSNumber? = nil) {
         self.client = client
         self.target = target
+        self.usbDeviceID = usbDeviceID
     }
 
     // The Mac-side capture of this app's screen, shared by Live Control and agents.
@@ -192,63 +196,122 @@ final class SPLKDeviceSession: SPLKControlChannel {
         case host, device
     }
 
-    // dtuhidd input into this app's simulator, when the Xcode has it.
-    private(set) lazy var simulatorInput: SPLKSimulatorHIDInput? = {
-        guard case .simulator(let udid) = target, SPLKSimulatorHIDInput.isSupported else { return nil }
-        return SPLKSimulatorHIDInput(udid: udid)
-    }()
-
-    private var hostInputConnected: Bool?
-
-    // Whether touches can go host-side; connects on first use and remembers a failure for the session.
-    func hostInputAvailable() async -> Bool {
-        if let hostInputConnected {
-            return hostInputConnected
-        }
-        guard let simulatorInput else {
-            hostInputConnected = false
-            return false
-        }
-        do {
-            try await simulatorInput.connect()
-            hostInputConnected = true
-        } catch {
-            NSLog("SupaLookin - host-side input unavailable: %@", String(describing: error))
-            hostInputConnected = false
-        }
-        return hostInputConnected ?? false
+    // Why a device can only be watched; see spec/20261118-protocol-v2-m12-jailbreak-input.md.
+    enum WatchOnlyReason: Equatable {
+        case comingSoon
+        case needsJailbreak
+        case locked
     }
 
-    // Touches go into the simulator itself when they can, so they reach the keyboard and system UI;
+    enum InputAvailability: Equatable {
+        case unknown
+        // Touches and buttons reach the whole simulator or device.
+        case host
+        // Input reaches the inspected app only: simulators without dtuhidd.
+        case app
+        case watchOnly(WatchOnlyReason)
+
+        var acceptsInput: Bool {
+            self == .host || self == .app
+        }
+    }
+
+    let inputAvailability = CurrentValueSubject<InputAvailability, Never>(.unknown)
+    // Why host-side input last failed to connect, for the help panel's check.
+    private(set) var hostInputError: Error?
+
+    // dtuhidd in this app's simulator, or splkhidd on this app's jailbroken device.
+    private(set) lazy var hostInput: SPLKHostInput? = {
+        switch target {
+        case .simulator(let udid):
+            return SPLKSimulatorHIDInput.isSupported ? SPLKSimulatorHIDInput(udid: udid) : nil
+        case .usbDevice(let serialNumber):
+            guard let serialNumber, let usbDeviceID else { return nil }
+            return SPLKJailbreakHIDInput(udid: serialNumber, deviceID: usbDeviceID) { [weak self] locked in
+                Task { @MainActor in
+                    self?.inputAvailability.send(locked ? .watchOnly(.locked) : .host)
+                }
+            }
+        }
+    }()
+
+    private var isUSBDevice: Bool {
+        if case .usbDevice = target { return true }
+        return false
+    }
+
+    // Connects host-side input and settles what input this session takes. A simulator falls back to input inside the
+    // app; a device without its helper, or locked, can only be watched.
+    @discardableResult
+    func refreshInputAvailability() async -> InputAvailability {
+        var availability: InputAvailability
+        do {
+            guard let hostInput else { throw SPLKJailbreakHIDInput.Refusal.unreachable }
+            try await hostInput.connect()
+            availability = .host
+            hostInputError = nil
+        } catch {
+            NSLog("SupaLookin - host-side input unavailable: %@", String(describing: error))
+            hostInputError = error
+            if !isUSBDevice {
+                availability = .app
+            } else if (error as? SPLKJailbreakHIDInput.Refusal) == .locked {
+                availability = .watchOnly(.locked)
+            } else {
+                availability = .watchOnly(client.serverHello.app.osMainVersion >= 27 ? .comingSoon : .needsJailbreak)
+            }
+        }
+        inputAvailability.send(availability)
+        return availability
+    }
+
+    private func currentAvailability() async -> InputAvailability {
+        let availability = inputAvailability.value
+        return availability == .unknown ? await refreshInputAvailability() : availability
+    }
+
+    static var watchOnlyError: Error {
+        SPLKError.make(NSLocalizedString("This device can only be watched.", comment: ""), NSLocalizedString("Operating it needs a simulator, iOS 27 or later (coming soon), or a jailbroken device with the SupaLookin helper, unlocked.", comment: ""))
+    }
+
+    // Touches go into the simulator or device itself when they can, so they reach the keyboard and system UI;
     // text, keys and shakes always go to the app.
     @discardableResult
     func deliverInput(_ events: [SPLKV2InputEvent], as actor: SPLKControlArbiter.Actor = .window, screen: SPLKV2ScreenInfo) async throws -> InputBackend {
         let touches = events.filter { if case .touch = $0.kind { return true } else { return false } }
         let others = events.filter { if case .touch = $0.kind { return false } else { return true } }
-        guard !touches.isEmpty, await hostInputAvailable(), let simulatorInput else {
+        switch await currentAvailability() {
+        case .watchOnly, .unknown:
+            throw Self.watchOnlyError
+        case .app:
             try await injectInput(events, as: actor)
             return .device
+        case .host:
+            guard let hostInput, !touches.isEmpty else {
+                try await injectInput(events, as: actor)
+                return .device
+            }
+            try checkHostInput(as: actor)
+            do {
+                try await hostInput.send(touches, orientation: screen.orientation)
+            } catch {
+                // Settle afresh, with every retry, before the next input.
+                inputAvailability.send(.unknown)
+                throw error
+            }
+            if !others.isEmpty {
+                try await injectInput(others, as: actor)
+            }
+            return .host
         }
-        try checkHostInput(as: actor)
-        do {
-            try await simulatorInput.send(touches, orientation: screen.orientation)
-        } catch {
-            // Connect afresh, with every retry, before the next input.
-            hostInputConnected = nil
-            throw error
-        }
-        if !others.isEmpty {
-            try await injectInput(others, as: actor)
-        }
-        return .host
     }
 
-    func press(_ button: SPLKSimulatorHIDInput.Button, as actor: SPLKControlArbiter.Actor = .window) async throws {
-        guard await hostInputAvailable(), let simulatorInput else {
-            throw SPLKError.make(NSLocalizedString("Buttons need a simulator.", comment: ""), NSLocalizedString("Home and Lock are pressed through Xcode's simulator, so they don't work on USB devices.", comment: ""))
+    func press(_ button: SPLKHostButton, as actor: SPLKControlArbiter.Actor = .window) async throws {
+        guard await currentAvailability() == .host, let hostInput else {
+            throw isUSBDevice ? Self.watchOnlyError : SPLKError.make(NSLocalizedString("Buttons need Xcode 27 or later.", comment: ""), NSLocalizedString("Home and Lock are pressed through the simulator's HID daemon.", comment: ""))
         }
         try checkHostInput(as: actor)
-        try await simulatorInput.press(button)
+        try await hostInput.press(button)
     }
 
     // Host-side input never reaches the phone's lease check, so the arbiter decides here.

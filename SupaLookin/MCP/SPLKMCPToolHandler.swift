@@ -205,14 +205,14 @@ enum SPLKMCPToolHandler {
         var result = actionResult(try await session.waitForIdle(timeout: 2), agent: agent)
         if name == "tap_at" {
             // Host-side taps reach the keyboard and system UI too; device-side ones only the app.
-            result["input"] = backend == .host ? "simulator" : "app"
+            result["input"] = backend == .host ? "system" : "app"
         }
         return result
     }
 
     private static func pressButton(_ arguments: [String: Value], agent: String) async throws -> [String: Any] {
         let session = try controlledSession(agent: agent)
-        let button: SPLKSimulatorHIDInput.Button
+        let button: SPLKHostButton
         switch arguments["button"]?.stringValue {
         case "home": button = .home
         case "lock": button = .lock

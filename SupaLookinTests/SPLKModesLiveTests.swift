@@ -110,7 +110,7 @@ struct SPLKModesLiveTests {
         #expect(try await counter("buttonTaps", session: session, controllerOid: controllerOid) == tapsBefore + 1)
 
         // On a simulator the click goes through dtuhidd, so the software keyboard's keys can be clicked too.
-        if await session.hostInputAvailable(), screen == CGSize(width: 466, height: 678) {
+        if await session.refreshInputAvailability() == .host, screen == CGSize(width: 466, height: 678) {
             let textView = try #require(dataSource.flatItems.first { $0.viewObject?.classChainList?.first == "UITextView" })
             click(textView, screen: screen, in: videoView)
             try await Task.sleep(for: .seconds(1.5))
@@ -121,7 +121,8 @@ struct SPLKModesLiveTests {
             clickVideo(at: point, in: videoView)
             try await Task.sleep(for: .seconds(1))
             let after = try await session.invoke(oid: UInt(textView.viewObject!.oid), text: "text")?["description"] as? String ?? ""
-            #expect(after == before + "m")
+            // Focusing can select a word, which the key then replaces, so only the typed letter is certain.
+            #expect(after != before && after.hasSuffix("m"))
         }
 
         let shakesBefore = try await counter("shakes", session: session, controllerOid: controllerOid)

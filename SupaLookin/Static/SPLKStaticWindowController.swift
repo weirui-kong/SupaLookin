@@ -38,6 +38,15 @@ final class SPLKStaticWindowController: SPLKWindowController, NSToolbarDelegate,
     private let modeItem = SPLKModeToolbarItem()
     private weak var modeSession: SPLKDeviceSession?
     private var arbiterSubscription: AnyCancellable?
+    // Set when the app drops out of Live Control. A device's first screen capture makes it re-attach over USB, which
+    // drops the app; Live Control comes back if the app reconnects by itself before this.
+    private var resumeLiveControlDeadline: Date?
+    private weak var resumeLiveControlSession: SPLKDeviceSession?
+    private var liveControlStartDate: Date?
+    // A drop this soon after Live Control starts is the device re-attaching for screen capture, so it's expected.
+    private static let expectedDropWindow: TimeInterval = 15
+    private var reconnectToast: SPLKToast?
+    private static let resumeLiveControlWindow: TimeInterval = 30
 
     private var isShowingVideo: Bool {
         viewController.modeTransition.displayedMode.showsVideo
@@ -117,10 +126,29 @@ final class SPLKStaticWindowController: SPLKWindowController, NSToolbarDelegate,
                 self?.inspectingSessionDidChange(app?.session)
             }
             .store(in: &cancellables)
+        SPLKAppsManager.sharedInstance.didAutoReconnectSucc
+            .sink { [weak self] _ in
+                self?.resumeLiveControlIfNeeded()
+            }
+            .store(in: &cancellables)
     }
 
     private func inspectingSessionDidChange(_ session: SPLKDeviceSession?) {
         guard session !== modeSession else { return }
+        if session == nil, modeSession != nil, viewController.modeTransition.displayedMode == .liveControl {
+            resumeLiveControlDeadline = Date().addingTimeInterval(Self.resumeLiveControlWindow)
+            if let start = liveControlStartDate, Date().timeIntervalSince(start) < Self.expectedDropWindow {
+                reconnectToast = SPLKToast.show(NSLocalizedString("Switching the device to screen capture…", comment: ""), detail: NSLocalizedString("The device reconnects the first time its screen is captured. Live Control comes back by itself.", comment: ""), in: window, duration: Self.resumeLiveControlWindow)
+            }
+        } else if let session {
+            // Resumes only if this is the app's own reconnect, which didAutoReconnectSucc then confirms.
+            resumeLiveControlSession = (resumeLiveControlDeadline.map { Date() < $0 } ?? false) ? session : nil
+            resumeLiveControlDeadline = nil
+            if resumeLiveControlSession == nil {
+                reconnectToast?.dismiss()
+                reconnectToast = nil
+            }
+        }
         if modeSession != nil, viewController.modeTransition.displayedMode.showsVideo {
             // The app went away or was replaced; there's nothing to animate back from.
             viewController.modeTransition.show(.inspect, session: nil, animated: false)
@@ -134,7 +162,17 @@ final class SPLKStaticWindowController: SPLKWindowController, NSToolbarDelegate,
         updateModeItem()
     }
 
+    private func resumeLiveControlIfNeeded() {
+        guard let session = resumeLiveControlSession, session === modeSession else { return }
+        resumeLiveControlSession = nil
+        reconnectToast?.dismiss()
+        reconnectToast = nil
+        guard session.arbiter.mode == .inspect else { return }
+        select(.liveControl)
+    }
+
     private func arbiterModeDidChange(_ mode: SPLKWindowMode, session: SPLKDeviceSession?) {
+        liveControlStartDate = mode == .liveControl ? Date() : nil
         viewController.modeTransition.show(mode, session: session, animated: true)
         updateModeItem()
     }
@@ -472,9 +510,14 @@ final class SPLKStaticWindowController: SPLKWindowController, NSToolbarDelegate,
         case .inspect:
             actions.formUnion([.inspectMode, .liveControlMode])
         case .liveControl:
-            actions.formUnion([.inspectMode, .liveControlMode, .shake])
-            if modeSession?.simulatorInput != nil {
-                actions.formUnion([.home, .lock])
+            actions.formUnion([.inspectMode, .liveControlMode])
+            switch modeSession?.inputAvailability.value {
+            case .host:
+                actions.formUnion([.shake, .home, .lock])
+            case .app:
+                actions.insert(.shake)
+            default:
+                break
             }
         case .takeover:
             actions.insert(.endTakeover)

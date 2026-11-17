@@ -84,11 +84,11 @@ nonisolated enum SPLKMCPTools {
         tool("go_back", "Pops the navigation stack the item belongs to, or dismisses its presented screen. Without oid, starts from the key window's root view.", [
             "oid": integer("An item on the screen to go back from."),
         ], readOnly: false),
-        tool("tap_at", "Taps a point of the screen, given as fractions of its width and height from the top left. On a simulator the tap goes through the simulator itself, so it also reaches the software keyboard, system alerts and the home screen.", [
+        tool("tap_at", "Taps a point of the screen, given as fractions of its width and height from the top left. On a simulator, or a jailbroken device with the SupaLookin helper, the tap goes through the system itself, so it also reaches the software keyboard, system alerts and the home screen. Other devices can only be watched.", [
             "x": number("0 is the left edge, 1 the right edge."),
             "y": number("0 is the top edge, 1 the bottom edge."),
         ], required: ["x", "y"], readOnly: false),
-        tool("press_button", "Presses the simulator's Home or Lock button. Works on simulators only.", [
+        tool("press_button", "Presses the Home or Lock button, on a simulator or a jailbroken device with the SupaLookin helper.", [
             "button": ["type": "string", "enum": ["home", "lock"], "description": "The button to press."],
         ], required: ["button"], readOnly: false),
         tool("type_text", "Types text into the focused text input.", [

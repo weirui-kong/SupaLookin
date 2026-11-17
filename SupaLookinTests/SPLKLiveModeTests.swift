@@ -5,7 +5,7 @@
 //  Created by Weirui Kong on 2026/11/10.
 //
 
-import Foundation
+import Cocoa
 import Testing
 import SPLKProtocol
 @testable import SupaLookin
@@ -218,5 +218,138 @@ struct SPLKDigitizerTranslatorTests {
         #expect(!SPLKSimulatorHIDInput.isSupported(version: "1155.3.9"))
         #expect(SPLKSimulatorHIDInput.isSupported(version: "1155.4"))
         #expect(SPLKSimulatorHIDInput.isSupported(version: "1174.21"))
+    }
+}
+
+struct SPLKTouchFrameEncoderTests {
+
+    private func touch(_ id: UInt32, _ phase: SPLKV2Touch.Phase, _ x: Double, _ y: Double) -> SPLKV2InputEvent {
+        var event = SPLKV2InputEvent()
+        event.touch.touchID = id
+        event.touch.phase = phase
+        event.touch.location.x = x
+        event.touch.location.y = y
+        return event
+    }
+
+    private func lines(_ encoder: inout SPLKTouchFrameEncoder, _ events: [SPLKV2InputEvent]) -> [String] {
+        encoder.frames(for: events).map(SPLKTouchFrameEncoder.line(for:))
+    }
+
+    @Test func oneFingerDownMovesAndLifts() {
+        var encoder = SPLKTouchFrameEncoder()
+        #expect(lines(&encoder, [touch(7, .began, 0.1, 0.2)]) == ["T 0:0.10000:0.20000:1"])
+        #expect(lines(&encoder, [touch(7, .moved, 0.3, 0.4)]) == ["T 0:0.30000:0.40000:1"])
+        #expect(lines(&encoder, [touch(7, .moved, 0.5, 0.5), touch(7, .ended, 0.5, 0.5)]) == ["T 0:0.50000:0.50000:1", "T 0:0.50000:0.50000:0"])
+    }
+
+    @Test func fingersKeepTheirIdentities() {
+        var encoder = SPLKTouchFrameEncoder()
+        #expect(lines(&encoder, [touch(1, .began, 0.4, 0.5), touch(2, .began, 0.6, 0.5)]) == ["T 0:0.40000:0.50000:1 1:0.60000:0.50000:1"])
+        // A lifting finger is in its last frame alongside the one still down.
+        #expect(lines(&encoder, [touch(1, .ended, 0.4, 0.5)]) == ["T 0:0.40000:0.50000:0 1:0.60000:0.50000:1"])
+        // A new finger takes the identity freed by the lift.
+        #expect(lines(&encoder, [touch(3, .began, 0.2, 0.2)]) == ["T 0:0.20000:0.20000:1 1:0.60000:0.50000:1"])
+    }
+
+    @Test func cancelLiftsAndUnknownFingersAreIgnored() {
+        var encoder = SPLKTouchFrameEncoder()
+        #expect(lines(&encoder, [touch(9, .moved, 0.5, 0.5)]).isEmpty)
+        _ = lines(&encoder, [touch(1, .began, 0.2, 0.2)])
+        #expect(lines(&encoder, [touch(1, .cancelled, 0.2, 0.2)]) == ["T 0:0.20000:0.20000:0"])
+        var text = SPLKV2InputEvent()
+        text.text.text = "a"
+        #expect(lines(&encoder, [text]).isEmpty)
+    }
+
+    @Test func pointsAreTransformedAndClamped() {
+        var encoder = SPLKTouchFrameEncoder()
+        let frames = encoder.frames(for: [touch(1, .began, 0.25, 0.1)]) { SPLKDigitizerTranslator.nativePoint($0, orientation: .landscapeLeft) }
+        #expect(frames.map(SPLKTouchFrameEncoder.line(for:)) == ["T 0:0.10000:0.75000:1"])
+        #expect(SPLKTouchFrameEncoder.line(for: [.init(identity: 0, point: CGPoint(x: 1.2, y: -0.1), isDown: true)]) == "T 0:1.00000:0.00000:1")
+    }
+
+    @Test func liftAllReleasesEveryFinger() {
+        var encoder = SPLKTouchFrameEncoder()
+        _ = lines(&encoder, [touch(1, .began, 0.4, 0.5), touch(2, .began, 0.6, 0.5)])
+        #expect(SPLKTouchFrameEncoder.line(for: encoder.liftAll()) == "T 0:0.40000:0.50000:0 1:0.60000:0.50000:0")
+        #expect(encoder.liftAll().isEmpty)
+    }
+
+    @Test func buttonLines() {
+        let home = SPLKHostButton.home, lock = SPLKHostButton.lock
+        #expect(SPLKTouchFrameEncoder.buttonLine(page: home.usagePage, usage: home.usage, holdMilliseconds: home.holdMilliseconds) == "B c 40 80")
+        #expect(SPLKTouchFrameEncoder.buttonLine(page: lock.usagePage, usage: lock.usage, holdMilliseconds: lock.holdMilliseconds) == "B c 30 100")
+    }
+
+    @Test func watchOnlyNotesSayWhy() {
+        let notes = [SPLKDeviceSession.WatchOnlyReason.comingSoon, .needsJailbreak, .locked].map(SPLKLiveViewController.note(for:))
+        #expect(Set(notes).count == 3)
+        #expect(notes.allSatisfy { !$0.isEmpty })
+        #expect(!SPLKDeviceSession.InputAvailability.watchOnly(.locked).acceptsInput)
+        #expect(SPLKDeviceSession.InputAvailability.app.acceptsInput)
+    }
+}
+
+struct SPLKControlHelpTests {
+
+    private typealias Help = SPLKControlHelpViewController
+
+    @Test func checkResultsSayWhatWasFound() {
+        #expect(Help.checkResult(.host, isUSBDevice: true, error: nil).contains("Helper"))
+        #expect(Help.checkResult(.host, isUSBDevice: false, error: nil).contains("simulator"))
+        #expect(Help.checkResult(.app, isUSBDevice: false, error: nil).contains("Xcode 27"))
+        #expect(Help.checkResult(.watchOnly(.locked), isUSBDevice: true, error: nil).contains("Unlock"))
+        #expect(Help.checkResult(.watchOnly(.comingSoon), isUSBDevice: true, error: nil).contains("iOS 27"))
+        #expect(Help.checkResult(.watchOnly(.needsJailbreak), isUSBDevice: true, error: SPLKJailbreakHIDInput.Refusal.unreachable).contains("wasn't found"))
+        #expect(Help.checkResult(.watchOnly(.needsJailbreak), isUSBDevice: true, error: SPLKJailbreakHIDInput.Refusal(reason: "no-touchscreen")).contains("no-touchscreen"))
+        #expect(Help.checkResult(.watchOnly(.needsJailbreak), isUSBDevice: true, error: SPLKVideoError("This Mac isn't paired with the device.")) == "This Mac isn't paired with the device.")
+    }
+
+    @Test func supportTableCoversEveryTarget() {
+        #expect(Help.supportRows.count == 5)
+        #expect(Help.supportRows.map(\.support) == [.full, .partial, .none, .full, .none])
+        #expect(Help.installCommand.hasSuffix("/var/mobile/Media/SupaLookin/org.supacode.app.lookin.splkhid.deb"))
+        #expect(Bundle(for: SPLKDeviceSession.self).url(forResource: Help.packageName, withExtension: "deb") != nil || Bundle.main.url(forResource: Help.packageName, withExtension: "deb") != nil)
+    }
+
+    // Writes the panel as a PNG to TEST_RUNNER_SPLK_SNAPSHOT_OUT, to look at its layout.
+    @Test(.enabled(if: ProcessInfo.processInfo.environment["SPLK_SNAPSHOT_OUT"] != nil))
+    func snapshot() throws {
+        let controller = Help(session: nil)
+        let view = controller.view
+        view.appearance = NSAppearance(named: .aqua)
+        view.layoutSubtreeIfNeeded()
+        view.setFrameSize(view.fittingSize)
+        view.layoutSubtreeIfNeeded()
+        let rep = try #require(view.bitmapImageRepForCachingDisplay(in: view.bounds))
+        view.cacheDisplay(in: view.bounds, to: rep)
+        try rep.representation(using: .png, properties: [:])?.write(to: URL(fileURLWithPath: ProcessInfo.processInfo.environment["SPLK_SNAPSHOT_OUT"]!))
+    }
+}
+
+@MainActor
+struct SPLKToastTests {
+
+    private func toastViews(in window: NSWindow) -> [NSView] {
+        window.contentView?.subviews.filter { String(describing: type(of: $0)).contains("Toast") } ?? []
+    }
+
+    @Test func showsOnePerWindowAndGoesAway() async throws {
+        let window = NSWindow(contentRect: NSRect(x: 0, y: 0, width: 600, height: 400), styleMask: [.titled], backing: .buffered, defer: false)
+        window.contentView = NSView()
+        let first = try #require(SPLKToast.show("First", in: window, duration: nil))
+        #expect(toastViews(in: window).count == 1)
+
+        SPLKToast.show("Second", detail: "Detail", style: .warning, in: window, duration: nil)
+        try await Task.sleep(for: .milliseconds(500))
+        #expect(toastViews(in: window).count == 1)
+        first.dismiss()
+
+        let third = try #require(SPLKToast.show("Third", style: .success, in: window, duration: 0.1))
+        _ = third
+        try await Task.sleep(for: .milliseconds(800))
+        #expect(toastViews(in: window).isEmpty)
+        #expect(SPLKToast.show("No window", in: nil) == nil)
     }
 }

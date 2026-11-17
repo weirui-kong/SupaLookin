@@ -67,3 +67,11 @@ This spec sets how far Supa Lookin lets a person or an agent operate a simulator
 
 - Element-targeted taps on devices, from the element frames of `remoteAXService` (iOS 27).
 - `hierarchy.diff`, in-app video and Wi-Fi discovery, from `20261109-protocol-v2.md`.
+
+## Update: M12 before M10 (see `20261118-protocol-v2-m12-jailbreak-input.md`)
+
+- **Order**: M12, jailbroken devices, comes next. A jailbroken iPhone 14 (iOS 16.1, Dopamine) is available to verify it.
+- **M10 is on hold.** Devices on iOS 27 or later stay watch-only, and the note says operating them is coming soon. M10's transport is unsettled:
+  - Supa Lookin's own RSD connection is evicted by `remoted` within seconds, and the device closes its services once that connection goes;
+  - CoreDevice's service socket can only be reached through private Swift API.
+- **Note wording** for watch-only devices is set in M12's spec.

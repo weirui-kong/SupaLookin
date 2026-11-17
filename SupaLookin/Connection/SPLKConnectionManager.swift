@@ -73,7 +73,8 @@ final class SPLKConnectionManager {
             }
             switch await attempt?.value {
             case .client(let client):
-                let session = SPLKDeviceSession(client: client, target: videoTarget(for: port, client: client))
+                let usbDeviceID: NSNumber? = if case .usb(let deviceID, _) = port { deviceID } else { nil }
+                let session = SPLKDeviceSession(client: client, target: videoTarget(for: port, client: client), usbDeviceID: usbDeviceID)
                 sessions[port] = session
                 Task {
                     await session.waitUntilClosed()

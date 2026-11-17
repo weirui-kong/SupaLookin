@@ -66,8 +66,8 @@ Get the token from the command that **Copy Command** copies. The snippets below 
 | What | How |
 |---|---|
 | Turn the server on or off | **Preferences › MCP Server**. It is on by default. |
-| Change the port | `defaults write icu.retrouvailles.supalookin mcpPort -int 47201`, then turn the server off and on again in Preferences. The default port is 47200. |
-| Create a new token | Quit Supa Lookin, run `defaults delete icu.retrouvailles.supalookin mcpToken`, and open Supa Lookin again. Clients that used the old token must be updated. |
+| Change the port | `defaults write org.supacode.app.lookin mcpPort -int 47201`, then turn the server off and on again in Preferences. The default port is 47200. |
+| Create a new token | Quit Supa Lookin, run `defaults delete org.supacode.app.lookin mcpToken`, and open Supa Lookin again. Clients that used the old token must be updated. |
 
 The default port is chosen to stay clear of the ports SPLKServer uses (47264–47269 for simulators, 47275–47279 for USB devices).
 
@@ -276,8 +276,8 @@ An agent must take over the app before changing it. Only one agent can hold take
 | `scroll_to_visible` | `oid` | Scrolls the item into view |
 | `swipe` | `oid`, `dx`, `dy` | Drags one finger from the item's center by points |
 | `go_back` | `oid` (optional) | Pops the navigation stack, or dismisses the presented screen |
-| `tap_at` | `x`, `y` | Taps a point given as fractions of the screen, 0–1 from the top left. On a simulator the tap goes through the simulator itself, so it also reaches the software keyboard, system alerts and the home screen; the result's `input` is `simulator`, or `app` when only the app could be reached |
-| `press_button` | `button`: `home` or `lock` | Presses the simulator's Home or Lock button. Simulators only (Xcode 27 or later) |
+| `tap_at` | `x`, `y` | Taps a point given as fractions of the screen, 0–1 from the top left. On a simulator (Xcode 27 or later) or a jailbroken device with the SupaLookin helper, the tap goes through the system itself, so it also reaches the software keyboard, system alerts and the home screen; the result's `input` is `system`. On other simulators it reaches the app only (`input` is `app`), and other devices can only be watched, so it fails there |
+| `press_button` | `button`: `home` or `lock` | Presses Home or Lock, on a simulator (Xcode 27 or later) or a jailbroken device with the SupaLookin helper |
 | `type_text` | `text` | Types into the focused text input |
 
 Every write tool renews takeover and returns once the UI settles:
@@ -310,14 +310,14 @@ At the HTTP level:
 - The server listens on `127.0.0.1` only and can't be reached from other machines.
 - Every request needs the bearer token. Any program running on your Mac can reach a local port, so the token is what keeps other software out.
 - Requests whose `Origin` or `Host` header isn't `localhost` or `127.0.0.1` are rejected, which protects against DNS rebinding. Web pages served from localhost pass this check, so the token is what stops them.
-- The token is stored in Supa Lookin's preferences (`~/Library/Preferences/icu.retrouvailles.supalookin.plist`). Treat it like a password, and create a new one if it leaks.
+- The token is stored in Supa Lookin's preferences (`~/Library/Preferences/org.supacode.app.lookin.plist`). Treat it like a password, and create a new one if it leaks.
 - Up to 16 client sessions are kept at a time. When a 17th starts, the oldest is closed.
 
 ## Troubleshooting
 
 | Symptom | What to do |
 |---|---|
-| Preferences shows *Port 47200 is unavailable.* | Another program uses the port. Pick another one with `defaults write icu.retrouvailles.supalookin mcpPort -int <port>`, turn the server off and on, and update your client's URL. |
+| Preferences shows *Port 47200 is unavailable.* | Another program uses the port. Pick another one with `defaults write org.supacode.app.lookin mcpPort -int <port>`, turn the server off and on, and update your client's URL. |
 | The client gets 401 | The token in the client doesn't match. Copy the command from Preferences again. |
 | Tools say no app is being inspected | Open Supa Lookin and pick your app. Tools work only while an app is connected and its hierarchy has loaded. |
 | The hierarchy looks out of date | Call `reload`. The tools read what Supa Lookin last loaded. |

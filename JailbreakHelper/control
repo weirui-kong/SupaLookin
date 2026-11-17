@@ -1,0 +1,9 @@
+Package: org.supacode.app.lookin.splkhid
+Name: SupaLookin Helper
+Version: 1.0.0
+Architecture: iphoneos-arm64
+Description: Lets Supa Lookin on a paired Mac operate this device over USB while it is unlocked.
+Maintainer: Weirui Kong
+Author: Weirui Kong
+Section: Development
+Depends: firmware (>= 15.0)

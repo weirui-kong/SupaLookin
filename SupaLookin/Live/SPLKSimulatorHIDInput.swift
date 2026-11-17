@@ -6,23 +6,14 @@
 //
 
 import Foundation
-import XPC
+@preconcurrency import XPC
 import SPLKProtocol
 
 // Sends touches and buttons into a simulator through dtuhidd, the HID daemon Xcode 27 runs in it (private).
 // The protocol follows facebook/idb's FBSimulatorControl/HID (MIT).
-nonisolated final class SPLKSimulatorHIDInput: @unchecked Sendable {
+nonisolated final class SPLKSimulatorHIDInput: SPLKHostInput, @unchecked Sendable {
 
-    enum Button {
-        case home, lock
-
-        var usage: (page: UInt64, code: UInt64) {
-            switch self {
-            case .home: return (0x0C, 0x40)
-            case .lock: return (0x0C, 0x30)
-            }
-        }
-    }
+    typealias Button = SPLKHostButton
 
     static let service = "com.apple.coredevice.feature.remote.hid.digitizer"
     static let barrierTimeout: TimeInterval = 4
@@ -66,7 +57,7 @@ nonisolated final class SPLKSimulatorHIDInput: @unchecked Sendable {
             for state: UInt64 in [1, 2] {
                 xpc_connection_send_message(connection, Self.button(button, state: state))
                 if state == 1 {
-                    Thread.sleep(forTimeInterval: 0.08)
+                    Thread.sleep(forTimeInterval: Double(button.holdMilliseconds) / 1000)
                 }
             }
         }
@@ -79,7 +70,7 @@ nonisolated final class SPLKSimulatorHIDInput: @unchecked Sendable {
         }
     }
 
-    private func perform(_ body: @escaping (SPLKSimulatorHIDInput) throws -> Void) async throws {
+    private func perform(_ body: @escaping @Sendable (SPLKSimulatorHIDInput) throws -> Void) async throws {
         try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<Void, Error>) in
             queue.async {
                 do {
@@ -142,10 +133,11 @@ nonisolated final class SPLKSimulatorHIDInput: @unchecked Sendable {
         // Without this the daemon sees the peer but never a payload.
         enableSim2Host(connection)
         xpc_connection_set_target_queue(connection, queue)
-        xpc_connection_set_event_handler(connection) { [weak self, weak connection] event in
+        let identifier = ObjectIdentifier(connection)
+        xpc_connection_set_event_handler(connection) { [weak self] event in
             guard xpc_get_type(event) == XPC_TYPE_ERROR else { return }
             // Called on `queue`; the next send reconnects and proves the daemon again.
-            if let self, let connection, self.connection === connection {
+            if let self, self.connection.map(ObjectIdentifier.init) == identifier {
                 self.connection = nil
             }
         }
@@ -220,8 +212,7 @@ nonisolated final class SPLKSimulatorHIDInput: @unchecked Sendable {
     }
 
     private static func button(_ button: Button, state: UInt64) -> xpc_object_t {
-        let usage = button.usage
-        return envelope("IndigoButtonEvent", payload: dictionary(["usagePage": usage.page, "usageCode": usage.code, "state": state]))
+        return envelope("IndigoButtonEvent", payload: dictionary(["usagePage": UInt64(button.usagePage), "usageCode": UInt64(button.usage), "state": state]))
     }
 }
 

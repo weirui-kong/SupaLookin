@@ -1,0 +1,4 @@
+#!/bin/sh
+set -e
+# launchd only listens on the socket; the helper itself starts when Supa Lookin connects.
+launchctl load /var/jb/Library/LaunchDaemons/org.supacode.app.lookin.splkhid.plist 2>/dev/null || true
