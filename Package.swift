@@ -29,6 +29,7 @@ let package = Package(
     ],
     products: [
         .library(name: "SPLKServer", targets: ["SPLKServer", "SPLKServerSession"]),
+        .library(name: "SPLKServerDynamic", type: .dynamic, targets: ["SPLKServer", "SPLKServerSession"]),
         .library(name: "SPLKModelBridge", targets: ["SPLKModelBridge"]),
     ],
     dependencies: [

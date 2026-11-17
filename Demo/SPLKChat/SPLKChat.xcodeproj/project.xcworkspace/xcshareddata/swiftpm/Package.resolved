@@ -1,0 +1,15 @@
+{
+  "originHash" : "8d4c8a4ee8c43c772d088e4e2dbf68f60d04cafc3b05996a29ea772c7abbccf7",
+  "pins" : [
+    {
+      "identity" : "swift-protobuf",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/apple/swift-protobuf",
+      "state" : {
+        "revision" : "fed2f76413026cb0ae90999a8c9116949dfe6aa6",
+        "version" : "1.41.0"
+      }
+    }
+  ],
+  "version" : 3
+}

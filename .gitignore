@@ -10,3 +10,7 @@ Gemfile.lock
 
 # Local-only notes, not for the public repo
 .private/
+
+# Demo apps
+Demo/**/xcuserdata/
+Demo/**/DerivedData/
