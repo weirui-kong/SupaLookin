@@ -57,6 +57,13 @@ jobs:
             DEVELOPMENT_TEAM= \
             build
 
+      - name: Build SPLKServer.xcframework
+        id: xcframework
+        run: |
+          set -euo pipefail
+          CHECKSUM=$(Scripts/build-xcframework.sh | tail -n 1)
+          echo "checksum=${CHECKSUM}" >> "$GITHUB_OUTPUT"
+
       - name: Package DMG
         id: dmg
         run: |
@@ -78,6 +85,8 @@ jobs:
           set -euo pipefail
           VERSION="${{ steps.bump.outputs.new_version }}"
           DMG_NAME="${{ steps.dmg.outputs.dmg_name }}"
+          CHECKSUM="${{ steps.xcframework.outputs.checksum }}"
+          XCFRAMEWORK_ZIP="build/xcframework/SPLKServer.xcframework.zip"
           NOTES_FILE="release-notes.md"
           cat > "$NOTES_FILE" <<EOF
           ## 安装
@@ -91,7 +100,21 @@ jobs:
           \`\`\`
 
           完成后再次打开 \`Supa Lookin.app\`。
+
+          ## SPLKServer.xcframework
+
+          SPLKServer for iOS and the iOS Simulator, prebuilt, for apps that would rather embed a binary than build the Swift package. Add \`SPLKServer.xcframework\` to your app target with **Embed & Sign**. It works in Debug builds only; keep it out of your Release builds.
+
+          With Swift Package Manager, from a package of your own:
+
+          \`\`\`swift
+          .binaryTarget(
+              name: "SPLKServer",
+              url: "https://github.com/${{ github.repository }}/releases/download/v${VERSION}/SPLKServer.xcframework.zip",
+              checksum: "${CHECKSUM}"
+          )
+          \`\`\`
           EOF
-          gh release create "v${VERSION}" "$DMG_NAME" \
+          gh release create "v${VERSION}" "$DMG_NAME" "$XCFRAMEWORK_ZIP" \
             --title "v${VERSION}" \
             --notes-file "$NOTES_FILE"

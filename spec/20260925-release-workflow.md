@@ -75,3 +75,7 @@ All dependencies now come from Swift Package Manager: local packages under `Pack
 ## Update: SPLKServer version (see `20261109-splk-server.md`)
 
 The repository also ships SPLKServer, released under the same tag as the app. The bump step sets `SPLK_SERVER_READABLE_VERSION` in `Sources/SPLKServer/include/SPLKDefines.h` to the new `MARKETING_VERSION`, fails if the replacement didn't happen, and commits that file together with the project file.
+
+## Update: SPLKServer.xcframework (see `20261118-xcframework-release.md`)
+
+After building the app, the workflow runs `Scripts/build-xcframework.sh` and attaches `SPLKServer.xcframework.zip` to the release beside the DMG. The release notes gain a section on embedding it, with a SwiftPM `binaryTarget` snippet carrying the zip's URL and checksum.
