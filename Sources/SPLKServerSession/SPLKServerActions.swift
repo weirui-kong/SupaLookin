@@ -48,7 +48,11 @@ enum SPLKServerActions {
         case .swipe:
             try await touch(view, holding: 0, moving: CGPoint(x: call.delta.x, y: call.delta.y))
         case .goBack:
-            try goBack(from: view)
+            if call.oid == 0, let controller = topViewController() {
+                try goBack(from: controller)
+            } else {
+                try goBack(from: view)
+            }
         case .unspecified, .UNRECOGNIZED:
             throw SPLKStatusError(.invalidArgument, reason: "unknown_action")
         }
@@ -159,6 +163,27 @@ enum SPLKServerActions {
         guard let controller = responder as? UIViewController else {
             throw failed("nothing_to_go_back", "No view controller owns this view.")
         }
+        try goBack(from: controller)
+    }
+
+    // The screen on top: what the key window's root presents, then each container's visible child.
+    private static func topViewController() -> UIViewController? {
+        var controller = SPLKServerRuntime.keyWindow()?.rootViewController
+        while let current = controller {
+            if let presented = current.presentedViewController {
+                controller = presented
+            } else if let tabs = current as? UITabBarController, let selected = tabs.selectedViewController {
+                controller = selected
+            } else if let navigation = current as? UINavigationController, let top = navigation.topViewController {
+                controller = top
+            } else {
+                return current
+            }
+        }
+        return nil
+    }
+
+    private static func goBack(from controller: UIViewController) throws {
         let navigation = controller as? UINavigationController ?? controller.navigationController
         if let navigation, navigation.viewControllers.count > 1 {
             navigation.popViewController(animated: true)

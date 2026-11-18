@@ -110,26 +110,45 @@ Whether an app is being inspected, and which one. Call this first.
     "bundle_id": "com.example.myapp",
     "device": "iPhone 17 Pro",
     "os": "26.1",
-    "server_version": "1.2.8"
+    "server_version": "1.2.8",
+    "app_id": "8A3F…/com.example.myapp",
+    "device_id": "8A3F…",
+    "device_kind": "simulator"
   },
   "item_count": 235,
   "selected_oid": 22
 }
 ```
 
-When no app is being inspected, it returns `{"inspecting": false, "hint": "…"}`.
+When no app is being inspected, it returns `{"inspecting": false, "hint": "…"}`. Call `list_apps` and `select_app` then.
 
 ### `list_apps`
 
 The inspectable apps found right now on simulators and USB devices, looked up the same way as the App popover in Supa Lookin's toolbar. The one being inspected has `"inspecting": true`. An app whose SPLKServer version is not supported carries an `error` instead.
 
+| Field | Meaning |
+|---|---|
+| `app_id` | `<device_id>/<bundle_id>`, which `select_app` takes |
+| `device_id` | The simulator's UDID, or the USB device's serial number (its UDID) |
+| `device_kind` | `simulator` or `device` |
+
 ```json
 {
   "apps": [
-    { "name": "MyApp", "bundle_id": "com.example.myapp", "device": "iPhone 17 Pro", "os": "26.1", "server_version": "1.2.8", "inspecting": true }
+    { "name": "MyApp", "bundle_id": "com.example.myapp", "device": "iPhone 17 Pro", "os": "26.1", "server_version": "1.2.8", "app_id": "8A3F…/com.example.myapp", "device_id": "8A3F…", "device_kind": "simulator", "inspecting": true }
   ]
 }
 ```
+
+### `select_app`
+
+Inspects an app, the same way as picking it in Supa Lookin: it fetches the app's hierarchy and shows it in the window, opening the window if only the launch window is showing. Picking the app that's already inspected reloads it.
+
+| Argument | Type | Notes |
+|---|---|---|
+| `app_id` | string | Required; from `list_apps` |
+
+It returns what `get_status` returns. It fails while another agent has taken over the inspected app.
 
 ### `get_hierarchy`
 
@@ -224,14 +243,14 @@ When the video can't be read, it falls back to a screenshot the app takes of its
 
 ### `search`
 
-Items whose class name, title or memory address contains the query, ignoring case and whitespace, the same way as the search field in Supa Lookin's hierarchy panel.
+Items whose class name, title or memory address contains the query, ignoring case and whitespace, the same way as the search field in Supa Lookin's hierarchy panel. It also matches the text an item shows: a label's text, a text field's text and placeholder, and a text view's text. That text comes from the item's attributes, so it's found once they've synced, as for `get_item`; until then, results carry a `hint` saying how many items' text isn't searchable yet.
 
 | Argument | Type | Default | Notes |
 |---|---|---|---|
 | `query` | string | — | Required |
 | `limit` | integer | 50 | Between 1 and 500 |
 
-It returns `{"items": [ …item summaries… ], "truncated": false}`.
+It returns `{"items": [ …item summaries… ], "truncated": false}`. An item that shows text also has `text`.
 
 ### `get_selection`
 
@@ -275,7 +294,7 @@ An agent must take over the app before changing it. Only one agent can hold take
 | `scroll` | `oid`, `dx`, `dy` | Scrolls the item, or the scroll view around it, by points |
 | `scroll_to_visible` | `oid` | Scrolls the item into view |
 | `swipe` | `oid`, `dx`, `dy` | Drags one finger from the item's center by points |
-| `go_back` | `oid` (optional) | Pops the navigation stack, or dismisses the presented screen |
+| `go_back` | `oid` (optional) | Pops the navigation stack, or dismisses the presented screen. Without `oid`, goes back from the screen on top: what's presented, then a tab bar's selected tab, then a navigation stack's top screen |
 | `tap_at` | `x`, `y` | Taps a point given as fractions of the screen, 0–1 from the top left. On a simulator (Xcode 27 or later) or a jailbroken device with the SupaLookin helper, the tap goes through the system itself, so it also reaches the software keyboard, system alerts and the home screen; the result's `input` is `system`. On other simulators it reaches the app only (`input` is `app`), and other devices can only be watched, so it fails there |
 | `press_button` | `button`: `home` or `lock` | Presses Home or Lock, on a simulator (Xcode 27 or later) or a jailbroken device with the SupaLookin helper |
 | `type_text` | `text` | Types into the focused text input |
@@ -288,11 +307,17 @@ Every write tool renews takeover and returns once the UI settles:
 
 The hint appears when the view tree changed since the agent's previous call: the items `get_hierarchy` and `get_item` return are from before the change until `reload` runs.
 
+A tap that goes through the system (`input` is `system`) reaches the app a moment after it's sent, so `tap_at` first waits up to 400 ms for the UI to change, then for it to settle.
+
+**When the connection drops**: Supa Lookin reconnects to the app by itself. A USB device does this once, the first time Supa Lookin captures its screen. Meanwhile:
+- tools that need the app wait for it to come back, for up to 15 s;
+- the agent's takeover is taken again on its next call that needs it, as long as the agent hadn't released it, the person hadn't taken it back, and it hadn't expired.
+
 ## Errors
 
 A tool that cannot complete returns a result with `isError: true` and a message that says what to do next, for example:
 
-- `No iOS app is being inspected. Pick an app in Supa Lookin first.`
+- `No iOS app is being inspected. Call list_apps and select_app, or pick an app in Supa Lookin.`
 - `No item has oid 424242. The hierarchy may have changed; call get_hierarchy or reload.`
 - `The hierarchy is syncing. Try again once Supa Lookin finishes syncing.`
 

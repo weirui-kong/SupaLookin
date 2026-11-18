@@ -30,6 +30,7 @@ final class SPLKAppsManager {
 
             storedInspectingApp = newValue
             if let newValue {
+                reconnectingSince = nil
                 willConnectToApp.send(newValue)
             }
 
@@ -48,6 +49,9 @@ final class SPLKAppsManager {
     /// 断开后自动重连成功
     let didAutoReconnectSucc = PassthroughSubject<SPLKInspectableApp, Never>()
 
+    // When the inspected app's session ended and reconnecting to it began; nil once an app is inspected again.
+    private(set) var reconnectingSince: Date?
+
     private let willConnectToApp = PassthroughSubject<SPLKInspectableApp, Never>()
     private var cancellables = Set<AnyCancellable>()
 
@@ -60,6 +64,7 @@ final class SPLKAppsManager {
                 NSLog("current connection end")
                 let targetAppInfo = self.inspectingApp?.appInfo
                 self.inspectingApp = nil
+                self.reconnectingSince = Date()
                 self.startReconnecting(to: targetAppInfo)
             }
             .store(in: &cancellables)

@@ -52,6 +52,26 @@ final class SPLKDemoViewController: UIViewController, UITableViewDataSource {
         navigationController?.pushViewController(detail, animated: false)
     }
 
+    // A screen pushed inside a tab, on top of everything, for going back without an oid.
+    @objc func presentTabbedDetail() {
+        let navigation = UINavigationController(rootViewController: UIViewController())
+        let detail = UIViewController()
+        detail.view.backgroundColor = .systemIndigo
+        navigation.pushViewController(detail, animated: false)
+        let tabs = UITabBarController()
+        tabs.viewControllers = [navigation]
+        tabs.modalPresentationStyle = .fullScreen
+        present(tabs, animated: false)
+    }
+
+    @objc var tabsShown: Bool {
+        presentedViewController is UITabBarController
+    }
+
+    @objc var tabbedDetailShown: Bool {
+        ((presentedViewController as? UITabBarController)?.selectedViewController as? UINavigationController)?.viewControllers.count ?? 0 > 1
+    }
+
     @objc func buttonTapped() {
         buttonTaps += 1
     }

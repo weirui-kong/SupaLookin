@@ -584,6 +584,15 @@ struct EndToEndTests {
         #expect(back.settled)
         #expect(try await invoke(session, oid: controller, "detailShown").description_p == "NO")
 
+        // Without an oid, going back starts from the screen on top: here, one pushed inside a presented tab.
+        _ = try await invoke(session, oid: controller, "presentTabbedDetail")
+        #expect(try await invoke(session, oid: controller, "tabbedDetailShown").description_p == "YES")
+        _ = try await perform(session, .goBack, oid: 0)
+        #expect(try await invoke(session, oid: controller, "tabbedDetailShown").description_p == "NO")
+        #expect(try await invoke(session, oid: controller, "tabsShown").description_p == "YES")
+        _ = try await perform(session, .goBack, oid: 0)
+        #expect(try await eventually(session, oid: controller, "tabsShown") { $0 == "NO" })
+
         do {
             _ = try await perform(session, .setText, oid: try tree.node(ofClass: "UIButton").view.oid, text: "x")
             Issue.record("expected no_text_input")

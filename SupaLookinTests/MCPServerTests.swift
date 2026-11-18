@@ -73,6 +73,53 @@ struct MCPPayloadTests {
         #expect(limited["truncated"] as? Bool == true)
     }
 
+    private func showText(_ text: String, as identifier: String, on item: SPLKDisplayItem) {
+        let attribute = SPLKAttribute()
+        attribute.identifier = identifier
+        attribute.attrType = .nsString
+        attribute.value = text
+        let section = SPLKAttributesSection()
+        section.attributes = [attribute]
+        let group = SPLKAttributesGroup()
+        group.attrSections = [section]
+        item.attributesGroupList = (item.attributesGroupList ?? []) + [group]
+    }
+
+    @Test func searchMatchesShownText() throws {
+        let tree = makeTree()
+        let flatItems = SPLKDisplayItem.flatItems(fromHierarchicalItems: [tree]) ?? []
+        let label = try #require(flatItems.first { $0.layerObject?.oid == 2 })
+        showText("Xavier Ruiz", as: SPLKAttr_UILabel_Text_Text, on: label)
+        let field = try #require(flatItems.first { $0.layerObject?.oid == 3 })
+        showText("Message", as: SPLKAttr_UITextField_Placeholder_Placeholder, on: field)
+
+        let byName = try #require(SPLKMCPPayload.search("xavier ruiz", in: flatItems, limit: 50)["items"] as? [[String: Any]])
+        #expect(byName.map { $0["oid"] as? UInt } == [2])
+        #expect(byName.first?["text"] as? String == "Xavier Ruiz")
+
+        let byPlaceholder = try #require(SPLKMCPPayload.search("message", in: flatItems, limit: 50)["items"] as? [[String: Any]])
+        #expect(byPlaceholder.map { $0["oid"] as? UInt } == [3])
+
+        let pending = SPLKMCPPayload.search("xavier", in: flatItems, limit: 50)
+        #expect((pending["hint"] as? String)?.hasPrefix("2 items'") == true)
+
+        let byClass = try #require(SPLKMCPPayload.search("ImageView", in: flatItems, limit: 50)["items"] as? [[String: Any]])
+        #expect(byClass.map { $0["oid"] as? UInt } == [4])
+        #expect(byClass.first?["text"] == nil)
+    }
+
+    @Test func appsAreIdentifiedByDeviceAndBundle() {
+        let simulator = SPLKMCPPayload.device(of: .simulator(udid: "8A3F"))
+        #expect(simulator.kind == "simulator")
+        #expect(SPLKMCPPayload.appID(deviceID: simulator.id, bundleID: "com.example.app") == "8A3F/com.example.app")
+
+        let device = SPLKMCPPayload.device(of: .usbDevice(serialNumber: "00008110-000459CA2699401E"))
+        #expect(device.kind == "device")
+        #expect(SPLKMCPPayload.appID(deviceID: device.id, bundleID: "com.example.app") == "00008110-000459CA2699401E/com.example.app")
+
+        #expect(SPLKMCPPayload.appID(deviceID: nil, bundleID: "com.example.app") == nil)
+    }
+
     @Test func attributeValuesAreJSON() throws {
         let rect = SPLKAttribute()
         rect.attrType = .cgRect

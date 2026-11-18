@@ -249,21 +249,11 @@ final class SPLKStaticWindowController: SPLKWindowController, NSToolbarDelegate,
                     }
 
                 } else {
-                    self.viewController.progressView.animate(toProgress: InitialIndicatorProgressWhenFetchHierarchy)
-
-                    let isTheSameApp = SPLKAppsManager.sharedInstance.inspectingApp?.appInfo?.isEqual(to: app.appInfo) ?? false
-
                     Task {
                         do {
-                            guard let info = try await app.fetchHierarchyData() else {
-                                throw SPLKError.inner
-                            }
-                            self.viewController.progressView.finish(completion: nil)
-                            SPLKAppsManager.sharedInstance.inspectingApp = app
-                            SPLKStaticHierarchyDataSource.sharedInstance.reload(with: info, keepState: isTheSameApp)
+                            try await self.select(app)
                         } catch {
                             SPLKHelper.alertError(error, window: self.window)
-                            self.viewController.progressView.resetToZero()
                         }
                     }
                 }
@@ -407,6 +397,23 @@ final class SPLKStaticWindowController: SPLKWindowController, NSToolbarDelegate,
     }
 
     // Unlike Reload in the menu, MCP's reload never alerts, and never stops a detail sync that's running
+    // Picking an app in the toolbar's list, which MCP's select_app does too.
+    func select(_ app: SPLKInspectableApp) async throws {
+        viewController.progressView.animate(toProgress: InitialIndicatorProgressWhenFetchHierarchy)
+        let isTheSameApp = SPLKAppsManager.sharedInstance.inspectingApp?.appInfo?.isEqual(to: app.appInfo) ?? false
+        do {
+            guard let info = try await app.fetchHierarchyData() else {
+                throw SPLKError.inner
+            }
+            viewController.progressView.finish(completion: nil)
+            SPLKAppsManager.sharedInstance.inspectingApp = app
+            SPLKStaticHierarchyDataSource.sharedInstance.reload(with: info, keepState: isTheSameApp)
+        } catch {
+            viewController.progressView.resetToZero()
+            throw error
+        }
+    }
+
     func reloadForMCP() async throws {
         guard let app = SPLKAppsManager.sharedInstance.inspectingApp else {
             throw SPLKError.noConnect

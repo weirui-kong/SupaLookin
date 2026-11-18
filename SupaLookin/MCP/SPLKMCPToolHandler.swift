@@ -21,11 +21,16 @@ enum SPLKMCPToolHandler {
                 return json(actionResult(try await deviceSession().waitForIdle(timeout: timeout), agent: agent))
             case "take_control":
                 let label = arguments["label"]?.stringValue ?? "MCP agent"
-                try await deviceSession().arbiter.requestTakeover(session: agent, label: label)
+                let session = try await deviceSession()
+                try await session.arbiter.requestTakeover(session: agent, label: label)
+                takeovers[agent] = Takeover(label: label, session: session)
                 return json(["controlling": true])
             case "release_control":
-                await (try deviceSession()).arbiter.releaseTakeover(session: agent)
+                takeovers[agent] = nil
+                await (try await deviceSession()).arbiter.releaseTakeover(session: agent)
                 return json(["controlling": false])
+            case "select_app":
+                return json(try await selectApp(arguments, agent: agent))
             case "tap", "long_press", "set_text", "scroll", "scroll_to_visible", "swipe", "go_back":
                 return json(try await performAction(name, arguments: arguments, agent: agent))
             case "tap_at", "type_text":
@@ -93,7 +98,7 @@ enum SPLKMCPToolHandler {
         guard let app = SPLKAppsManager.sharedInstance.inspectingApp else {
             return ["inspecting": false, "hint": "Open Supa Lookin and pick an iOS app that has SPLKServer, or call list_apps."]
         }
-        var result: [String: Any] = ["inspecting": true, "app": SPLKMCPPayload.appInfo(app.appInfo)]
+        var result: [String: Any] = ["inspecting": true, "app": SPLKMCPPayload.appInfo(app.appInfo, target: app.session?.target)]
         result["item_count"] = dataSource.flatItems.count
         if let selectedItem = dataSource.selectedItem {
             result["selected_oid"] = SPLKMCPPayload.oid(of: selectedItem)
@@ -107,7 +112,7 @@ enum SPLKMCPToolHandler {
         let list: [[String: Any]] = apps.map { app in
             var entry: [String: Any] = [:]
             if let appInfo = app.appInfo {
-                entry = SPLKMCPPayload.appInfo(appInfo)
+                entry = SPLKMCPPayload.appInfo(appInfo, target: app.session?.target)
                 entry["inspecting"] = inspectingInfo?.isEqual(to: appInfo) ?? false
             }
             if let error = app.serverVersionError {
@@ -116,6 +121,36 @@ enum SPLKMCPToolHandler {
             return entry
         }
         return ["apps": list]
+    }
+
+    private static func selectApp(_ arguments: [String: Value], agent: String) async throws -> [String: Any] {
+        guard let appID = arguments["app_id"]?.stringValue, !appID.isEmpty else {
+            throw SPLKError.make("app_id is required.", "")
+        }
+        if case .takeover(let holder, _) = SPLKAppsManager.sharedInstance.inspectingApp?.session?.arbiter.mode, holder != agent {
+            throw SPLKError.make(NSLocalizedString("An agent is controlling this app.", comment: ""), "Wait until it releases control.")
+        }
+        let apps = await SPLKAppsManager.sharedInstance.fetchAppInfos(withImage: false, localInfos: nil)
+        guard let app = apps.first(where: { app in
+            guard let session = app.session else { return false }
+            return SPLKMCPPayload.appID(deviceID: SPLKMCPPayload.device(of: session.target).id, bundleID: app.appInfo?.appBundleIdentifier) == appID
+        }) else {
+            throw SPLKError.make("No app has this app_id.", "Call list_apps.")
+        }
+        let navigation = SPLKNavigationManager.sharedInstance
+        if let windowController = navigation.staticWindowController {
+            try await windowController.select(app)
+        } else {
+            // From the launch window, as picking an app there does.
+            guard let info = try await app.fetchHierarchyData() else {
+                throw SPLKError.inner
+            }
+            SPLKAppsManager.sharedInstance.inspectingApp = app
+            SPLKStaticHierarchyDataSource.sharedInstance.reload(with: info, keepState: false)
+        }
+        navigation.showStaticWorkspace()
+        navigation.closeLaunch()
+        return status()
     }
 
     private static func reload() async throws -> [String: Any] {
@@ -130,26 +165,50 @@ enum SPLKMCPToolHandler {
 
     private static var lastVersions: [String: UInt64] = [:]
 
-    private static func deviceSession() throws -> SPLKDeviceSession {
-        guard let session = SPLKAppsManager.sharedInstance.inspectingApp?.session else {
-            throw SPLKError.make("No iOS app is being inspected.", "Pick an app in Supa Lookin first.")
+    private struct Takeover {
+        let label: String
+        let session: SPLKDeviceSession
+    }
+
+    // The session each agent took over, so a takeover the device dropped can be taken again after the reconnect.
+    private static var takeovers: [String: Takeover] = [:]
+
+    // How long a tool waits for the inspected app to come back after its session ended.
+    private static let reconnectWait: TimeInterval = 15
+
+    private static func deviceSession() async throws -> SPLKDeviceSession {
+        let manager = SPLKAppsManager.sharedInstance
+        while manager.inspectingApp?.session == nil, let since = manager.reconnectingSince, Date().timeIntervalSince(since) < reconnectWait {
+            try await Task.sleep(for: .milliseconds(250))
+        }
+        guard let session = manager.inspectingApp?.session else {
+            throw SPLKError.make("No iOS app is being inspected.", "Call list_apps and select_app, or pick an app in Supa Lookin.")
         }
         return session
     }
 
     // Every write renews this agent's takeover first, so an agent that stops calling loses it.
-    private static func controlledSession(agent: String) throws -> SPLKDeviceSession {
-        let session = try deviceSession()
+    private static func controlledSession(agent: String) async throws -> SPLKDeviceSession {
+        let session = try await deviceSession()
         do {
             try session.arbiter.renewTakeover(session: agent)
         } catch {
-            throw SPLKError.make(NSLocalizedString("Take over the app before changing it.", comment: ""), "Call take_control first.")
+            // A takeover released, taken back or expired has left its session's arbiter; one the device dropped hasn't.
+            guard let previous = takeovers[agent], previous.session !== session,
+                  case .takeover(let holder, _) = previous.session.arbiter.mode, holder == agent,
+                  previous.session.target == session.target,
+                  previous.session.client.serverHello.app.bundleIdentifier == session.client.serverHello.app.bundleIdentifier else {
+                throw SPLKError.make(NSLocalizedString("Take over the app before changing it.", comment: ""), "Call take_control first.")
+            }
+            // The device dropped the session, not the agent or the person; take it over again.
+            try await session.arbiter.requestTakeover(session: agent, label: previous.label)
+            takeovers[agent] = Takeover(label: previous.label, session: session)
         }
         return session
     }
 
     private static func performAction(_ name: String, arguments: [String: Value], agent: String) async throws -> [String: Any] {
-        let session = try controlledSession(agent: agent)
+        let session = try await controlledSession(agent: agent)
         var call = SPLKV2PerformAction()
         switch name {
         case "tap": call.action = .tap
@@ -176,7 +235,7 @@ enum SPLKMCPToolHandler {
     }
 
     private static func inject(_ name: String, arguments: [String: Value], agent: String) async throws -> [String: Any] {
-        let session = try controlledSession(agent: agent)
+        let session = try await controlledSession(agent: agent)
         var events: [SPLKV2InputEvent] = []
         if name == "tap_at" {
             guard let x = arguments["x"]?.doubleValue ?? arguments["x"].flatMap(integer).map(Double.init),
@@ -201,7 +260,15 @@ enum SPLKMCPToolHandler {
             events.append(event)
         }
         let screen = (try? await session.screenInfo()) ?? session.client.serverHello.app.screen
+        let before = try await session.waitForIdle(timeout: generationProbe).hierarchyVersion
         let backend = try await session.deliverInput(events, as: .mcp(agent), screen: screen)
+        if backend == .host {
+            // A tap through the system reaches the app a moment later; settling before it lands would say nothing changed.
+            let deadline = Date().addingTimeInterval(hostInputLanding)
+            while Date() < deadline, try await session.waitForIdle(timeout: generationProbe).hierarchyVersion == before {
+                try await Task.sleep(for: .milliseconds(50))
+            }
+        }
         var result = actionResult(try await session.waitForIdle(timeout: 2), agent: agent)
         if name == "tap_at" {
             // Host-side taps reach the keyboard and system UI too; device-side ones only the app.
@@ -210,8 +277,12 @@ enum SPLKMCPToolHandler {
         return result
     }
 
+    private static let hostInputLanding: TimeInterval = 0.4
+    // The phone reads a zero timeout as its 2 s default; 1 ms just reads the generation.
+    private static let generationProbe: TimeInterval = 0.001
+
     private static func pressButton(_ arguments: [String: Value], agent: String) async throws -> [String: Any] {
-        let session = try controlledSession(agent: agent)
+        let session = try await controlledSession(agent: agent)
         let button: SPLKHostButton
         switch arguments["button"]?.stringValue {
         case "home": button = .home
@@ -226,7 +297,7 @@ enum SPLKMCPToolHandler {
 
     // Video shows what the user sees, system UI included; the app's own screenshot is the fallback.
     private static func screen() async throws -> CallTool.Result {
-        let session = try deviceSession()
+        let session = try await deviceSession()
         let screen = (try? await session.screenInfo()) ?? session.client.serverHello.app.screen
         var payload: [String: Any]
         let png: Data?

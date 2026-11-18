@@ -16,7 +16,7 @@ enum SPLKMCPPayload {
         item.layerObject?.oid ?? item.viewObject?.oid ?? 0
     }
 
-    static func appInfo(_ appInfo: SPLKAppInfo?) -> [String: Any] {
+    static func appInfo(_ appInfo: SPLKAppInfo?, target: SPLKVideoTarget? = nil) -> [String: Any] {
         guard let appInfo else {
             return [:]
         }
@@ -26,7 +26,46 @@ enum SPLKMCPPayload {
         result["device"] = appInfo.deviceDescription
         result["os"] = appInfo.osDescription
         result["server_version"] = appInfo.serverReadableVersion as String?
+        if let target {
+            let (kind, deviceID) = device(of: target)
+            result["device_kind"] = kind
+            result["device_id"] = deviceID
+            if let id = appID(deviceID: deviceID, bundleID: appInfo.appBundleIdentifier) {
+                result["app_id"] = id
+            }
+        }
         return result
+    }
+
+    static func device(of target: SPLKVideoTarget) -> (kind: String, id: String?) {
+        switch target {
+        case .simulator(let udid): ("simulator", udid)
+        case .usbDevice(let serialNumber): ("device", serialNumber)
+        }
+    }
+
+    static func appID(deviceID: String?, bundleID: String?) -> String? {
+        guard let deviceID, !deviceID.isEmpty, let bundleID, !bundleID.isEmpty else {
+            return nil
+        }
+        return "\(deviceID)/\(bundleID)"
+    }
+
+    private static let textAttributes: Set<String> = [
+        SPLKAttr_UILabel_Text_Text,
+        SPLKAttr_UITextField_Text_Text,
+        SPLKAttr_UITextField_Placeholder_Placeholder,
+        SPLKAttr_UITextView_Text_Text,
+    ]
+
+    // What the item shows as text, from its attributes once they've synced.
+    static func texts(of item: SPLKDisplayItem) -> [String] {
+        (item.queryAllAttrGroupList() ?? [])
+            .flatMap { $0.attrSections ?? [] }
+            .flatMap { $0.attributes ?? [] }
+            .filter { textAttributes.contains($0.identifier) }
+            .compactMap { $0.value as? String }
+            .filter { !$0.isEmpty }
     }
 
     static func summary(of item: SPLKDisplayItem) -> [String: Any] {
@@ -94,8 +133,25 @@ enum SPLKMCPPayload {
         guard !searchString.isEmpty else {
             return ["items": [], "truncated": false]
         }
-        let matches = items.filter { $0.isMatched(withSearchString: searchString) }
-        return ["items": matches.prefix(limit).map(summary), "truncated": matches.count > limit]
+        let lowercased = searchString.lowercased()
+        let matches = items.filter { item in
+            item.isMatched(withSearchString: searchString)
+                || texts(of: item).contains { $0.replacingOccurrences(of: "\\s", with: "", options: .regularExpression).lowercased().contains(lowercased) }
+        }
+        let results = matches.prefix(limit).map { item -> [String: Any] in
+            var result = summary(of: item)
+            let shown = texts(of: item)
+            if !shown.isEmpty {
+                result["text"] = shown.joined(separator: "\n")
+            }
+            return result
+        }
+        var payload: [String: Any] = ["items": results, "truncated": matches.count > limit]
+        let unsynced = items.filter { $0.attributesGroupList == nil }.count
+        if unsynced > 0 {
+            payload["hint"] = "\(unsynced) items' attributes haven't synced, so their text isn't searchable yet. Search again shortly."
+        }
+        return payload
     }
 
     static func png(of item: SPLKDisplayItem, includeSubviews: Bool) -> Data? {
