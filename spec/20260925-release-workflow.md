@@ -79,3 +79,7 @@ The repository also ships SPLKServer, released under the same tag as the app. Th
 ## Update: SPLKServer.xcframework (see `20261118-xcframework-release.md`)
 
 After building the app, the workflow runs `Scripts/build-xcframework.sh` and attaches `SPLKServer.xcframework.zip` to the release beside the DMG. The release notes gain a section on embedding it, with a SwiftPM `binaryTarget` snippet carrying the zip's URL and checksum.
+
+## Update: the commit and tag go up in one push
+
+The v1.0.17 run pushed the version bump to `master`, but GitHub then rejected the tag's separate push (`missing necessary objects`), so nothing was built or released for it. The workflow now pushes the branch and the tag with one `git push --atomic`, so either both land or neither does.

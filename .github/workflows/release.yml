@@ -41,8 +41,7 @@ jobs:
           git add SupaLookin.xcodeproj/project.pbxproj Sources/SPLKServer/include/SPLKDefines.h
           git commit -m "Bump version to ${{ steps.bump.outputs.new_version }}"
           git tag "v${{ steps.bump.outputs.new_version }}"
-          git push origin HEAD:master
-          git push origin "v${{ steps.bump.outputs.new_version }}"
+          git push --atomic origin HEAD:master "v${{ steps.bump.outputs.new_version }}"
 
       - name: Build (Release, ad-hoc signed)
         run: |
