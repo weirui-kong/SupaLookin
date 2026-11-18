@@ -16,6 +16,8 @@ protocol SPLKStaticAsyncUpdateManagerDelegate: AnyObject {
     /// 当剩余未完成的 task 数量变化时，该方法会被调用。表示当前一共有 totalCount 个任务，其中 finishedCount 已经完成。
     func detailUpdateTasks(totalCount: Int, finishedCount: Int)
     func detailUpdateReceivedError(_ error: Error)
+    // Some items' details didn't arrive, though the rest of the sync did.
+    func detailUpdatePartiallyFailed(_ error: Error)
 }
 
 private final class SPLKDetailUpdateRequest {
@@ -342,7 +344,7 @@ final class SPLKStaticAsyncUpdateManager {
 
                 if ongoingRequest.failedTasksCount > 0 {
                     let error = SPLKError.make(NSLocalizedString("Some layer data failed to transmit.", comment: ""), NSLocalizedString("It may be due to changes in the layer structure within the iOS app. You can try reloading the entire structure in Lookin.", comment: ""))
-                    self.delegate?.detailUpdateReceivedError(error)
+                    self.delegate?.detailUpdatePartiallyFailed(error)
                 }
 
                 self.ongoingRequest = nil

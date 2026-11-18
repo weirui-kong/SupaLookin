@@ -220,3 +220,7 @@ The first time a Mac process captures a device's screen, the device re-attaches 
 - Rootful jailbreaks and palera1n's rootful mode.
 - The software keyboard's hardware-keyboard mode.
 - Distributing the package through a repository; it's built from this repository and installed by hand.
+
+## Update: toasts at the bottom left (see `20261119-toast-notices.md`)
+
+Toasts, the reconnect toast included, now show at the window's bottom left.

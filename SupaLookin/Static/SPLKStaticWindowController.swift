@@ -706,4 +706,9 @@ final class SPLKStaticWindowController: SPLKWindowController, NSToolbarDelegate,
     func detailUpdateReceivedError(_ error: Error) {
         SPLKHelper.alertError(error, window: window)
     }
+
+    func detailUpdatePartiallyFailed(_ error: Error) {
+        let nsError = error as NSError
+        SPLKToast.show(nsError.localizedDescription, detail: nsError.localizedRecoverySuggestion, style: .warning, in: window, duration: 6)
+    }
 }

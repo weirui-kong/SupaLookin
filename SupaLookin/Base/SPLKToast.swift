@@ -7,7 +7,7 @@
 
 import Cocoa
 
-// A note at a window's bottom-right corner that goes away by itself, for news that needs no answer. A window shows
+// A note at a window's bottom-left corner that goes away by itself, for news that needs no answer. A window shows
 // one at a time; a new one replaces the old.
 @MainActor
 final class SPLKToast {
@@ -63,10 +63,10 @@ final class SPLKToast {
         view.alphaValue = 0
         container.addSubview(view, positioned: .above, relativeTo: nil)
         NSLayoutConstraint.activate([
-            view.trailingAnchor.constraint(equalTo: container.trailingAnchor, constant: -16),
+            view.leadingAnchor.constraint(equalTo: container.leadingAnchor, constant: 16),
             view.bottomAnchor.constraint(equalTo: container.bottomAnchor, constant: -16),
             view.widthAnchor.constraint(lessThanOrEqualToConstant: 380),
-            view.leadingAnchor.constraint(greaterThanOrEqualTo: container.leadingAnchor, constant: 16),
+            view.trailingAnchor.constraint(lessThanOrEqualTo: container.trailingAnchor, constant: -16),
         ])
         NSAnimationContext.runAnimationGroup { context in
             context.duration = 0.2

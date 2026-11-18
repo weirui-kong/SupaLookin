@@ -352,4 +352,16 @@ struct SPLKToastTests {
         #expect(toastViews(in: window).isEmpty)
         #expect(SPLKToast.show("No window", in: nil) == nil)
     }
+
+    @Test func sitsAtTheBottomLeft() throws {
+        let window = NSWindow(contentRect: NSRect(x: 0, y: 0, width: 800, height: 500), styleMask: [.titled], backing: .buffered, defer: false)
+        window.contentView = NSView()
+        let toast = try #require(SPLKToast.show("Some layer data failed to transmit.", detail: "Detail", style: .warning, in: window, duration: nil))
+        window.contentView?.layoutSubtreeIfNeeded()
+        let frame = try #require(toastViews(in: window).first).frame
+        #expect(frame.minX == 16)
+        #expect(frame.minY == 16)
+        #expect(frame.width <= 380)
+        toast.dismiss()
+    }
 }
