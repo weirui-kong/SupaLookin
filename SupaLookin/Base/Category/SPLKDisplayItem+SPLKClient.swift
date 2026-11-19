@@ -143,6 +143,13 @@ extension SPLKDisplayItem {
         subitems?.forEach { $0.enumerateSelfAndChildren(block) }
     }
 
+    // self is depth 0; children deeper than maxDepth aren't visited.
+    func enumerateSelfAndChildren(maxDepth: Int, _ block: (SPLKDisplayItem) -> Void) {
+        guard maxDepth >= 0 else { return }
+        block(self)
+        subitems?.forEach { $0.enumerateSelfAndChildren(maxDepth: maxDepth - 1, block) }
+    }
+
     func itemIsKindOfClass(withName className: String) -> Bool {
         itemIsKindOfClasses(withNames: [className])
     }

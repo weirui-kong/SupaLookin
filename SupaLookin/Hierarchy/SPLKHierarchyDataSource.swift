@@ -345,14 +345,17 @@ class SPLKHierarchyDataSource {
      wantsSelectedItem 为 true 时返回这次调整所建议选中的 item
      */
     @discardableResult
-    func adjustExpansion(byIndex index: Int, referenceDict: [UInt: Bool]?, wantsSelectedItem: Bool = false) -> SPLKDisplayItem? {
+    func adjustExpansion(byIndex index: Int, referenceDict: [UInt: Bool]?, wantsSelectedItem: Bool = false, remembersIndex: Bool = true) -> SPLKDisplayItem? {
         var index = index
         if index < 0 || index > 4 {
             assertionFailure("adjustExpansionByIndex, index 为 \(index)")
             index = max(min(index, 4), 0)
         }
 
-        preferenceManager.expansionIndex = index
+        // The mode transition's collapse isn't the person's choice of depth, so it leaves the preference alone.
+        if remembersIndex {
+            preferenceManager.expansionIndex = index
+        }
 
         var suggestedSelectedItem: SPLKDisplayItem?
 
@@ -574,6 +577,23 @@ class SPLKHierarchyDataSource {
             }
         }
         buildDisplayingFlatItems()
+    }
+
+    // The item is level 0, so expanding levels 0 to levels - 1 shows its descendants down to level `levels`.
+    func expandItemsRooted(by item: SPLKDisplayItem, levels: Int) {
+        Self.expand(item, levels: levels)
+        buildDisplayingFlatItems()
+    }
+
+    static let expansionLevels = [3, 5, 10]
+
+    static func expand(_ item: SPLKDisplayItem, levels: Int) {
+        let opensCollapsedPreferred = item.preferToBeCollapsed
+        item.enumerateSelfAndChildren(maxDepth: levels - 1) { targetItem in
+            if targetItem.isExpandable && !targetItem.isExpanded && (opensCollapsedPreferred || !targetItem.preferToBeCollapsed) {
+                targetItem.isExpanded = true
+            }
+        }
     }
 
     /// 把 item 所有后代元素全部折叠（但是不折叠 item 自身）

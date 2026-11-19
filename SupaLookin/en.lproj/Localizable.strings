@@ -37,6 +37,7 @@
 "More…" = "More…";
 
 "Expand recursively" = "Expand recursively";
+"Expand %d levels" = "Expand %d levels";
 "Collapse children" = "Collapse children";
 "Focus" = "Focus";
 "Print" = "Print";

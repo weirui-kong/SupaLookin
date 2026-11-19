@@ -20,6 +20,7 @@ protocol SPLKHierarchyViewDelegate: AnyObject {
     func hierarchyView(_ view: SPLKHierarchyView, didDoubleClickItem item: SPLKDisplayItem)
     func hierarchyView(_ view: SPLKHierarchyView, didHoverAtItem item: SPLKDisplayItem?)
     func hierarchyView(_ view: SPLKHierarchyView, needToExpandItem item: SPLKDisplayItem, recursively: Bool)
+    func hierarchyView(_ view: SPLKHierarchyView, needToExpandItem item: SPLKDisplayItem, levels: Int)
     func hierarchyView(_ view: SPLKHierarchyView, needToCollapseItem item: SPLKDisplayItem)
     func hierarchyView(_ view: SPLKHierarchyView, needToCollapseChildrenOfItem item: SPLKDisplayItem)
     /// 在底部的搜索框里输入了文字，string 可能为空字符串或 nil
@@ -369,6 +370,11 @@ final class SPLKHierarchyView: SPLKBaseView, SPLKTableViewDelegate, SPLKTableVie
             menu.addItem(NSMenuItem(title: NSLocalizedString("Expand recursively", comment: "")) { [weak self] item in
                 self?.handleExpandRecursively(item)
             })
+            for levels in SPLKHierarchyDataSource.expansionLevels {
+                menu.addItem(NSMenuItem(title: String(format: NSLocalizedString("Expand %d levels", comment: ""), levels)) { [weak self] item in
+                    self?.handleExpand(item, levels: levels)
+                })
+            }
             menu.addItem(NSMenuItem(title: NSLocalizedString("Collapse children", comment: "")) { [weak self] item in
                 self?.handleCollapseChildren(item)
             })
@@ -489,6 +495,14 @@ final class SPLKHierarchyView: SPLKBaseView, SPLKTableViewDelegate, SPLKTableVie
             return
         }
         delegate?.hierarchyView(self, needToExpandItem: item, recursively: true)
+    }
+
+    private func handleExpand(_ menuItem: NSMenuItem, levels: Int) {
+        guard let item = rowViewItem(of: menuItem) else {
+            assertionFailure()
+            return
+        }
+        delegate?.hierarchyView(self, needToExpandItem: item, levels: levels)
     }
 
     private func handleCollapseChildren(_ menuItem: NSMenuItem) {

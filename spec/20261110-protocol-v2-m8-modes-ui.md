@@ -203,3 +203,9 @@ Input goes to the phone through `SPLKDeviceSession.injectInput(_:as: .window)`, 
 - The on-device takeover indicator of `20261109-protocol-v2.md`.
 - Host-side simulator input, which would reach system UI.
 - Recording the video.
+
+## Update: the collapse leaves the hierarchy depth alone
+
+Collapsing every item to its window went through `adjustExpansion(byIndex: 0, …)`, which also saves the index as the Hierarchy Depth preference. The way back restores it, but only when it reloads the same app; when the app dropped or was replaced in a video mode, the preference stayed at Level 1 (Collapse All). Every later reload without remembered expansion, such as after a reconnect or on a new screen, then collapsed the tree.
+
+The collapse now leaves the preference alone; only View › Hierarchy Depth sets it, as in Lookin. A preference already left at Level 1 stays until the person picks another level there.

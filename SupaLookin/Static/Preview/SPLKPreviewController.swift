@@ -664,6 +664,12 @@ final class SPLKPreviewController: SPLKBaseViewController, NSGestureRecognizerDe
                     guard let self, let item = self.rightClickingDisplayItem else { return }
                     self.dataSource.expandItemsRooted(by: item)
                 })
+                for levels in SPLKHierarchyDataSource.expansionLevels {
+                    menu.addItem(NSMenuItem(title: String(format: NSLocalizedString("Expand %d levels", comment: ""), levels)) { [weak self] _ in
+                        guard let self, let item = self.rightClickingDisplayItem else { return }
+                        self.dataSource.expandItemsRooted(by: item, levels: levels)
+                    })
+                }
             }
             menu.addItem(.separator())
         }

@@ -116,6 +116,10 @@ class SPLKHierarchyController: SPLKBaseViewController, SPLKHierarchyViewDelegate
         }
     }
 
+    func hierarchyView(_ view: SPLKHierarchyView, needToExpandItem item: SPLKDisplayItem, levels: Int) {
+        dataSource.expandItemsRooted(by: item, levels: levels)
+    }
+
     func hierarchyView(_ view: SPLKHierarchyView, didInputSearchString string: String?) {
         NSLog("search string:%@", string ?? "(null)")
         if let string, !string.isEmpty {

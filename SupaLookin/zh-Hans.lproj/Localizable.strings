@@ -39,6 +39,7 @@
 "More…" = "更多偏好设置…";
 
 "Expand recursively" = "全部展开";
+"Expand %d levels" = "展开 %d 层";
 "Collapse children" = "收起子图层";
 "Focus" = "聚焦";
 "Print" = "打印";

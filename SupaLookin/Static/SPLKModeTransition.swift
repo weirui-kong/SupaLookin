@@ -102,7 +102,7 @@ final class SPLKModeTransition {
                 expansion[item.layerObject?.oid ?? 0] = item.isExpanded
             }
             saved = SavedState(expansion: expansion, expansionIndex: dataSource.preferenceManager.expansionIndex, dimension: .dimension2D)
-            dataSource.adjustExpansion(byIndex: 0, referenceDict: nil)
+            dataSource.adjustExpansion(byIndex: 0, referenceDict: nil, remembersIndex: false)
             await sleep(Self.collapseDuration)
             saved?.dimension = preview.flattenForModeChange(duration: Self.flattenDuration)
             await sleep(Self.flattenDuration + 0.05)
