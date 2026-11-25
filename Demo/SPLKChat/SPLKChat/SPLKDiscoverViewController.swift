@@ -13,7 +13,7 @@ import UserNotifications
 final class SPLKDiscoverViewController: UITableViewController, CLLocationManagerDelegate {
 
     private enum Row {
-        case feed, photos, notifications, location, alert, textAlert, actionSheet, masks
+        case feed, photos, notifications, location, alert, textAlert, actionSheet, masks, encodeBench
     }
 
     private let sections: [(title: String?, rows: [Row])] = [
@@ -21,6 +21,7 @@ final class SPLKDiscoverViewController: UITableViewController, CLLocationManager
         ("System Alerts", [.photos, .notifications, .location]),
         ("App Alerts", [.alert, .textAlert, .actionSheet]),
         ("Inspector Cases", [.masks]),
+        ("Benchmarks", [.encodeBench]),
     ]
 
     private let locationManager = CLLocationManager()
@@ -115,12 +116,13 @@ final class SPLKDiscoverViewController: UITableViewController, CLLocationManager
         case .textAlert: ("Show Alert with Text Field", "character.cursor.ibeam", .systemTeal, nil)
         case .actionSheet: ("Show Action Sheet", "list.bullet.rectangle", .systemPurple, nil)
         case .masks: ("Masks", "theatermasks", .systemIndigo, nil)
+        case .encodeBench: ("Screenshot Encoding", "speedometer", .systemBrown, nil)
         }
         cell.textLabel?.text = title
         cell.detailTextLabel?.text = detail
         cell.imageView?.image = UIImage(systemName: symbol)
         cell.imageView?.tintColor = color
-        cell.accessoryType = row == .feed || row == .masks ? .disclosureIndicator : .none
+        cell.accessoryType = [.feed, .masks, .encodeBench].contains(row) ? .disclosureIndicator : .none
         cell.accessibilityIdentifier = "discover.\(row)"
         return cell
     }
@@ -135,6 +137,8 @@ final class SPLKDiscoverViewController: UITableViewController, CLLocationManager
             navigationController?.pushViewController(feed, animated: true)
         case .masks:
             showMasks(animated: true)
+        case .encodeBench:
+            showEncodeBench(animated: true)
         case .photos:
             Task {
                 _ = await PHPhotoLibrary.requestAuthorization(for: .readWrite)
@@ -179,6 +183,12 @@ final class SPLKDiscoverViewController: UITableViewController, CLLocationManager
         let masks = SPLKMasksViewController()
         masks.hidesBottomBarWhenPushed = true
         navigationController?.pushViewController(masks, animated: animated)
+    }
+
+    func showEncodeBench(animated: Bool) {
+        let bench = SPLKEncodeBenchViewController()
+        bench.hidesBottomBarWhenPushed = true
+        navigationController?.pushViewController(bench, animated: animated)
     }
 
     private func record(_ result: String) {

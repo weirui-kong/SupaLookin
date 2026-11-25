@@ -41,9 +41,18 @@ final class SPLKChatTabBarController: UITabBarController {
             return navigation
         }
         // Launching with `-SPLKChatScreen masks` opens Discover › Masks, for tests that need it on screen.
-        if UserDefaults.standard.string(forKey: "SPLKChatScreen") == "masks", let discover = tabs[2].0 as? SPLKDiscoverViewController {
-            selectedIndex = 2
-            discover.showMasks(animated: false)
+        // `-SPLKChatScreen encodeBench` opens Discover › Screenshot Encoding.
+        if let discover = tabs[2].0 as? SPLKDiscoverViewController {
+            switch UserDefaults.standard.string(forKey: "SPLKChatScreen") {
+            case "masks":
+                selectedIndex = 2
+                discover.showMasks(animated: false)
+            case "encodeBench":
+                selectedIndex = 2
+                discover.showEncodeBench(animated: false)
+            default:
+                break
+            }
         }
     }
 }

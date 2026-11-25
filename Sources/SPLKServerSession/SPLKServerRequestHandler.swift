@@ -26,7 +26,7 @@ struct SPLKServerRequestHandler: SPLKRequestHandler {
     // Every v2 client has those features, so the peer's own version never reaches them.
     static let v1FeatureVersion = "1.0.4"
 
-    // Converting, PNG encoding included, stays off the main thread, in arrival order.
+    // Converting, screenshot encoding included, stays off the main thread, in arrival order.
     private static let conversionQueue = DispatchQueue(label: "SPLKServerSession.conversion")
 
     func handle(_ request: SPLKV2Request, context: SPLKRequestContext) async throws -> SPLKHandlerResult {
@@ -58,7 +58,8 @@ struct SPLKServerRequestHandler: SPLKRequestHandler {
 
         case .fetchDetails(let call):
             let packages = SPLKTransfer(value: call.packages.map { SPLKBridge.package($0, clientVersion: Self.v1FeatureVersion) })
-            return .stream(Self.detailStream(includesMasks: includesMasks) { progress, finished in
+            let format = SPLKBridge.screenshotFormat(requested: call.screenshotFormat, capabilities: context.capabilities)
+            return .stream(Self.detailStream(includesMasks: includesMasks, screenshotFormat: format) { progress, finished in
                 await MainActor.run {
                     SPLKTransfer(value: SPLKServerOperations.fetchDetails(packages: packages.value, progress: { details in
                         details.forEach(progress)
@@ -73,12 +74,14 @@ struct SPLKServerRequestHandler: SPLKRequestHandler {
             let detail: SPLKTransfer<SPLKDisplayItemDetail?> = try await Self.reply { reply in
                 SPLKServerOperations.modifyAttribute(modification.value) { detail, error in reply(detail, error) }
             }
-            return .response(detail.value.map { .nodeDetail(SPLKBridge.detailMessage($0, includesMasks: includesMasks)) })
+            let format = SPLKBridge.screenshotFormat(requested: call.screenshotFormat, capabilities: context.capabilities)
+            return .response(detail.value.map { .nodeDetail(SPLKBridge.detailMessage($0, includesMasks: includesMasks, screenshotFormat: format)) })
 
         case .fetchModificationPatch(let call):
             let tasks = SPLKTransfer(value: call.tasks.map { SPLKBridge.task($0, clientVersion: Self.v1FeatureVersion) })
             let expected = call.tasks.count
-            return .stream(Self.detailStream(expected: expected, includesMasks: includesMasks) { progress, _ in
+            let format = SPLKBridge.screenshotFormat(requested: call.screenshotFormat, capabilities: context.capabilities)
+            return .stream(Self.detailStream(expected: expected, includesMasks: includesMasks, screenshotFormat: format) { progress, _ in
                 await MainActor.run {
                     SPLKServerOperations.fetchModificationPatch(tasks: tasks.value, progress: progress)
                     return SPLKTransfer(value: NSNull() as Any)
@@ -190,6 +193,7 @@ struct SPLKServerRequestHandler: SPLKRequestHandler {
     private static func detailStream(
         expected: Int? = nil,
         includesMasks: Bool,
+        screenshotFormat: SPLKV2EncodedImage.Format,
         start: @escaping @Sendable (_ progress: @escaping @Sendable (SPLKDisplayItemDetail) -> Void, _ finished: @escaping @Sendable () -> Void) async -> SPLKTransfer<Any>,
         cancel: @escaping @Sendable (SPLKTransfer<Any>) async -> Void
     ) -> AsyncThrowingStream<SPLKV2StreamItem, Error> {
@@ -202,7 +206,7 @@ struct SPLKServerRequestHandler: SPLKRequestHandler {
                 let transfer = SPLKTransfer(value: detail)
                 conversionQueue.async {
                     var item = SPLKV2StreamItem()
-                    item.nodeDetail = SPLKBridge.detailMessage(transfer.value, includesMasks: includesMasks)
+                    item.nodeDetail = SPLKBridge.detailMessage(transfer.value, includesMasks: includesMasks, screenshotFormat: screenshotFormat)
                     continuation.yield(item)
                 }
                 if let expected, count.increment() >= expected {

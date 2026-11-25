@@ -132,10 +132,12 @@ message Insets { double top = 1; double left = 2; double bottom = 3; double righ
 message Color { float r = 1; float g = 2; float b = 3; float a = 4; }   // 0–1, sRGB
 
 message EncodedImage {
-  enum Format { FORMAT_UNSPECIFIED = 0; PNG = 1; JPEG = 2; HEIC = 3; }
+  enum Format { FORMAT_UNSPECIFIED = 0; PNG = 1; JPEG = 2; HEIC = 3; QOI_LZ4 = 4; }
   Format format = 1;
   bytes data = 2;
   double scale = 3;
+  uint32 pixel_width = 4;           // set with QOI_LZ4
+  uint32 pixel_height = 5;
 }
 
 message ScreenInfo {
@@ -332,8 +334,8 @@ message DetailTask {                // SPLKStaticAsyncUpdateTask
 
 message DetailTaskPackage { repeated DetailTask tasks = 1; }
 
-message FetchDetails { repeated DetailTaskPackage packages = 1; }
-message FetchModificationPatch { repeated DetailTask tasks = 1; }
+message FetchDetails { repeated DetailTaskPackage packages = 1; EncodedImage.Format screenshot_format = 2; }
+message FetchModificationPatch { repeated DetailTask tasks = 1; EncodedImage.Format screenshot_format = 2; }
 
 message NodeDetail {                // SPLKDisplayItemDetail
   uint64 oid = 1;
@@ -358,6 +360,7 @@ message ModifyAttribute {           // SPLKAttributeModification
   string getter = 3;
   AttrType type = 4;
   Value value = 5;
+  EncodedImage.Format screenshot_format = 6;
 }
 
 message ModifyCustomAttribute {     // SPLKCustomAttrModification

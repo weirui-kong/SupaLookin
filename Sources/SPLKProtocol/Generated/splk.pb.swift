@@ -355,69 +355,75 @@ public nonisolated struct SPLKV2ServerHello: @unchecked Sendable {
   fileprivate var _storage = _StorageClass.defaultInstance
 }
 
-public nonisolated struct SPLKV2Envelope: Sendable {
+public nonisolated struct SPLKV2Envelope: @unchecked Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
 
-  public var id: UInt64 = 0
+  public var id: UInt64 {
+    get {_storage._id}
+    set {_uniqueStorage()._id = newValue}
+  }
 
-  public var body: SPLKV2Envelope.OneOf_Body? = nil
+  public var body: OneOf_Body? {
+    get {return _storage._body}
+    set {_uniqueStorage()._body = newValue}
+  }
 
   public var request: SPLKV2Request {
     get {
-      if case .request(let v)? = body {return v}
+      if case .request(let v)? = _storage._body {return v}
       return SPLKV2Request()
     }
-    set {body = .request(newValue)}
+    set {_uniqueStorage()._body = .request(newValue)}
   }
 
   public var response: SPLKV2Response {
     get {
-      if case .response(let v)? = body {return v}
+      if case .response(let v)? = _storage._body {return v}
       return SPLKV2Response()
     }
-    set {body = .response(newValue)}
+    set {_uniqueStorage()._body = .response(newValue)}
   }
 
   public var streamItem: SPLKV2StreamItem {
     get {
-      if case .streamItem(let v)? = body {return v}
+      if case .streamItem(let v)? = _storage._body {return v}
       return SPLKV2StreamItem()
     }
-    set {body = .streamItem(newValue)}
+    set {_uniqueStorage()._body = .streamItem(newValue)}
   }
 
   public var streamEnd: SPLKV2StreamEnd {
     get {
-      if case .streamEnd(let v)? = body {return v}
+      if case .streamEnd(let v)? = _storage._body {return v}
       return SPLKV2StreamEnd()
     }
-    set {body = .streamEnd(newValue)}
+    set {_uniqueStorage()._body = .streamEnd(newValue)}
   }
 
   public var cancel: SPLKV2Cancel {
     get {
-      if case .cancel(let v)? = body {return v}
+      if case .cancel(let v)? = _storage._body {return v}
       return SPLKV2Cancel()
     }
-    set {body = .cancel(newValue)}
+    set {_uniqueStorage()._body = .cancel(newValue)}
   }
 
   public var event: SPLKV2Event {
     get {
-      if case .event(let v)? = body {return v}
+      if case .event(let v)? = _storage._body {return v}
       return SPLKV2Event()
     }
-    set {body = .event(newValue)}
+    set {_uniqueStorage()._body = .event(newValue)}
   }
 
   public var heartbeat: SPLKV2Heartbeat {
     get {
-      if case .heartbeat(let v)? = body {return v}
+      if case .heartbeat(let v)? = _storage._body {return v}
       return SPLKV2Heartbeat()
     }
-    set {body = .heartbeat(newValue)}
+    set {_uniqueStorage()._body = .heartbeat(newValue)}
   }
 
   public var unknownFields = SwiftProtobuf.UnknownStorage()
@@ -434,6 +440,8 @@ public nonisolated struct SPLKV2Envelope: Sendable {
   }
 
   public init() {}
+
+  fileprivate var _storage = _StorageClass.defaultInstance
 }
 
 public nonisolated struct SPLKV2Request: Sendable {
@@ -1046,6 +1054,11 @@ public nonisolated struct SPLKV2EncodedImage: Sendable {
 
   public var scale: Double = 0
 
+  /// set with QOI_LZ4
+  public var pixelWidth: UInt32 = 0
+
+  public var pixelHeight: UInt32 = 0
+
   public var unknownFields = SwiftProtobuf.UnknownStorage()
 
   public nonisolated enum Format: SwiftProtobuf.Enum, Swift.CaseIterable {
@@ -1054,6 +1067,7 @@ public nonisolated struct SPLKV2EncodedImage: Sendable {
     case png // = 1
     case jpeg // = 2
     case heic // = 3
+    case qoiLz4 // = 4
     case UNRECOGNIZED(Int)
 
     public init() {
@@ -1066,6 +1080,7 @@ public nonisolated struct SPLKV2EncodedImage: Sendable {
       case 1: self = .png
       case 2: self = .jpeg
       case 3: self = .heic
+      case 4: self = .qoiLz4
       default: self = .UNRECOGNIZED(rawValue)
       }
     }
@@ -1076,6 +1091,7 @@ public nonisolated struct SPLKV2EncodedImage: Sendable {
       case .png: return 1
       case .jpeg: return 2
       case .heic: return 3
+      case .qoiLz4: return 4
       case .UNRECOGNIZED(let i): return i
       }
     }
@@ -1086,6 +1102,7 @@ public nonisolated struct SPLKV2EncodedImage: Sendable {
       .png,
       .jpeg,
       .heic,
+      .qoiLz4,
     ]
 
   }
@@ -2199,6 +2216,8 @@ public nonisolated struct SPLKV2FetchDetails: Sendable {
 
   public var packages: [SPLKV2DetailTaskPackage] = []
 
+  public var screenshotFormat: SPLKV2EncodedImage.Format = .unspecified
+
   public var unknownFields = SwiftProtobuf.UnknownStorage()
 
   public init() {}
@@ -2210,6 +2229,8 @@ public nonisolated struct SPLKV2FetchModificationPatch: Sendable {
   // methods supported on all messages.
 
   public var tasks: [SPLKV2DetailTask] = []
+
+  public var screenshotFormat: SPLKV2EncodedImage.Format = .unspecified
 
   public var unknownFields = SwiftProtobuf.UnknownStorage()
 
@@ -2356,6 +2377,8 @@ public nonisolated struct SPLKV2ModifyAttribute: Sendable {
   public var hasValue: Bool {self._value != nil}
   /// Clears the value of `value`. Subsequent reads from it will return its default value.
   public mutating func clearValue() {self._value = nil}
+
+  public var screenshotFormat: SPLKV2EncodedImage.Format = .unspecified
 
   public var unknownFields = SwiftProtobuf.UnknownStorage()
 
@@ -3241,154 +3264,192 @@ nonisolated extension SPLKV2Envelope: SwiftProtobuf.Message, SwiftProtobuf._Mess
   public static let protoMessageName: String = _protobuf_package + ".Envelope"
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}id\0\u{1}request\0\u{1}response\0\u{3}stream_item\0\u{3}stream_end\0\u{1}cancel\0\u{1}event\0\u{1}heartbeat\0")
 
+  fileprivate class _StorageClass {
+    var _id: UInt64 = 0
+    var _body: SPLKV2Envelope.OneOf_Body?
+
+      // This property is used as the initial default value for new instances of the type.
+      // The type itself is protecting the reference to its storage via CoW semantics.
+      // This will force a copy to be made of this reference when the first mutation occurs;
+      // hence, it is safe to mark this as `nonisolated(unsafe)`.
+      static nonisolated(unsafe) let defaultInstance = _StorageClass()
+
+    private init() {}
+
+    init(copying source: _StorageClass) {
+      _id = source._id
+      _body = source._body
+    }
+  }
+
+  fileprivate mutating func _uniqueStorage() -> _StorageClass {
+    if !isKnownUniquelyReferenced(&_storage) {
+      _storage = _StorageClass(copying: _storage)
+    }
+    return _storage
+  }
+
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
-    while let fieldNumber = try decoder.nextFieldNumber() {
-      // The use of inline closures is to circumvent an issue where the compiler
-      // allocates stack space for every case branch when no optimizations are
-      // enabled. https://github.com/apple/swift-protobuf/issues/1034
-      switch fieldNumber {
-      case 1: try { try decoder.decodeSingularUInt64Field(value: &self.id) }()
-      case 2: try {
-        var v: SPLKV2Request?
-        var hadOneofValue = false
-        if let current = self.body {
-          hadOneofValue = true
-          if case .request(let m) = current {v = m}
+    _ = _uniqueStorage()
+    try withExtendedLifetime(_storage) { (_storage: _StorageClass) in
+      while let fieldNumber = try decoder.nextFieldNumber() {
+        // The use of inline closures is to circumvent an issue where the compiler
+        // allocates stack space for every case branch when no optimizations are
+        // enabled. https://github.com/apple/swift-protobuf/issues/1034
+        switch fieldNumber {
+        case 1: try { try decoder.decodeSingularUInt64Field(value: &_storage._id) }()
+        case 2: try {
+          var v: SPLKV2Request?
+          var hadOneofValue = false
+          if let current = _storage._body {
+            hadOneofValue = true
+            if case .request(let m) = current {v = m}
+          }
+          try decoder.decodeSingularMessageField(value: &v)
+          if let v = v {
+            if hadOneofValue {try decoder.handleConflictingOneOf()}
+            _storage._body = .request(v)
+          }
+        }()
+        case 3: try {
+          var v: SPLKV2Response?
+          var hadOneofValue = false
+          if let current = _storage._body {
+            hadOneofValue = true
+            if case .response(let m) = current {v = m}
+          }
+          try decoder.decodeSingularMessageField(value: &v)
+          if let v = v {
+            if hadOneofValue {try decoder.handleConflictingOneOf()}
+            _storage._body = .response(v)
+          }
+        }()
+        case 4: try {
+          var v: SPLKV2StreamItem?
+          var hadOneofValue = false
+          if let current = _storage._body {
+            hadOneofValue = true
+            if case .streamItem(let m) = current {v = m}
+          }
+          try decoder.decodeSingularMessageField(value: &v)
+          if let v = v {
+            if hadOneofValue {try decoder.handleConflictingOneOf()}
+            _storage._body = .streamItem(v)
+          }
+        }()
+        case 5: try {
+          var v: SPLKV2StreamEnd?
+          var hadOneofValue = false
+          if let current = _storage._body {
+            hadOneofValue = true
+            if case .streamEnd(let m) = current {v = m}
+          }
+          try decoder.decodeSingularMessageField(value: &v)
+          if let v = v {
+            if hadOneofValue {try decoder.handleConflictingOneOf()}
+            _storage._body = .streamEnd(v)
+          }
+        }()
+        case 6: try {
+          var v: SPLKV2Cancel?
+          var hadOneofValue = false
+          if let current = _storage._body {
+            hadOneofValue = true
+            if case .cancel(let m) = current {v = m}
+          }
+          try decoder.decodeSingularMessageField(value: &v)
+          if let v = v {
+            if hadOneofValue {try decoder.handleConflictingOneOf()}
+            _storage._body = .cancel(v)
+          }
+        }()
+        case 7: try {
+          var v: SPLKV2Event?
+          var hadOneofValue = false
+          if let current = _storage._body {
+            hadOneofValue = true
+            if case .event(let m) = current {v = m}
+          }
+          try decoder.decodeSingularMessageField(value: &v)
+          if let v = v {
+            if hadOneofValue {try decoder.handleConflictingOneOf()}
+            _storage._body = .event(v)
+          }
+        }()
+        case 8: try {
+          var v: SPLKV2Heartbeat?
+          var hadOneofValue = false
+          if let current = _storage._body {
+            hadOneofValue = true
+            if case .heartbeat(let m) = current {v = m}
+          }
+          try decoder.decodeSingularMessageField(value: &v)
+          if let v = v {
+            if hadOneofValue {try decoder.handleConflictingOneOf()}
+            _storage._body = .heartbeat(v)
+          }
+        }()
+        default: break
         }
-        try decoder.decodeSingularMessageField(value: &v)
-        if let v = v {
-          if hadOneofValue {try decoder.handleConflictingOneOf()}
-          self.body = .request(v)
-        }
-      }()
-      case 3: try {
-        var v: SPLKV2Response?
-        var hadOneofValue = false
-        if let current = self.body {
-          hadOneofValue = true
-          if case .response(let m) = current {v = m}
-        }
-        try decoder.decodeSingularMessageField(value: &v)
-        if let v = v {
-          if hadOneofValue {try decoder.handleConflictingOneOf()}
-          self.body = .response(v)
-        }
-      }()
-      case 4: try {
-        var v: SPLKV2StreamItem?
-        var hadOneofValue = false
-        if let current = self.body {
-          hadOneofValue = true
-          if case .streamItem(let m) = current {v = m}
-        }
-        try decoder.decodeSingularMessageField(value: &v)
-        if let v = v {
-          if hadOneofValue {try decoder.handleConflictingOneOf()}
-          self.body = .streamItem(v)
-        }
-      }()
-      case 5: try {
-        var v: SPLKV2StreamEnd?
-        var hadOneofValue = false
-        if let current = self.body {
-          hadOneofValue = true
-          if case .streamEnd(let m) = current {v = m}
-        }
-        try decoder.decodeSingularMessageField(value: &v)
-        if let v = v {
-          if hadOneofValue {try decoder.handleConflictingOneOf()}
-          self.body = .streamEnd(v)
-        }
-      }()
-      case 6: try {
-        var v: SPLKV2Cancel?
-        var hadOneofValue = false
-        if let current = self.body {
-          hadOneofValue = true
-          if case .cancel(let m) = current {v = m}
-        }
-        try decoder.decodeSingularMessageField(value: &v)
-        if let v = v {
-          if hadOneofValue {try decoder.handleConflictingOneOf()}
-          self.body = .cancel(v)
-        }
-      }()
-      case 7: try {
-        var v: SPLKV2Event?
-        var hadOneofValue = false
-        if let current = self.body {
-          hadOneofValue = true
-          if case .event(let m) = current {v = m}
-        }
-        try decoder.decodeSingularMessageField(value: &v)
-        if let v = v {
-          if hadOneofValue {try decoder.handleConflictingOneOf()}
-          self.body = .event(v)
-        }
-      }()
-      case 8: try {
-        var v: SPLKV2Heartbeat?
-        var hadOneofValue = false
-        if let current = self.body {
-          hadOneofValue = true
-          if case .heartbeat(let m) = current {v = m}
-        }
-        try decoder.decodeSingularMessageField(value: &v)
-        if let v = v {
-          if hadOneofValue {try decoder.handleConflictingOneOf()}
-          self.body = .heartbeat(v)
-        }
-      }()
-      default: break
       }
     }
   }
 
   public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
-    // The use of inline closures is to circumvent an issue where the compiler
-    // allocates stack space for every if/case branch local when no optimizations
-    // are enabled. https://github.com/apple/swift-protobuf/issues/1034 and
-    // https://github.com/apple/swift-protobuf/issues/1182
-    if self.id != 0 {
-      try visitor.visitSingularUInt64Field(value: self.id, fieldNumber: 1)
-    }
-    switch self.body {
-    case .request?: try {
-      guard case .request(let v)? = self.body else { preconditionFailure() }
-      try visitor.visitSingularMessageField(value: v, fieldNumber: 2)
-    }()
-    case .response?: try {
-      guard case .response(let v)? = self.body else { preconditionFailure() }
-      try visitor.visitSingularMessageField(value: v, fieldNumber: 3)
-    }()
-    case .streamItem?: try {
-      guard case .streamItem(let v)? = self.body else { preconditionFailure() }
-      try visitor.visitSingularMessageField(value: v, fieldNumber: 4)
-    }()
-    case .streamEnd?: try {
-      guard case .streamEnd(let v)? = self.body else { preconditionFailure() }
-      try visitor.visitSingularMessageField(value: v, fieldNumber: 5)
-    }()
-    case .cancel?: try {
-      guard case .cancel(let v)? = self.body else { preconditionFailure() }
-      try visitor.visitSingularMessageField(value: v, fieldNumber: 6)
-    }()
-    case .event?: try {
-      guard case .event(let v)? = self.body else { preconditionFailure() }
-      try visitor.visitSingularMessageField(value: v, fieldNumber: 7)
-    }()
-    case .heartbeat?: try {
-      guard case .heartbeat(let v)? = self.body else { preconditionFailure() }
-      try visitor.visitSingularMessageField(value: v, fieldNumber: 8)
-    }()
-    case nil: break
+    try withExtendedLifetime(_storage) { (_storage: _StorageClass) in
+      // The use of inline closures is to circumvent an issue where the compiler
+      // allocates stack space for every if/case branch local when no optimizations
+      // are enabled. https://github.com/apple/swift-protobuf/issues/1034 and
+      // https://github.com/apple/swift-protobuf/issues/1182
+      if _storage._id != 0 {
+        try visitor.visitSingularUInt64Field(value: _storage._id, fieldNumber: 1)
+      }
+      switch _storage._body {
+      case .request?: try {
+        guard case .request(let v)? = _storage._body else { preconditionFailure() }
+        try visitor.visitSingularMessageField(value: v, fieldNumber: 2)
+      }()
+      case .response?: try {
+        guard case .response(let v)? = _storage._body else { preconditionFailure() }
+        try visitor.visitSingularMessageField(value: v, fieldNumber: 3)
+      }()
+      case .streamItem?: try {
+        guard case .streamItem(let v)? = _storage._body else { preconditionFailure() }
+        try visitor.visitSingularMessageField(value: v, fieldNumber: 4)
+      }()
+      case .streamEnd?: try {
+        guard case .streamEnd(let v)? = _storage._body else { preconditionFailure() }
+        try visitor.visitSingularMessageField(value: v, fieldNumber: 5)
+      }()
+      case .cancel?: try {
+        guard case .cancel(let v)? = _storage._body else { preconditionFailure() }
+        try visitor.visitSingularMessageField(value: v, fieldNumber: 6)
+      }()
+      case .event?: try {
+        guard case .event(let v)? = _storage._body else { preconditionFailure() }
+        try visitor.visitSingularMessageField(value: v, fieldNumber: 7)
+      }()
+      case .heartbeat?: try {
+        guard case .heartbeat(let v)? = _storage._body else { preconditionFailure() }
+        try visitor.visitSingularMessageField(value: v, fieldNumber: 8)
+      }()
+      case nil: break
+      }
     }
     try unknownFields.traverse(visitor: &visitor)
   }
 
   public static func ==(lhs: SPLKV2Envelope, rhs: SPLKV2Envelope) -> Bool {
-    if lhs.id != rhs.id {return false}
-    if lhs.body != rhs.body {return false}
+    if lhs._storage !== rhs._storage {
+      let storagesAreEqual: Bool = withExtendedLifetime((lhs._storage, rhs._storage)) { (_args: (_StorageClass, _StorageClass)) in
+        let _storage = _args.0
+        let rhs_storage = _args.1
+        if _storage._id != rhs_storage._id {return false}
+        if _storage._body != rhs_storage._body {return false}
+        return true
+      }
+      if !storagesAreEqual {return false}
+    }
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }
@@ -4423,7 +4484,7 @@ nonisolated extension SPLKV2Color: SwiftProtobuf.Message, SwiftProtobuf._Message
 
 nonisolated extension SPLKV2EncodedImage: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".EncodedImage"
-  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}format\0\u{1}data\0\u{1}scale\0")
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}format\0\u{1}data\0\u{1}scale\0\u{3}pixel_width\0\u{3}pixel_height\0")
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
@@ -4434,6 +4495,8 @@ nonisolated extension SPLKV2EncodedImage: SwiftProtobuf.Message, SwiftProtobuf._
       case 1: try { try decoder.decodeSingularEnumField(value: &self.format) }()
       case 2: try { try decoder.decodeSingularBytesField(value: &self.data) }()
       case 3: try { try decoder.decodeSingularDoubleField(value: &self.scale) }()
+      case 4: try { try decoder.decodeSingularUInt32Field(value: &self.pixelWidth) }()
+      case 5: try { try decoder.decodeSingularUInt32Field(value: &self.pixelHeight) }()
       default: break
       }
     }
@@ -4449,6 +4512,12 @@ nonisolated extension SPLKV2EncodedImage: SwiftProtobuf.Message, SwiftProtobuf._
     if self.scale.bitPattern != 0 {
       try visitor.visitSingularDoubleField(value: self.scale, fieldNumber: 3)
     }
+    if self.pixelWidth != 0 {
+      try visitor.visitSingularUInt32Field(value: self.pixelWidth, fieldNumber: 4)
+    }
+    if self.pixelHeight != 0 {
+      try visitor.visitSingularUInt32Field(value: self.pixelHeight, fieldNumber: 5)
+    }
     try unknownFields.traverse(visitor: &visitor)
   }
 
@@ -4456,13 +4525,15 @@ nonisolated extension SPLKV2EncodedImage: SwiftProtobuf.Message, SwiftProtobuf._
     if lhs.format != rhs.format {return false}
     if lhs.data != rhs.data {return false}
     if lhs.scale != rhs.scale {return false}
+    if lhs.pixelWidth != rhs.pixelWidth {return false}
+    if lhs.pixelHeight != rhs.pixelHeight {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }
 }
 
 nonisolated extension SPLKV2EncodedImage.Format: SwiftProtobuf._ProtoNameProviding {
-  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{2}\0FORMAT_UNSPECIFIED\0\u{1}PNG\0\u{1}JPEG\0\u{1}HEIC\0")
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{2}\0FORMAT_UNSPECIFIED\0\u{1}PNG\0\u{1}JPEG\0\u{1}HEIC\0\u{1}QOI_LZ4\0")
 }
 
 nonisolated extension SPLKV2ScreenInfo: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
@@ -6163,7 +6234,7 @@ nonisolated extension SPLKV2DetailTaskPackage: SwiftProtobuf.Message, SwiftProto
 
 nonisolated extension SPLKV2FetchDetails: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".FetchDetails"
-  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}packages\0")
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}packages\0\u{3}screenshot_format\0")
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
@@ -6172,6 +6243,7 @@ nonisolated extension SPLKV2FetchDetails: SwiftProtobuf.Message, SwiftProtobuf._
       // enabled. https://github.com/apple/swift-protobuf/issues/1034
       switch fieldNumber {
       case 1: try { try decoder.decodeRepeatedMessageField(value: &self.packages) }()
+      case 2: try { try decoder.decodeSingularEnumField(value: &self.screenshotFormat) }()
       default: break
       }
     }
@@ -6181,11 +6253,15 @@ nonisolated extension SPLKV2FetchDetails: SwiftProtobuf.Message, SwiftProtobuf._
     if !self.packages.isEmpty {
       try visitor.visitRepeatedMessageField(value: self.packages, fieldNumber: 1)
     }
+    if self.screenshotFormat != .unspecified {
+      try visitor.visitSingularEnumField(value: self.screenshotFormat, fieldNumber: 2)
+    }
     try unknownFields.traverse(visitor: &visitor)
   }
 
   public static func ==(lhs: SPLKV2FetchDetails, rhs: SPLKV2FetchDetails) -> Bool {
     if lhs.packages != rhs.packages {return false}
+    if lhs.screenshotFormat != rhs.screenshotFormat {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }
@@ -6193,7 +6269,7 @@ nonisolated extension SPLKV2FetchDetails: SwiftProtobuf.Message, SwiftProtobuf._
 
 nonisolated extension SPLKV2FetchModificationPatch: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".FetchModificationPatch"
-  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}tasks\0")
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}tasks\0\u{3}screenshot_format\0")
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
@@ -6202,6 +6278,7 @@ nonisolated extension SPLKV2FetchModificationPatch: SwiftProtobuf.Message, Swift
       // enabled. https://github.com/apple/swift-protobuf/issues/1034
       switch fieldNumber {
       case 1: try { try decoder.decodeRepeatedMessageField(value: &self.tasks) }()
+      case 2: try { try decoder.decodeSingularEnumField(value: &self.screenshotFormat) }()
       default: break
       }
     }
@@ -6211,11 +6288,15 @@ nonisolated extension SPLKV2FetchModificationPatch: SwiftProtobuf.Message, Swift
     if !self.tasks.isEmpty {
       try visitor.visitRepeatedMessageField(value: self.tasks, fieldNumber: 1)
     }
+    if self.screenshotFormat != .unspecified {
+      try visitor.visitSingularEnumField(value: self.screenshotFormat, fieldNumber: 2)
+    }
     try unknownFields.traverse(visitor: &visitor)
   }
 
   public static func ==(lhs: SPLKV2FetchModificationPatch, rhs: SPLKV2FetchModificationPatch) -> Bool {
     if lhs.tasks != rhs.tasks {return false}
+    if lhs.screenshotFormat != rhs.screenshotFormat {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }
@@ -6384,7 +6465,7 @@ nonisolated extension SPLKV2NodeDetail: SwiftProtobuf.Message, SwiftProtobuf._Me
 
 nonisolated extension SPLKV2ModifyAttribute: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".ModifyAttribute"
-  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{3}target_oid\0\u{1}setter\0\u{1}getter\0\u{1}type\0\u{1}value\0")
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{3}target_oid\0\u{1}setter\0\u{1}getter\0\u{1}type\0\u{1}value\0\u{3}screenshot_format\0")
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
@@ -6397,6 +6478,7 @@ nonisolated extension SPLKV2ModifyAttribute: SwiftProtobuf.Message, SwiftProtobu
       case 3: try { try decoder.decodeSingularStringField(value: &self.getter) }()
       case 4: try { try decoder.decodeSingularEnumField(value: &self.type) }()
       case 5: try { try decoder.decodeSingularMessageField(value: &self._value) }()
+      case 6: try { try decoder.decodeSingularEnumField(value: &self.screenshotFormat) }()
       default: break
       }
     }
@@ -6422,6 +6504,9 @@ nonisolated extension SPLKV2ModifyAttribute: SwiftProtobuf.Message, SwiftProtobu
     try { if let v = self._value {
       try visitor.visitSingularMessageField(value: v, fieldNumber: 5)
     } }()
+    if self.screenshotFormat != .unspecified {
+      try visitor.visitSingularEnumField(value: self.screenshotFormat, fieldNumber: 6)
+    }
     try unknownFields.traverse(visitor: &visitor)
   }
 
@@ -6431,6 +6516,7 @@ nonisolated extension SPLKV2ModifyAttribute: SwiftProtobuf.Message, SwiftProtobu
     if lhs.getter != rhs.getter {return false}
     if lhs.type != rhs.type {return false}
     if lhs._value != rhs._value {return false}
+    if lhs.screenshotFormat != rhs.screenshotFormat {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }

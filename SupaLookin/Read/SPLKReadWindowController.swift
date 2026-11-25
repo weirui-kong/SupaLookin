@@ -103,7 +103,7 @@ final class SPLKReadWindowController: SPLKWindowController, NSToolbarDelegate {
         let popover = NSPopover()
         popover.behavior = .transient
         popover.animates = false
-        popover.contentSize = NSSize(width: SPLKHelper.isEnglish ? 270 : 350, height: 230)
+        popover.contentSize = NSSize(width: SPLKHelper.isEnglish ? 270 : 350, height: SPLKMenuPopoverSettingController.height)
         popover.contentViewController = SPLKMenuPopoverSettingController(preferenceManager: preferenceManager)
         popover.show(relativeTo: NSRect(x: 0, y: 0, width: button.bounds.size.width, height: button.bounds.size.height), of: button, preferredEdge: .maxY)
     }

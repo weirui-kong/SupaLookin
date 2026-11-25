@@ -38,6 +38,7 @@ final class SPLKStaticWindowController: SPLKWindowController, NSToolbarDelegate,
     private let modeItem = SPLKModeToolbarItem()
     private weak var modeSession: SPLKDeviceSession?
     private var arbiterSubscription: AnyCancellable?
+    private var pngFallbackSubscription: AnyCancellable?
     // Set when the app drops out of Live Control. A device's first screen capture makes it re-attach over USB, which
     // drops the app; Live Control comes back if the app reconnects by itself before this.
     private var resumeLiveControlDeadline: Date?
@@ -159,7 +160,19 @@ final class SPLKStaticWindowController: SPLKWindowController, NSToolbarDelegate,
             .sink { [weak self, weak session] mode in
                 self?.arbiterModeDidChange(SPLKWindowMode(mode), session: session)
             }
+        // Once per session, per 20261125-screenshot-qoi.md.
+        pngFallbackSubscription = session?.fellBackToPNG
+            .first { $0 }
+            .sink { [weak self] _ in
+                self?.showPNGFallbackToast()
+            }
         updateModeItem()
+    }
+
+    private func showPNGFallbackToast() {
+        SPLKToast.show(NSLocalizedString("This device only supports PNG screenshots.", comment: ""),
+                       detail: NSLocalizedString("Syncing may be slower. Update SPLKServer in the app to use QOI + LZ4.", comment: ""),
+                       style: .warning, in: window, duration: 6)
     }
 
     private func resumeLiveControlIfNeeded() {
@@ -437,8 +450,8 @@ final class SPLKStaticWindowController: SPLKWindowController, NSToolbarDelegate,
         let popover = NSPopover()
         popover.behavior = .transient
         popover.animates = false
-        popover.contentSize = NSSize(width: SPLKHelper.isEnglish ? 270 : 350, height: 230)
-        popover.contentViewController = SPLKMenuPopoverSettingController(preferenceManager: SPLKPreferenceManager.mainManager)
+        popover.contentSize = NSSize(width: SPLKHelper.isEnglish ? 270 : 350, height: SPLKMenuPopoverSettingController.height + SPLKMenuPopoverSettingController.screenshotFormatHeight)
+        popover.contentViewController = SPLKMenuPopoverSettingController(preferenceManager: SPLKPreferenceManager.mainManager, showsScreenshotFormat: true)
         popover.show(relativeTo: NSRect(x: 0, y: 0, width: button.bounds.size.width, height: button.bounds.size.height), of: button, preferredEdge: .maxY)
     }
 

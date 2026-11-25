@@ -44,6 +44,7 @@ final class SPLKDeviceSession: SPLKControlChannel {
         SPLKCapability.controlLease, SPLKCapability.events,
         SPLKCapability.inputTouch, SPLKCapability.inputMotion, SPLKCapability.inputText,
         SPLKCapability.actionSemantic, SPLKCapability.waitIdle, SPLKCapability.eventsHierarchy, SPLKCapability.hierarchyMasks,
+        SPLKCapability.screenshotQOI,
     ]
 
     static var configuration: SPLKClientSession.Configuration {
@@ -52,6 +53,18 @@ final class SPLKDeviceSession: SPLKControlChannel {
 
     var serverVersion: String {
         client.serverHello.serverVersion
+    }
+
+    // Turns true the first time this session asks for PNG screenshots although QOI + LZ4 is preferred.
+    let fellBackToPNG = CurrentValueSubject<Bool, Never>(false)
+
+    private var screenshotFormat: SPLKV2EncodedImage.Format {
+        let preferred = SPLKPreferenceManager.mainManager.screenshotFormat.message
+        let format = SPLKBridge.screenshotFormat(requested: preferred, capabilities: client.capabilities)
+        if format != preferred && !fellBackToPNG.value {
+            fellBackToPNG.send(true)
+        }
+        return format
     }
 
     func close() async {
@@ -94,17 +107,21 @@ final class SPLKDeviceSession: SPLKControlChannel {
     func details(_ packages: [SPLKStaticAsyncUpdateTasksPackage]) async throws -> AsyncThrowingStream<SPLKV2StreamItem, Error> {
         var call = SPLKV2FetchDetails()
         call.packages = packages.map(SPLKBridge.packageMessage)
+        call.screenshotFormat = screenshotFormat
         return try await stream(.fetchDetails(call))
     }
 
     func modificationPatch(_ tasks: [SPLKStaticAsyncUpdateTask]) async throws -> AsyncThrowingStream<SPLKV2StreamItem, Error> {
         var call = SPLKV2FetchModificationPatch()
         call.tasks = tasks.map(SPLKBridge.taskMessage)
+        call.screenshotFormat = screenshotFormat
         return try await stream(.fetchModificationPatch(call))
     }
 
     func modify(_ modification: SPLKAttributeModification, as actor: SPLKControlArbiter.Actor = .window) async throws -> SPLKDisplayItemDetail? {
-        guard case .nodeDetail(let detail) = try await mutating(.modifyAttribute(SPLKBridge.modificationMessage(modification)), as: actor) else { return nil }
+        var call = SPLKBridge.modificationMessage(modification)
+        call.screenshotFormat = screenshotFormat
+        guard case .nodeDetail(let detail) = try await mutating(.modifyAttribute(call), as: actor) else { return nil }
         return SPLKBridge.detail(detail)
     }
 

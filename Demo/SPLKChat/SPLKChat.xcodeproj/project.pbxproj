@@ -30,8 +30,11 @@
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
-		5C1A00000000000000000015 /* PBXFileSystemSynchronizedBuildFileExceptionSet */ = {
+		5C1A00000000000000000015 /* Exceptions for "SPLKChat" folder in "SPLKChat" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			additionalCompilerFlagsByRelativePath = {
+				SPLKEncodeBenchQOIRelease.c = "-Os";
+			};
 			membershipExceptions = (
 				Info.plist,
 			);
@@ -40,7 +43,14 @@
 /* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
-		5C1A00000000000000000005 /* SPLKChat */ = {isa = PBXFileSystemSynchronizedRootGroup; exceptions = (5C1A00000000000000000015 /* PBXFileSystemSynchronizedBuildFileExceptionSet */, ); explicitFileTypes = {}; explicitFolders = (); path = SPLKChat; sourceTree = "<group>"; };
+		5C1A00000000000000000005 /* SPLKChat */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				5C1A00000000000000000015 /* Exceptions for "SPLKChat" folder in "SPLKChat" target */,
+			);
+			path = SPLKChat;
+			sourceTree = "<group>";
+		};
 /* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -227,6 +237,7 @@
 				SWIFT_APPROACHABLE_CONCURRENCY = YES;
 				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
 				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_OBJC_BRIDGING_HEADER = "SPLKChat/SPLKChat-Bridging-Header.h";
 				SWIFT_VERSION = 6.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
@@ -256,6 +267,7 @@
 				SWIFT_APPROACHABLE_CONCURRENCY = YES;
 				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
 				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_OBJC_BRIDGING_HEADER = "SPLKChat/SPLKChat-Bridging-Header.h";
 				SWIFT_VERSION = 6.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};

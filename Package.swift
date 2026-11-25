@@ -69,8 +69,13 @@ let package = Package(
             swiftSettings: sharedSwiftDefines
         ),
         .target(
+            name: "SPLKImageCodec",
+            path: "Sources/SPLKImageCodec",
+            cSettings: sharedDefines
+        ),
+        .target(
             name: "SPLKModelBridge",
-            dependencies: ["SPLKProtocol", "SPLKServer"],
+            dependencies: ["SPLKProtocol", "SPLKServer", "SPLKImageCodec"],
             path: "Sources/SPLKModelBridge",
             swiftSettings: sharedSwiftDefines
         ),

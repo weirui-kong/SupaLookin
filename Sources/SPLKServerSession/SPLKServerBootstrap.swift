@@ -36,6 +36,7 @@ final class SPLKServerRuntime {
         SPLKCapability.image, SPLKCapability.gestureToggle,
         SPLKCapability.controlLease, SPLKCapability.events,
         SPLKCapability.actionSemantic, SPLKCapability.waitIdle, SPLKCapability.eventsHierarchy, SPLKCapability.hierarchyMasks,
+        SPLKCapability.screenshotQOI,
     ]
 
     let state = SPLKServerState()

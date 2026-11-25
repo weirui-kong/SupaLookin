@@ -374,13 +374,13 @@ extension SPLKBridge {
 
     // MARK: - Details
 
-    public static func detailMessage(_ detail: SPLKDisplayItemDetail, includesMasks: Bool = true) -> SPLKV2NodeDetail {
+    public static func detailMessage(_ detail: SPLKDisplayItemDetail, includesMasks: Bool = true, screenshotFormat: SPLKV2EncodedImage.Format = .png) -> SPLKV2NodeDetail {
         var message = SPLKV2NodeDetail()
         message.oid = UInt64(detail.displayItemOid)
-        if let image = encodedImage(detail.groupScreenshot) {
+        if let image = encodedScreenshot(detail.groupScreenshot, format: screenshotFormat) {
             message.groupScreenshot = image
         }
-        if let image = encodedImage(detail.soloScreenshot) {
+        if let image = encodedScreenshot(detail.soloScreenshot, format: screenshotFormat) {
             message.soloScreenshot = image
         }
         if let frame = rectValue(detail.frameValue) {

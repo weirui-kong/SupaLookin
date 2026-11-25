@@ -34,6 +34,7 @@
 "Show layer outline" = "Show layer outline";
 "Show hidden UIView and CALayer" = "Show hidden UIView and CALayer";
 "Show maskView and mask layer" = "Show maskView and mask layer";
+"Screenshot format" = "Screenshot format";
 "Item separation" = "Item separation";
 "More…" = "More…";
 
@@ -325,3 +326,5 @@
 "Need help?" = "Need help?";
 "Switching the device to screen capture…" = "Switching the device to screen capture…";
 "The device reconnects the first time its screen is captured. Live Control comes back by itself." = "The device reconnects the first time its screen is captured. Live Control comes back by itself.";
+"This device only supports PNG screenshots." = "This device only supports PNG screenshots.";
+"Syncing may be slower. Update SPLKServer in the app to use QOI + LZ4." = "Syncing may be slower. Update SPLKServer in the app to use QOI + LZ4.";

@@ -236,6 +236,9 @@ extension SPLKBridge {
     }
 
     static func makeImage(_ message: SPLKV2EncodedImage) -> SPLKBridgeImage? {
+        if message.format == .qoiLz4 {
+            return makeQOILZ4Image(message)
+        }
         #if canImport(UIKit)
         return UIImage(data: message.data, scale: message.scale > 0 ? CGFloat(message.scale) : 1)
         #else

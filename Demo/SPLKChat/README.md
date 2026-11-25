@@ -15,6 +15,11 @@ SPLKServer only compiles in the Debug configuration, so build Debug. A Release b
   - System alerts: Photos, Notifications and Location permission requests.
   - App alerts: a `UIAlertController` alert, one with a text field, and an action sheet.
   - Inspector cases: Masks, with a `maskView` with subviews, a `CAShapeLayer` mask, a gradient fade, a mask with its own mask, and a mask a switch adds and removes. Launch with `-SPLKChatScreen masks` to open it directly.
+  - Benchmarks: Screenshot Encoding, which encodes the same screenshots as PNG, raw pixels through the Compression framework, QOI, and lossy formats for reference, and shows each one's size and encode time on this device. See `spec/20261125-screenshot-encoding-bench.md`. Launch with `-SPLKChatScreen encodeBench` to open it, and add `-SPLKChatEncodeBenchAutorun YES` to start a run too. Every run writes its results to `Documents/encode-bench.md` in the app's container:
+
+    ```bash
+    xcrun devicectl device copy from --device <DEVICE> --domain-type appDataContainer --domain-identifier icu.retrouvailles.splkchat --source Documents/encode-bench.md --destination encode-bench.md
+    ```
 - **Me**: a profile header, switches (Dark Mode switches the window's appearance), a slider, and destructive confirmation alerts.
 
 Key controls have accessibility identifiers, such as `conversation.input`, `conversation.send` and `contacts.search`.

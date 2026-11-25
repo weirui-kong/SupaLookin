@@ -36,6 +36,7 @@
 "Show layer outline" = "显示图层边框";
 "Show hidden UIView and CALayer" = "显示 hidden 为 YES 或 opacity 为 0 的图层图像";
 "Show maskView and mask layer" = "显示 maskView 和 mask 图层";
+"Screenshot format" = "截图格式";
 "Item separation" = "图层纵向间距";
 "More…" = "更多偏好设置…";
 
@@ -323,3 +324,5 @@
 "Need help?" = "需要帮助？";
 "Switching the device to screen capture…" = "正在将设备切换到屏幕录制…";
 "The device reconnects the first time its screen is captured. Live Control comes back by itself." = "设备第一次被录制屏幕时会重新连接一次，Live Control 会自动恢复。";
+"This device only supports PNG screenshots." = "这台设备仅支持 PNG 截图。";
+"Syncing may be slower. Update SPLKServer in the app to use QOI + LZ4." = "同步可能会变慢。将 App 中的 SPLKServer 更新后即可使用 QOI + LZ4。";

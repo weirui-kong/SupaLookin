@@ -33,6 +33,19 @@ enum SPLKDoubleClickBehavior: Int {
     case focus
 }
 
+// 20261125-screenshot-qoi.md
+enum SPLKScreenshotFormat: Int {
+    case qoiLZ4
+    case png
+
+    var message: SPLKV2EncodedImage.Format {
+        switch self {
+        case .qoiLZ4: .qoiLz4
+        case .png: .png
+        }
+    }
+}
+
 enum SPLKPreferredCallStackType: Int {
     /// 格式化 + 简略
     case `default`
@@ -64,6 +77,7 @@ private let Key_ContrastLevel = "contrastLevel"
 private let Key_SectionsShow = "ss"
 private let Key_CollapsedGroups = "collapsedGroups_918"
 private let Key_PreferredExportCompression = "preferredExportCompression"
+private let Key_ScreenshotFormat = "screenshotFormat"
 private let Key_SyncConsoleTarget = "syncConsoleTarget"
 private let Key_FreeRotation = "FreeRotation"
 private let Key_FastMode = "fastMode"
@@ -107,6 +121,15 @@ final class SPLKPreferenceManager {
             guard oldValue != expansionIndex else { return }
             if shouldStoreToLocal {
                 userDefaults.set(expansionIndex, forKey: Key_ExpansionIndex)
+            }
+        }
+    }
+
+    var screenshotFormat: SPLKScreenshotFormat {
+        didSet {
+            guard oldValue != screenshotFormat else { return }
+            if shouldStoreToLocal {
+                userDefaults.set(screenshotFormat.rawValue, forKey: Key_ScreenshotFormat)
             }
         }
     }
@@ -241,6 +264,12 @@ final class SPLKPreferenceManager {
         } else {
             showMaskItems = SPLKBOOLMsgAttribute(bool: false)
             userDefaults.set(false, forKey: Key_ShowMaskItems)
+        }
+
+        if let value = userDefaults.object(forKey: Key_ScreenshotFormat) as? NSNumber {
+            screenshotFormat = SPLKScreenshotFormat(rawValue: value.intValue) ?? .qoiLZ4
+        } else {
+            screenshotFormat = .qoiLZ4
         }
 
         if let value = userDefaults.object(forKey: Key_DoubleClickBehavior) as? NSNumber {
