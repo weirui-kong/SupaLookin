@@ -69,3 +69,9 @@ with the version and checksum filled in.
 - tvOS, visionOS and Mac Catalyst slices.
 - A CocoaPods podspec.
 - Signing the framework.
+
+## Update: the framework is optimized
+
+The framework is still built in the Debug configuration, since that's what compiles the server, but with Release's optimization: the script passes `SWIFT_OPTIMIZATION_LEVEL=-O`, `SWIFT_COMPILATION_MODE=wholemodule`, `GCC_OPTIMIZATION_LEVEL=s` and `ENABLE_TESTABILITY=NO`. Everything else stays as in Debug, `NSAssert` included. Nothing changes for an app embedding it: the zip, its contents and the Debug-only note are the same.
+
+Verified by building SPLK Chat with the same settings and running `SPLKMaskLiveTests` against it on a device.

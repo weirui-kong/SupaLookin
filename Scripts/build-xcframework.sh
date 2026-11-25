@@ -23,11 +23,12 @@ VERSION="$(sed -n 's/.*SPLK_SERVER_READABLE_VERSION = @"\([^"]*\)".*/\1/p' "$ROO
 mkdir -p "$WORK/package"
 ln -s "$ROOT/Package.swift" "$ROOT/Package.resolved" "$ROOT/Sources" "$ROOT/Tests" "$WORK/package/"
 
-# SPLKServer compiles its server only in Debug.
+# SPLKServer compiles its server only in Debug, so the optimization that Release would bring is set here.
 build() {
     local destination="$1" products="$2"
     (cd "$WORK/package" && xcodebuild -quiet -scheme SPLKServerDynamic -destination "$destination" -configuration Debug \
-        -derivedDataPath "$WORK/derived" ONLY_ACTIVE_ARCH=NO CODE_SIGNING_ALLOWED=NO build)
+        -derivedDataPath "$WORK/derived" ONLY_ACTIVE_ARCH=NO CODE_SIGNING_ALLOWED=NO \
+        SWIFT_OPTIMIZATION_LEVEL=-O SWIFT_COMPILATION_MODE=wholemodule GCC_OPTIMIZATION_LEVEL=s ENABLE_TESTABILITY=NO build)
     local framework="$WORK/$products/SPLKServer.framework"
     mkdir -p "$WORK/$products"
     cp -R "$WORK/derived/Build/Products/$products/PackageFrameworks/SPLKServerDynamic.framework" "$framework"
