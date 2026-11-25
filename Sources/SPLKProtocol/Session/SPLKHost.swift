@@ -36,12 +36,14 @@ public actor SPLKHost {
     private final class Session {
         let id: Data
         let control: SPLKRPCConnection
+        let capabilities: Set<String>
         var bulk: [SPLKRPCConnection] = []
         var liveness: SPLKWatchdog?
 
-        init(id: Data, control: SPLKRPCConnection) {
+        init(id: Data, control: SPLKRPCConnection, capabilities: Set<String>) {
             self.id = id
             self.control = control
+            self.capabilities = capabilities
         }
     }
 
@@ -89,7 +91,8 @@ public actor SPLKHost {
         }
         switch clientHello.role {
         case .control:
-            await openSession(on: connection, clientVersion: clientHello.clientVersion)
+            let capabilities = configuration.capabilities.intersection(clientHello.capabilities)
+            await openSession(on: connection, clientVersion: clientHello.clientVersion, capabilities: capabilities)
         case .bulk:
             guard let session, session.id == clientHello.sessionID else {
                 await reject(connection, SPLKStatusError(.notFound, reason: "unknown_session"))
@@ -97,16 +100,16 @@ public actor SPLKHost {
             }
             try? await connection.sendHello(await serverHello(sessionID: session.id))
             session.bulk.append(connection)
-            await connection.startDispatching(handler: handler, sessionID: session.id, channel: .bulk, clientVersion: clientHello.clientVersion)
+            await connection.startDispatching(handler: handler, sessionID: session.id, channel: .bulk, clientVersion: clientHello.clientVersion, capabilities: session.capabilities)
         case .video, .unspecified, .UNRECOGNIZED:
             await reject(connection, SPLKStatusError(.unimplemented, reason: "channel_unsupported"))
         }
     }
 
-    private func openSession(on connection: SPLKRPCConnection, clientVersion: String) async {
+    private func openSession(on connection: SPLKRPCConnection, clientVersion: String, capabilities: Set<String>) async {
         await closeSession()
         let id = Data((0..<16).map { _ in UInt8.random(in: .min ... .max) })
-        let newSession = Session(id: id, control: connection)
+        let newSession = Session(id: id, control: connection, capabilities: capabilities)
         session = newSession
 
         do {
@@ -119,7 +122,7 @@ public actor SPLKHost {
             Task { await self?.closeSession(id) }
         }
         newSession.liveness = liveness
-        await connection.startDispatching(handler: handler, sessionID: id, channel: .control, clientVersion: clientVersion, activity: { liveness.touch() })
+        await connection.startDispatching(handler: handler, sessionID: id, channel: .control, clientVersion: clientVersion, capabilities: capabilities, activity: { liveness.touch() })
         Task {
             await connection.waitUntilClosed()
             await self.closeSession(id)

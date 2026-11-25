@@ -30,6 +30,7 @@ struct SPLKServerRequestHandler: SPLKRequestHandler {
     private static let conversionQueue = DispatchQueue(label: "SPLKServerSession.conversion")
 
     func handle(_ request: SPLKV2Request, context: SPLKRequestContext) async throws -> SPLKHandlerResult {
+        let includesMasks = context.capabilities.contains(SPLKCapability.hierarchyMasks)
         switch request.call {
         case .subscribe, .releaseControl:
             break
@@ -53,11 +54,11 @@ struct SPLKServerRequestHandler: SPLKRequestHandler {
                 (SPLKTransfer(value: SPLKServerOperations.hierarchy(withClientVersion: Self.v1FeatureVersion)), SPLKServerRuntime.screenInfo())
             }
             let version = await MainActor.run { SPLKUIMonitor.shared.currentGeneration() }
-            return .response(.hierarchy(SPLKBridge.snapshot(info.value, version: version, screen: screen)))
+            return .response(.hierarchy(SPLKBridge.snapshot(info.value, version: version, screen: screen, includesMasks: includesMasks)))
 
         case .fetchDetails(let call):
             let packages = SPLKTransfer(value: call.packages.map { SPLKBridge.package($0, clientVersion: Self.v1FeatureVersion) })
-            return .stream(Self.detailStream { progress, finished in
+            return .stream(Self.detailStream(includesMasks: includesMasks) { progress, finished in
                 await MainActor.run {
                     SPLKTransfer(value: SPLKServerOperations.fetchDetails(packages: packages.value, progress: { details in
                         details.forEach(progress)
@@ -72,12 +73,12 @@ struct SPLKServerRequestHandler: SPLKRequestHandler {
             let detail: SPLKTransfer<SPLKDisplayItemDetail?> = try await Self.reply { reply in
                 SPLKServerOperations.modifyAttribute(modification.value) { detail, error in reply(detail, error) }
             }
-            return .response(detail.value.map { .nodeDetail(SPLKBridge.detailMessage($0)) })
+            return .response(detail.value.map { .nodeDetail(SPLKBridge.detailMessage($0, includesMasks: includesMasks)) })
 
         case .fetchModificationPatch(let call):
             let tasks = SPLKTransfer(value: call.tasks.map { SPLKBridge.task($0, clientVersion: Self.v1FeatureVersion) })
             let expected = call.tasks.count
-            return .stream(Self.detailStream(expected: expected) { progress, _ in
+            return .stream(Self.detailStream(expected: expected, includesMasks: includesMasks) { progress, _ in
                 await MainActor.run {
                     SPLKServerOperations.fetchModificationPatch(tasks: tasks.value, progress: progress)
                     return SPLKTransfer(value: NSNull() as Any)
@@ -188,6 +189,7 @@ struct SPLKServerRequestHandler: SPLKRequestHandler {
     // Streams details from an operation that reports them through a block, until `finished` or `expected` of them.
     private static func detailStream(
         expected: Int? = nil,
+        includesMasks: Bool,
         start: @escaping @Sendable (_ progress: @escaping @Sendable (SPLKDisplayItemDetail) -> Void, _ finished: @escaping @Sendable () -> Void) async -> SPLKTransfer<Any>,
         cancel: @escaping @Sendable (SPLKTransfer<Any>) async -> Void
     ) -> AsyncThrowingStream<SPLKV2StreamItem, Error> {
@@ -200,7 +202,7 @@ struct SPLKServerRequestHandler: SPLKRequestHandler {
                 let transfer = SPLKTransfer(value: detail)
                 conversionQueue.async {
                     var item = SPLKV2StreamItem()
-                    item.nodeDetail = SPLKBridge.detailMessage(transfer.value)
+                    item.nodeDetail = SPLKBridge.detailMessage(transfer.value, includesMasks: includesMasks)
                     continuation.yield(item)
                 }
                 if let expected, count.increment() >= expected {

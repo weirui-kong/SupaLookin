@@ -117,6 +117,9 @@ final class SPLKUIMonitor {
                 }
             }
             stack.append(contentsOf: sublayers)
+            if let mask = layer.mask {
+                stack.append(mask)
+            }
         }
         return (hasher.finalize(), animating)
     }

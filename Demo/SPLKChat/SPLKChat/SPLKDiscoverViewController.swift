@@ -13,13 +13,14 @@ import UserNotifications
 final class SPLKDiscoverViewController: UITableViewController, CLLocationManagerDelegate {
 
     private enum Row {
-        case feed, photos, notifications, location, alert, textAlert, actionSheet
+        case feed, photos, notifications, location, alert, textAlert, actionSheet, masks
     }
 
     private let sections: [(title: String?, rows: [Row])] = [
         (nil, [.feed]),
         ("System Alerts", [.photos, .notifications, .location]),
         ("App Alerts", [.alert, .textAlert, .actionSheet]),
+        ("Inspector Cases", [.masks]),
     ]
 
     private let locationManager = CLLocationManager()
@@ -113,12 +114,13 @@ final class SPLKDiscoverViewController: UITableViewController, CLLocationManager
         case .alert: ("Show Alert", "exclamationmark.bubble", .systemGreen, nil)
         case .textAlert: ("Show Alert with Text Field", "character.cursor.ibeam", .systemTeal, nil)
         case .actionSheet: ("Show Action Sheet", "list.bullet.rectangle", .systemPurple, nil)
+        case .masks: ("Masks", "theatermasks", .systemIndigo, nil)
         }
         cell.textLabel?.text = title
         cell.detailTextLabel?.text = detail
         cell.imageView?.image = UIImage(systemName: symbol)
         cell.imageView?.tintColor = color
-        cell.accessoryType = row == .feed ? .disclosureIndicator : .none
+        cell.accessoryType = row == .feed || row == .masks ? .disclosureIndicator : .none
         cell.accessibilityIdentifier = "discover.\(row)"
         return cell
     }
@@ -131,6 +133,8 @@ final class SPLKDiscoverViewController: UITableViewController, CLLocationManager
             let feed = SPLKFeedViewController()
             feed.hidesBottomBarWhenPushed = true
             navigationController?.pushViewController(feed, animated: true)
+        case .masks:
+            showMasks(animated: true)
         case .photos:
             Task {
                 _ = await PHPhotoLibrary.requestAuthorization(for: .readWrite)
@@ -169,6 +173,12 @@ final class SPLKDiscoverViewController: UITableViewController, CLLocationManager
             sheet.popoverPresentationController?.sourceRect = sourceView?.bounds ?? .zero
             present(sheet, animated: true)
         }
+    }
+
+    func showMasks(animated: Bool) {
+        let masks = SPLKMasksViewController()
+        masks.hidesBottomBarWhenPushed = true
+        navigationController?.pushViewController(masks, animated: animated)
     }
 
     private func record(_ result: String) {

@@ -35,6 +35,7 @@
 
 "Show layer outline" = "显示图层边框";
 "Show hidden UIView and CALayer" = "显示 hidden 为 YES 或 opacity 为 0 的图层图像";
+"Show maskView and mask layer" = "显示 maskView 和 mask 图层";
 "Item separation" = "图层纵向间距";
 "More…" = "更多偏好设置…";
 

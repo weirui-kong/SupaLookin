@@ -71,7 +71,7 @@ enum SPLKMCPToolHandler {
                     return failure("query is required.")
                 }
                 let limit = clamp(arguments["limit"].flatMap(integer) ?? 50, to: 1...500)
-                return json(SPLKMCPPayload.search(query, in: dataSource.flatItems, limit: limit))
+                return json(SPLKMCPPayload.search(query, in: dataSource.flatItems + hiddenMaskItems(in: dataSource), limit: limit))
             case "get_selection":
                 let dataSource = try loadedDataSource()
                 guard let selectedItem = dataSource.selectedItem else {
@@ -337,8 +337,17 @@ enum SPLKMCPToolHandler {
         return dataSource
     }
 
+    // Masks the window hides still count for agents.
+    private static func hiddenMaskItems(in dataSource: SPLKHierarchyDataSource) -> [SPLKDisplayItem] {
+        guard !dataSource.preferenceManager.showMaskItems.currentBOOLValue else {
+            return []
+        }
+        return SPLKDisplayItem.itemsInMasks(in: dataSource.rawHierarchyInfo?.displayItems ?? [])
+    }
+
     private static func item(withOid oid: UInt, in dataSource: SPLKHierarchyDataSource) throws -> SPLKDisplayItem {
-        guard let item = dataSource.displayItem(withOid: oid) else {
+        let hiddenMask = { hiddenMaskItems(in: dataSource).first { $0.viewObject?.oid == oid || $0.layerObject?.oid == oid } }
+        guard let item = dataSource.displayItem(withOid: oid) ?? hiddenMask() else {
             throw SPLKError.make("No item has oid \(oid).", "The hierarchy may have changed; call get_hierarchy or reload.")
         }
         return item

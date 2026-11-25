@@ -33,6 +33,7 @@
 
 "Show layer outline" = "Show layer outline";
 "Show hidden UIView and CALayer" = "Show hidden UIView and CALayer";
+"Show maskView and mask layer" = "Show maskView and mask layer";
 "Item separation" = "Item separation";
 "More…" = "More…";
 

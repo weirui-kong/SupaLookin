@@ -15,6 +15,7 @@ public struct SPLKRequestContext: Sendable {
     public let channel: SPLKV2ChannelRole
     public let requestID: UInt64
     public let clientVersion: String
+    public let capabilities: Set<String>
 }
 
 public enum SPLKHandlerResult: Sendable {
@@ -93,6 +94,7 @@ public actor SPLKRPCConnection {
     private var sessionID = Data()
     private var channel = SPLKV2ChannelRole.unspecified
     private var clientVersion = ""
+    private var capabilities: Set<String> = []
     private var activityObserver: (@Sendable () -> Void)?
     private var onewayFailureObserver: (@Sendable (SPLKOnewayFailure) -> Void)?
 
@@ -154,6 +156,7 @@ public actor SPLKRPCConnection {
         sessionID: Data,
         channel: SPLKV2ChannelRole,
         clientVersion: String = "",
+        capabilities: Set<String> = [],
         activity: (@Sendable () -> Void)? = nil,
         onewayFailure: (@Sendable (SPLKOnewayFailure) -> Void)? = nil
     ) {
@@ -162,6 +165,7 @@ public actor SPLKRPCConnection {
         self.sessionID = sessionID
         self.channel = channel
         self.clientVersion = clientVersion
+        self.capabilities = capabilities
         activityObserver = activity
         onewayFailureObserver = onewayFailure
         phase = .running
@@ -353,7 +357,7 @@ public actor SPLKRPCConnection {
         call.watchdog = SPLKWatchdog(timeout: Self.deadline(of: request)) { [weak self] in
             Task { await self?.expireInbound(id) }
         }
-        let context = SPLKRequestContext(sessionID: sessionID, channel: channel, requestID: id, clientVersion: clientVersion)
+        let context = SPLKRequestContext(sessionID: sessionID, channel: channel, requestID: id, clientVersion: clientVersion, capabilities: capabilities)
         call.task = Task {
             await self.runInbound(request, id: id, call: call, handler: handler, context: context)
         }

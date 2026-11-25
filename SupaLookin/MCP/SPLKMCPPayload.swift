@@ -83,6 +83,9 @@ enum SPLKMCPPayload {
         if let viewController = item.hostViewControllerObject?.completedDemangledClassName {
             result["view_controller"] = viewController
         }
+        if item.isMask {
+            result["mask"] = true
+        }
         return result
     }
 
@@ -97,7 +100,8 @@ enum SPLKMCPPayload {
             }
             count += 1
             var result = summary(of: item)
-            let subitems = item.subitems ?? []
+            // Masks are listed whether or not the window shows them.
+            let subitems = (item.subitems ?? []).filter { !$0.isMask } + [item.mask].compactMap { $0 }
             if let maxDepth, depth >= maxDepth {
                 if !subitems.isEmpty {
                     result["children_count"] = subitems.count

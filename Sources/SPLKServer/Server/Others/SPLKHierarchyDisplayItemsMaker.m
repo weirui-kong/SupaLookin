@@ -113,29 +113,41 @@
             }
         }        
     }
+    if (layer.mask) {
+        SPLKDisplayItem *maskItem = [self _displayItemWithLayer:layer.mask screenshots:hasScreenshots attrList:hasAttrList lowImageQuality:lowQuality readCustomInfo:readCustomInfo saveCustomSetter:saveCustomSetter];
+        maskItem.isMask = YES;
+        item.maskItem = maskItem;
+    }
     
     return item;
 }
 
 + (NSArray<SPLKDisplayItem *> *)subitemsOfLayer:(CALayer *)layer {
-    if (!layer || layer.sublayers.count == 0) {
+    if (!layer || (layer.sublayers.count == 0 && !layer.mask)) {
         return @[];
     }
     [[SPLKTraceManager sharedInstance] reload];
     
     NSMutableArray<SPLKDisplayItem *> *resultSubitems = [NSMutableArray array];
 
-    NSArray<CALayer *> *sublayers = [layer.sublayers copy];
-    [sublayers enumerateObjectsUsingBlock:^(__kindof CALayer * _Nonnull sublayer, NSUInteger idx, BOOL * _Nonnull stop) {
-        SPLKDisplayItem *sublayer_item = [self _displayItemWithLayer:sublayer screenshots:NO attrList:NO lowImageQuality:NO readCustomInfo:YES saveCustomSetter:YES];
-        if (sublayer_item) {
-            [resultSubitems addObject:sublayer_item];
-        }
-    }];
+    if (layer.sublayers.count) {
+        NSArray<CALayer *> *sublayers = [layer.sublayers copy];
+        [sublayers enumerateObjectsUsingBlock:^(__kindof CALayer * _Nonnull sublayer, NSUInteger idx, BOOL * _Nonnull stop) {
+            SPLKDisplayItem *sublayer_item = [self _displayItemWithLayer:sublayer screenshots:NO attrList:NO lowImageQuality:NO readCustomInfo:YES saveCustomSetter:YES];
+            if (sublayer_item) {
+                [resultSubitems addObject:sublayer_item];
+            }
+        }];
 
-    NSArray<SPLKDisplayItem *> *customSubitems = [[[SPLKCustomDisplayItemsMaker alloc] initWithLayer:layer saveAttrSetter:YES] make];
-    if (customSubitems.count > 0) {
-        [resultSubitems addObjectsFromArray:customSubitems];
+        NSArray<SPLKDisplayItem *> *customSubitems = [[[SPLKCustomDisplayItemsMaker alloc] initWithLayer:layer saveAttrSetter:YES] make];
+        if (customSubitems.count > 0) {
+            [resultSubitems addObjectsFromArray:customSubitems];
+        }
+    }
+    if (layer.mask) {
+        SPLKDisplayItem *maskItem = [self _displayItemWithLayer:layer.mask screenshots:NO attrList:NO lowImageQuality:NO readCustomInfo:YES saveCustomSetter:YES];
+        maskItem.isMask = YES;
+        [resultSubitems addObject:maskItem];
     }
     
     return resultSubitems;

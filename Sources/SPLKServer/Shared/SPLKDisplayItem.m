@@ -42,9 +42,11 @@
 
 - (id)copyWithZone:(NSZone *)zone {
     SPLKDisplayItem *newDisplayItem = [[SPLKDisplayItem allocWithZone:zone] init];
-    newDisplayItem.subitems = [self.subitems splk_map:^id(NSUInteger idx, SPLKDisplayItem *value) {
+    newDisplayItem.subitems = [[self _subitemsWithoutMask] splk_map:^id(NSUInteger idx, SPLKDisplayItem *value) {
         return value.copy;
     }];
+    newDisplayItem.isMask = self.isMask;
+    newDisplayItem.maskItem = self.maskItem.copy;
     newDisplayItem.customInfo = self.customInfo.copy;
     newDisplayItem.isHidden = self.isHidden;
     newDisplayItem.alpha = self.alpha;
@@ -75,7 +77,9 @@
 
 - (void)encodeWithCoder:(NSCoder *)aCoder {
     [aCoder encodeObject:self.customInfo forKey:@"customInfo"];
-    [aCoder encodeObject:self.subitems forKey:@"subitems"];
+    [aCoder encodeObject:[self _subitemsWithoutMask] forKey:@"subitems"];
+    [aCoder encodeBool:self.isMask forKey:@"isMask"];
+    [aCoder encodeObject:self.maskItem forKey:@"maskItem"];
     [aCoder encodeBool:self.isHidden forKey:@"hidden"];
     [aCoder encodeFloat:self.alpha forKey:@"alpha"];
     [aCoder encodeObject:self.viewObject forKey:@"viewObject"];
@@ -111,6 +115,8 @@
     if (self = [super init]) {
         self.customInfo = [aDecoder decodeObjectForKey:@"customInfo"];
         self.subitems = [aDecoder decodeObjectForKey:@"subitems"];
+        self.isMask = [aDecoder decodeBoolForKey:@"isMask"];
+        self.maskItem = [aDecoder decodeObjectForKey:@"maskItem"];
         self.isHidden = [aDecoder decodeBoolForKey:@"hidden"];
         self.alpha = [aDecoder decodeFloatForKey:@"alpha"];
         self.viewObject = [aDecoder decodeObjectForKey:@"viewObject"];
@@ -172,6 +178,16 @@
         [self _updateDisplayingInHierarchyProperty];
     }
     return self;
+}
+
+// The Mac may have joined maskItem to subitems; it's stored on its own.
+- (NSArray<SPLKDisplayItem *> *)_subitemsWithoutMask {
+    if (!self.maskItem || ![self.subitems containsObject:self.maskItem]) {
+        return self.subitems;
+    }
+    return [self.subitems splk_filter:^BOOL(SPLKDisplayItem *obj) {
+        return obj != self.maskItem;
+    }];
 }
 
 - (SPLKObject *)displayingObject {

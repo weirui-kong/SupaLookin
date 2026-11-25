@@ -113,6 +113,10 @@ extension SPLKDisplayItem {
         if subtitle?.lowercased().contains(searchString) == true {
             return true
         }
+        // The row's "mask" badge counts as its text.
+        if isMask && "mask".contains(searchString) {
+            return true
+        }
         if viewObject?.memoryAddress?.contains(searchString) == true {
             return true
         }
@@ -135,6 +139,68 @@ extension SPLKDisplayItem {
 
     func enumerateAncestors(_ block: (SPLKDisplayItem) -> Bool) {
         `super`?.enumerateSelfAndAncestors(block)
+    }
+
+    // A mask stays in `mask` and joins the end of subitems only while masks are shown.
+    static func applyMaskVisibility(to roots: [SPLKDisplayItem], showsMasks: Bool) {
+        var pending = roots
+        while let item = pending.popLast() {
+            let current = item.subitems ?? []
+            let plain = current.filter { !$0.isMask }
+            var wanted = plain
+            if showsMasks, let mask = item.mask {
+                wanted.append(mask)
+            }
+            if wanted.count != current.count || zip(wanted, current).contains(where: { $0 !== $1 }) {
+                item.subitems = wanted
+            }
+            pending.append(contentsOf: plain)
+            if let mask = item.mask {
+                pending.append(mask)
+            }
+        }
+    }
+
+    // Children fetched for one item list its mask among them.
+    func replaceChildren(with children: [SPLKDisplayItem], showsMasks: Bool) {
+        mask = children.last { $0.isMask }
+        subitems = children.filter { !$0.isMask }
+        Self.applyMaskVisibility(to: [self], showsMasks: showsMasks)
+    }
+
+    // Pre-order, with every mask whether it's shown or not.
+    static func itemsIncludingMasks(in roots: [SPLKDisplayItem]) -> [SPLKDisplayItem] {
+        var result: [SPLKDisplayItem] = []
+        var pending = Array(roots.reversed())
+        while let item = pending.popLast() {
+            result.append(item)
+            var children = (item.subitems ?? []).filter { !$0.isMask }
+            if let mask = item.mask {
+                children.append(mask)
+            }
+            pending.append(contentsOf: children.reversed())
+        }
+        return result
+    }
+
+    // Every item inside a mask, shown or not.
+    static func itemsInMasks(in roots: [SPLKDisplayItem]) -> [SPLKDisplayItem] {
+        var seen = Set<ObjectIdentifier>()
+        let masks = itemsIncludingMasks(in: roots).compactMap(\.mask)
+        return itemsIncludingMasks(in: masks).filter { seen.insert(ObjectIdentifier($0)).inserted }
+    }
+
+    // The outermost item whose mask contains this one; nil outside masks.
+    var maskOwner: SPLKDisplayItem? {
+        var owner: SPLKDisplayItem?
+        var item: SPLKDisplayItem? = self
+        while let current = item {
+            if current.isMask {
+                owner = current.`super`
+            }
+            item = current.`super`
+        }
+        return owner
     }
 
     /// 遍历自身后所有下级元素

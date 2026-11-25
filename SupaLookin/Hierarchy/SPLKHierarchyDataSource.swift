@@ -203,6 +203,10 @@ class SPLKHierarchyDataSource {
                 self?.setUpColors()
             }
             .store(in: &cancellables)
+
+        preferenceManager.showMaskItems.subscribe(self) { dataSource, _ in
+            dataSource.showMaskItemsDidChange()
+        }
     }
 
     deinit {
@@ -238,6 +242,7 @@ class SPLKHierarchyDataSource {
         // 设置 color alias 和 select color menu
         setUpColors()
 
+        SPLKDisplayItem.applyMaskVisibility(to: info.displayItems ?? [], showsMasks: preferenceManager.showMaskItems.currentBOOLValue)
         // 根据 subitems 属性打平为二维数组，同时给每个 item 设置 indentLevel
         rawFlatItems = SPLKDisplayItem.flatItems(fromHierarchicalItems: info.displayItems ?? [])
         let flatItems = rawFlatItems
@@ -315,6 +320,16 @@ class SPLKHierarchyDataSource {
         }
 
         didReloadHierarchyInfo.send(())
+    }
+
+    private func showMaskItemsDidChange() {
+        guard let info = rawHierarchyInfo else {
+            return
+        }
+        if !preferenceManager.showMaskItems.currentBOOLValue, let owner = selectedItem?.maskOwner {
+            selectedItem = owner
+        }
+        reload(with: info, keepState: true)
     }
 
     /// 当前应该被显示的 rows 行数

@@ -204,6 +204,7 @@ message Node {                      // SPLKDisplayItem
   repeated EventHandler event_handlers = 16;
   reserved 17;
   uint32 depth = 18;                // 0 for a root, or for a direct child in NodeDetail.children
+  bool is_mask = 19;                // the parent's mask, sent only with hierarchy.masks
 }
 
 message CustomNodeInfo {            // SPLKCustomDisplayItemInfo

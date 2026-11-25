@@ -437,7 +437,7 @@ final class SPLKStaticWindowController: SPLKWindowController, NSToolbarDelegate,
         let popover = NSPopover()
         popover.behavior = .transient
         popover.animates = false
-        popover.contentSize = NSSize(width: SPLKHelper.isEnglish ? 270 : 350, height: 200)
+        popover.contentSize = NSSize(width: SPLKHelper.isEnglish ? 270 : 350, height: 230)
         popover.contentViewController = SPLKMenuPopoverSettingController(preferenceManager: SPLKPreferenceManager.mainManager)
         popover.show(relativeTo: NSRect(x: 0, y: 0, width: button.bounds.size.width, height: button.bounds.size.height), of: button, preferredEdge: .maxY)
     }

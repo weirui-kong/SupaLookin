@@ -1473,6 +1473,12 @@ public nonisolated struct SPLKV2Node: @unchecked Sendable {
     set {_uniqueStorage()._depth = newValue}
   }
 
+  /// the parent's mask, sent only with hierarchy.masks
+  public var isMask: Bool {
+    get {_storage._isMask}
+    set {_uniqueStorage()._isMask = newValue}
+  }
+
   public var unknownFields = SwiftProtobuf.UnknownStorage()
 
   public init() {}
@@ -4808,7 +4814,7 @@ nonisolated extension SPLKV2IvarTrace: SwiftProtobuf.Message, SwiftProtobuf._Mes
 
 nonisolated extension SPLKV2Node: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".Node"
-  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}view\0\u{1}layer\0\u{3}host_view_controller\0\u{1}frame\0\u{1}bounds\0\u{1}hidden\0\u{1}alpha\0\u{3}background_color\0\u{3}represented_as_key_window\0\u{3}should_capture_image\0\u{3}custom_display_title\0\u{3}danceui_source\0\u{3}custom_info\0\u{3}attribute_groups\0\u{3}custom_attribute_groups\0\u{3}event_handlers\0\u{2}\u{2}depth\0\u{c}\u{11}\u{1}")
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}view\0\u{1}layer\0\u{3}host_view_controller\0\u{1}frame\0\u{1}bounds\0\u{1}hidden\0\u{1}alpha\0\u{3}background_color\0\u{3}represented_as_key_window\0\u{3}should_capture_image\0\u{3}custom_display_title\0\u{3}danceui_source\0\u{3}custom_info\0\u{3}attribute_groups\0\u{3}custom_attribute_groups\0\u{3}event_handlers\0\u{2}\u{2}depth\0\u{3}is_mask\0\u{c}\u{11}\u{1}")
 
   fileprivate class _StorageClass {
     var _view: SPLKV2ObjectRef? = nil
@@ -4828,6 +4834,7 @@ nonisolated extension SPLKV2Node: SwiftProtobuf.Message, SwiftProtobuf._MessageI
     var _customAttributeGroups: [SPLKV2AttributeGroup] = []
     var _eventHandlers: [SPLKV2EventHandler] = []
     var _depth: UInt32 = 0
+    var _isMask: Bool = false
 
       // This property is used as the initial default value for new instances of the type.
       // The type itself is protecting the reference to its storage via CoW semantics.
@@ -4855,6 +4862,7 @@ nonisolated extension SPLKV2Node: SwiftProtobuf.Message, SwiftProtobuf._MessageI
       _customAttributeGroups = source._customAttributeGroups
       _eventHandlers = source._eventHandlers
       _depth = source._depth
+      _isMask = source._isMask
     }
   }
 
@@ -4890,6 +4898,7 @@ nonisolated extension SPLKV2Node: SwiftProtobuf.Message, SwiftProtobuf._MessageI
         case 15: try { try decoder.decodeRepeatedMessageField(value: &_storage._customAttributeGroups) }()
         case 16: try { try decoder.decodeRepeatedMessageField(value: &_storage._eventHandlers) }()
         case 18: try { try decoder.decodeSingularUInt32Field(value: &_storage._depth) }()
+        case 19: try { try decoder.decodeSingularBoolField(value: &_storage._isMask) }()
         default: break
         }
       }
@@ -4953,6 +4962,9 @@ nonisolated extension SPLKV2Node: SwiftProtobuf.Message, SwiftProtobuf._MessageI
       if _storage._depth != 0 {
         try visitor.visitSingularUInt32Field(value: _storage._depth, fieldNumber: 18)
       }
+      if _storage._isMask != false {
+        try visitor.visitSingularBoolField(value: _storage._isMask, fieldNumber: 19)
+      }
     }
     try unknownFields.traverse(visitor: &visitor)
   }
@@ -4979,6 +4991,7 @@ nonisolated extension SPLKV2Node: SwiftProtobuf.Message, SwiftProtobuf._MessageI
         if _storage._customAttributeGroups != rhs_storage._customAttributeGroups {return false}
         if _storage._eventHandlers != rhs_storage._eventHandlers {return false}
         if _storage._depth != rhs_storage._depth {return false}
+        if _storage._isMask != rhs_storage._isMask {return false}
         return true
       }
       if !storagesAreEqual {return false}

@@ -75,6 +75,7 @@ final class SPLKHierarchyRowView: SPLKOutlineRowView, @preconcurrency SPLKDispla
         updateExpandStatus()
         updateStrikethroughLayer()
         updateLabelStringsAndImageViewAlpha()
+        updateMaskBadge()
         updateLabelsFonts()
 
         needsLayout = true
@@ -89,6 +90,7 @@ final class SPLKHierarchyRowView: SPLKOutlineRowView, @preconcurrency SPLKDispla
     override func viewDidChangeEffectiveAppearance() {
         super.viewDidChangeEffectiveAppearance()
         updateEventHandlerButtonColors()
+        updateMaskBadge()
     }
 
     // MARK: - Event Handler
@@ -168,6 +170,17 @@ final class SPLKHierarchyRowView: SPLKOutlineRowView, @preconcurrency SPLKDispla
         }
         titleLabel.attributedStringValue = titleString ?? NSAttributedString()
         subtitleLabel.attributedStringValue = subtitleString ?? NSAttributedString()
+    }
+
+    private func updateMaskBadge() {
+        guard let displayItem, displayItem.isMask else {
+            titleAccessoryView?.isHidden = true
+            return
+        }
+        let badge = (titleAccessoryView as? SPLKHierarchyMaskBadge) ?? SPLKHierarchyMaskBadge()
+        titleAccessoryView = badge
+        badge.isHidden = false
+        badge.update(selected: isRowSelected, faded: resolveIfShouldFadeContent())
     }
 
     private func updateEventsButton() {
@@ -388,5 +401,44 @@ final class SPLKHierarchyRowView: SPLKOutlineRowView, @preconcurrency SPLKDispla
         // The Objective-C code passed NSEventTypeMouseExited (raw 9) as a tracking option; the same raw bits are kept.
         let options: NSTrackingArea.Options = [NSTrackingArea.Options(rawValue: NSEvent.EventType.mouseExited.rawValue), .mouseMoved, .activeInKeyWindow, .inVisibleRect]
         addTrackingArea(NSTrackingArea(rect: bounds, options: options, owner: self, userInfo: nil))
+    }
+}
+
+private final class SPLKHierarchyMaskBadge: NSView {
+
+    private let label = NSTextField(labelWithString: "mask")
+
+    init() {
+        super.init(frame: .zero)
+        wantsLayer = true
+        label.font = .systemFont(ofSize: 10, weight: .medium)
+        addSubview(label)
+        let size = label.fittingSize
+        label.frame = NSRect(x: 6, y: 0, width: size.width, height: size.height)
+        setFrameSize(NSSize(width: size.width + 12, height: size.height))
+        layer?.cornerRadius = size.height / 2
+    }
+
+    @available(*, unavailable)
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
+
+    func update(selected: Bool, faded: Bool) {
+        let isDark = effectiveAppearance.bestMatch(from: [.aqua, .darkAqua]) == .darkAqua
+        effectiveAppearance.performAsCurrentDrawingAppearance {
+            // Selected rows are blue, so the badge turns white like the row's text.
+            if selected {
+                label.textColor = .white
+                layer?.backgroundColor = NSColor.white.withAlphaComponent(0.25).cgColor
+            } else if isDark {
+                label.textColor = NSColor.systemPurple.blended(withFraction: 0.45, of: .white)
+                layer?.backgroundColor = NSColor.systemPurple.withAlphaComponent(0.3).cgColor
+            } else {
+                label.textColor = .systemPurple
+                layer?.backgroundColor = NSColor.systemPurple.withAlphaComponent(0.15).cgColor
+            }
+        }
+        alphaValue = faded && !selected ? 0.6 : 1
     }
 }

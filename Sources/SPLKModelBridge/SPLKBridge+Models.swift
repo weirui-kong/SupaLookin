@@ -188,6 +188,7 @@ extension SPLKBridge {
         message.attributeGroups = (item.attributesGroupList ?? []).map(groupMessage)
         message.customAttributeGroups = (item.customAttrGroupList ?? []).map(groupMessage)
         message.eventHandlers = (item.eventHandlers ?? []).map(eventHandlerMessage)
+        message.isMask = item.isMask
         return message
     }
 
@@ -209,16 +210,22 @@ extension SPLKBridge {
         item.attributesGroupList = message.attributeGroups.map(group)
         item.customAttrGroupList = message.customAttributeGroups.map(group)
         item.eventHandlers = message.eventHandlers.map(eventHandler)
+        item.isMask = message.isMask
         return item
     }
 
     // Pre-order with depth: a nested message per level would overflow Swift concurrency's stacks in deep hierarchies.
-    public static func flatten(_ roots: [SPLKDisplayItem]) -> [SPLKV2Node] {
+    // A mask travels as its owner's last child. Without `includesMasks` none travel, as an older peer would take them for plain children.
+    public static func flatten(_ roots: [SPLKDisplayItem], includesMasks: Bool = true) -> [SPLKV2Node] {
         var nodes: [SPLKV2Node] = []
-        var stack: [(SPLKDisplayItem, UInt32)] = roots.reversed().map { ($0, 0) }
+        var stack: [(SPLKDisplayItem, UInt32)] = roots.filter { includesMasks || !$0.isMask }.reversed().map { ($0, 0) }
         while let (item, depth) = stack.popLast() {
             nodes.append(nodeMessage(item, depth: depth))
-            for child in (item.subitems ?? []).reversed() {
+            var children = (item.subitems ?? []).filter { !$0.isMask }
+            if includesMasks, let mask = item.mask {
+                children.append(mask)
+            }
+            for child in children.reversed() {
                 stack.append((child, depth + 1))
             }
         }
@@ -234,7 +241,11 @@ extension SPLKBridge {
             let depth = min(Int(node.depth), ancestors.count)
             ancestors.removeSubrange(depth...)
             if let parent = ancestors.last {
-                children[ObjectIdentifier(parent), default: []].append(item)
+                if item.isMask {
+                    parent.mask = item
+                } else {
+                    children[ObjectIdentifier(parent), default: []].append(item)
+                }
             } else {
                 roots.append(item)
             }
@@ -247,16 +258,19 @@ extension SPLKBridge {
                 item.subitems = list
                 pending.append(contentsOf: list)
             }
+            if let mask = item.mask {
+                pending.append(mask)
+            }
         }
         return roots
     }
 
     // MARK: - Hierarchy
 
-    public static func snapshot(_ info: SPLKHierarchyInfo, version: UInt64, screen: SPLKV2ScreenInfo?) -> SPLKV2HierarchySnapshot {
+    public static func snapshot(_ info: SPLKHierarchyInfo, version: UInt64, screen: SPLKV2ScreenInfo?, includesMasks: Bool = true) -> SPLKV2HierarchySnapshot {
         var message = SPLKV2HierarchySnapshot()
         message.version = version
-        message.nodes = flatten(info.displayItems ?? [])
+        message.nodes = flatten(info.displayItems ?? [], includesMasks: includesMasks)
         message.colorAlias = colorAliasMessage(info.colorAlias ?? [:])
         message.collapsedClassList = info.collapsedClassList ?? []
         if let appInfo = info.appInfo {
@@ -360,7 +374,7 @@ extension SPLKBridge {
 
     // MARK: - Details
 
-    public static func detailMessage(_ detail: SPLKDisplayItemDetail) -> SPLKV2NodeDetail {
+    public static func detailMessage(_ detail: SPLKDisplayItemDetail, includesMasks: Bool = true) -> SPLKV2NodeDetail {
         var message = SPLKV2NodeDetail()
         message.oid = UInt64(detail.displayItemOid)
         if let image = encodedImage(detail.groupScreenshot) {
@@ -391,7 +405,7 @@ extension SPLKBridge {
         message.customAttributeGroups = (detail.customAttrGroupList ?? []).map(groupMessage)
         if let subitems = detail.subitems {
             message.childrenSet = true
-            message.children = flatten(subitems)
+            message.children = flatten(subitems, includesMasks: includesMasks)
         }
         message.failureCode = Int32(detail.failureCode)
         return message

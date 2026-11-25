@@ -89,6 +89,9 @@
     [[layer.sublayers copy] enumerateObjectsUsingBlock:^(__kindof CALayer * _Nonnull sublayer, NSUInteger idx, BOOL * _Nonnull stop) {
         [self _addTraceForLayersRootedByLayer:sublayer];
     }];
+    if (layer.mask) {
+        [self _addTraceForLayersRootedByLayer:layer.mask];
+    }
 }
 
 - (void)_buildSpecialTraceForView:(UIView *)view {

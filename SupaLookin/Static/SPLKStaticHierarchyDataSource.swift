@@ -116,7 +116,7 @@ final class SPLKStaticHierarchyDataSource: SPLKHierarchyDataSource {
                 break
             }
 
-            displayItem.subitems = subitems
+            displayItem.replaceChildren(with: subitems, showsMasks: preferenceManager.showMaskItems.currentBOOLValue)
             // 根据 subitems 属性打平为二维数组，同时给每个 item 设置 indentLevel
             rawFlatItems = SPLKDisplayItem.flatItems(fromHierarchicalItems: rawHierarchyInfo?.displayItems ?? [])
             flatItems = rawFlatItems

@@ -25,7 +25,7 @@ final class SPLKReadHierarchyDataSource: SPLKHierarchyDataSource {
         let soloScreenshots = file?.soloScreenshots ?? [:]
         let groupScreenshots = file?.groupScreenshots ?? [:]
         if !soloScreenshots.isEmpty || !groupScreenshots.isEmpty {
-            for obj in flatItems {
+            for obj in SPLKDisplayItem.itemsIncludingMasks(in: file?.hierarchyInfo?.displayItems ?? []) {
                 let oid = NSNumber(value: obj.layerObject?.oid ?? 0)
 
                 if let soloData = soloScreenshots[oid] {

@@ -40,6 +40,11 @@ final class SPLKChatTabBarController: UITabBarController {
             navigation.tabBarItem = UITabBarItem(title: title, image: UIImage(systemName: symbol), selectedImage: UIImage(systemName: symbol + ".fill"))
             return navigation
         }
+        // Launching with `-SPLKChatScreen masks` opens Discover › Masks, for tests that need it on screen.
+        if UserDefaults.standard.string(forKey: "SPLKChatScreen") == "masks", let discover = tabs[2].0 as? SPLKDiscoverViewController {
+            selectedIndex = 2
+            discover.showMasks(animated: false)
+        }
     }
 }
 

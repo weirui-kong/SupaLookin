@@ -40,6 +40,8 @@ public enum SPLKCapability {
     public static let waitIdle = "wait.idle"
     public static let hierarchyDiff = "hierarchy.diff"
     public static let videoInAppH264 = "video.inapp.h264"
+    // 20261125-mask-display.md
+    public static let hierarchyMasks = "hierarchy.masks"
 }
 
 extension SPLKV2Request.OneOf_Call {

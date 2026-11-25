@@ -16,6 +16,7 @@ final class SPLKMenuPopoverSettingController: SPLKBaseViewController {
 
     private let enableOutlineButton = NSButton()
     private let showInvisiblesButton = NSButton()
+    private let showMasksButton = NSButton()
 
     private let spaceSlider = NSSlider()
     private let spaceSliderLabel = SPLKLabel()
@@ -44,6 +45,15 @@ final class SPLKMenuPopoverSettingController: SPLKBaseViewController {
         view.addSubview(showInvisiblesButton)
         showInvisiblesButton.state = manager.showHiddenItems.currentBOOLValue ? .on : .off
 
+        showMasksButton.font = .systemFont(ofSize: 14)
+        showMasksButton.title = NSLocalizedString("Show maskView and mask layer", comment: "")
+        showMasksButton.setButtonType(.switch)
+        showMasksButton.onAction { [unowned self] _ in
+            self.handleShowMasksControl()
+        }
+        view.addSubview(showMasksButton)
+        showMasksButton.state = manager.showMaskItems.currentBOOLValue ? .on : .off
+
         spaceSlider.minValue = Double(SPLKPreviewMinZInterspace)
         spaceSlider.maxValue = Double(SPLKPreviewMaxZInterspace)
         spaceSlider.onAction { [unowned self] slider in
@@ -71,7 +81,9 @@ final class SPLKMenuPopoverSettingController: SPLKBaseViewController {
         enableOutlineButton.setX(15).extendToRight(0).setHeight(24).setY(15)
         showInvisiblesButton.setX(15).extendToRight(0).setHeight(24).setY(enableOutlineButton.frame.maxY + 6)
 
-        spaceSlider.setX(15).extendToRight(15).setHeight(26).setY(showInvisiblesButton.frame.maxY + 22)
+        showMasksButton.setX(15).extendToRight(0).setHeight(24).setY(showInvisiblesButton.frame.maxY + 6)
+
+        spaceSlider.setX(15).extendToRight(15).setHeight(26).setY(showMasksButton.frame.maxY + 22)
         spaceSliderLabel.fitSize().setX(spaceSlider.frame.minX + 3).setY(spaceSlider.frame.maxY)
 
         preferenceButton.setWidth(130).centerHorizontally().alignBottom(4)
@@ -83,6 +95,10 @@ final class SPLKMenuPopoverSettingController: SPLKBaseViewController {
 
     private func handleShowInvisiblesControl() {
         manager.showHiddenItems.setBOOLValue(showInvisiblesButton.state == .on, ignoreSubscriber: nil)
+    }
+
+    private func handleShowMasksControl() {
+        manager.showMaskItems.setBOOLValue(showMasksButton.state == .on, ignoreSubscriber: nil)
     }
 
     private func handleSpaceSlider(_ slider: NSSlider) {

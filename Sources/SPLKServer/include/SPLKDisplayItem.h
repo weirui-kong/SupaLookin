@@ -111,6 +111,11 @@ typedef NS_ENUM(NSUInteger, SPLKDisplayItemProperty) {
 /// 可能为 nil
 @property(nonatomic, copy) NSString *danceuiSource;
 
+@property(nonatomic, assign) BOOL isMask;
+
+/// The layer's mask. It's kept apart from subitems; the Mac joins it to the end of subitems while masks are shown.
+@property(nonatomic, strong) SPLKDisplayItem *maskItem;
+
 #pragma mark - No Encode/Decode
 
 @property(nonatomic, weak) id<SPLKDisplayItemDelegate> previewItemDelegate;

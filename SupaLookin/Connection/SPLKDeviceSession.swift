@@ -43,7 +43,7 @@ final class SPLKDeviceSession: SPLKControlChannel {
         SPLKCapability.image, SPLKCapability.gestureToggle,
         SPLKCapability.controlLease, SPLKCapability.events,
         SPLKCapability.inputTouch, SPLKCapability.inputMotion, SPLKCapability.inputText,
-        SPLKCapability.actionSemantic, SPLKCapability.waitIdle, SPLKCapability.eventsHierarchy,
+        SPLKCapability.actionSemantic, SPLKCapability.waitIdle, SPLKCapability.eventsHierarchy, SPLKCapability.hierarchyMasks,
     ]
 
     static var configuration: SPLKClientSession.Configuration {

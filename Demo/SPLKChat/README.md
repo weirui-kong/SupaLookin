@@ -14,6 +14,7 @@ SPLKServer only compiles in the Debug configuration, so build Debug. A Release b
   - Moments: a 200-row feed with pull to refresh.
   - System alerts: Photos, Notifications and Location permission requests.
   - App alerts: a `UIAlertController` alert, one with a text field, and an action sheet.
+  - Inspector cases: Masks, with a `maskView` with subviews, a `CAShapeLayer` mask, a gradient fade, a mask with its own mask, and a mask a switch adds and removes. Launch with `-SPLKChatScreen masks` to open it directly.
 - **Me**: a profile header, switches (Dark Mode switches the window's appearance), a slider, and destructive confirmation alerts.
 
 Key controls have accessibility identifiers, such as `conversation.input`, `conversation.send` and `contacts.search`.

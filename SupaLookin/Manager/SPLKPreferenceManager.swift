@@ -54,6 +54,7 @@ enum SPLKMeasureState: Int {
 private let Key_PreviousClientVersion = "preVer"
 private let Key_ShowOutline = "showOutline"
 private let Key_ShowHiddenItems = "showHiddenItems"
+private let Key_ShowMaskItems = "showMaskItems"
 private let Key_RgbaFormat = "egbaFormat"
 private let Key_ZInterspace = "zInterspace_v095"
 private let Key_AppearanceType = "appearanceType"
@@ -112,6 +113,7 @@ final class SPLKPreferenceManager {
 
     let showOutline: SPLKBOOLMsgAttribute
     let showHiddenItems: SPLKBOOLMsgAttribute
+    let showMaskItems: SPLKBOOLMsgAttribute
 
     // 范围是 0 ～ 1
     let zInterspace: SPLKDoubleMsgAttribute
@@ -234,6 +236,13 @@ final class SPLKPreferenceManager {
             userDefaults.set(false, forKey: Key_ShowHiddenItems)
         }
 
+        if let value = userDefaults.object(forKey: Key_ShowMaskItems) as? NSNumber {
+            showMaskItems = SPLKBOOLMsgAttribute(bool: value.boolValue)
+        } else {
+            showMaskItems = SPLKBOOLMsgAttribute(bool: false)
+            userDefaults.set(false, forKey: Key_ShowMaskItems)
+        }
+
         if let value = userDefaults.object(forKey: Key_DoubleClickBehavior) as? NSNumber {
             doubleClickBehavior = SPLKDoubleClickBehavior(rawValue: Int(value.int32Value)) ?? .collapse
         } else {
@@ -321,6 +330,11 @@ final class SPLKPreferenceManager {
         showHiddenItems.subscribe(self) { manager, param in
             if manager.shouldStoreToLocal {
                 manager.userDefaults.set(param.boolValue, forKey: Key_ShowHiddenItems)
+            }
+        }
+        showMaskItems.subscribe(self) { manager, param in
+            if manager.shouldStoreToLocal {
+                manager.userDefaults.set(param.boolValue, forKey: Key_ShowMaskItems)
             }
         }
         zInterspace.subscribe(self) { manager, param in

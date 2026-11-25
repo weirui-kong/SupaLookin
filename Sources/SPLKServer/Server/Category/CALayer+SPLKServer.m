@@ -82,7 +82,8 @@
     }
     UIGraphicsBeginImageContextWithOptions(contextSize, NO, renderScale);
     CGContextRef context = UIGraphicsGetCurrentContext();
-    if (self.splk_hostView && !self.splk_hostView.splk_isChildrenViewOfTabBar) {
+    // A mask's view is in no window, so drawViewHierarchyInRect: would draw nothing for it.
+    if (self.splk_hostView && self.splk_window && !self.splk_hostView.splk_isChildrenViewOfTabBar) {
         [self.splk_hostView drawViewHierarchyInRect:CGRectMake(0, 0, self.frame.size.width, self.frame.size.height) afterScreenUpdates:YES];
     } else {
         [self renderInContext:context];
@@ -94,7 +95,8 @@
 
 - (UIImage *)splk_soloScreenshotWithLowQuality:(BOOL)lowQuality {
     if (!self.sublayers.count) {
-        return nil;
+        // Shown masks make the item expandable, and an expanded item draws its solo screenshot.
+        return self.mask ? [self splk_groupScreenshotWithLowQuality:lowQuality] : nil;
     }
     
     CGFloat screenScale = [SPLKMultiplatformAdapter mainScreenScale];
@@ -130,7 +132,7 @@
         
         UIGraphicsBeginImageContextWithOptions(contextSize, NO, renderScale);
         CGContextRef context = UIGraphicsGetCurrentContext();
-        if (self.splk_hostView && !self.splk_hostView.splk_isChildrenViewOfTabBar) {
+        if (self.splk_hostView && self.splk_window && !self.splk_hostView.splk_isChildrenViewOfTabBar) {
             [self.splk_hostView drawViewHierarchyInRect:CGRectMake(0, 0, self.frame.size.width, self.frame.size.height) afterScreenUpdates:YES];
         } else {
             [self renderInContext:context];

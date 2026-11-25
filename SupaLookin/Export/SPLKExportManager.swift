@@ -25,7 +25,7 @@ final class SPLKExportManager {
         var soloScreenshots: [NSNumber: Data] = [:]
         var groupScreenshots: [NSNumber: Data] = [:]
 
-        let allItems = SPLKDisplayItem.flatItems(fromHierarchicalItems: info?.displayItems ?? []) ?? []
+        let allItems = SPLKDisplayItem.itemsIncludingMasks(in: info?.displayItems ?? [])
         for displayItem in allItems {
             displayItem.screenshotEncodeType = .none
             let key = NSNumber(value: displayItem.layerObject?.oid ?? 0)

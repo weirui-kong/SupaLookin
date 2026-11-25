@@ -107,6 +107,24 @@ struct CallTests {
         await harness.session.close()
     }
 
+    @Test func handlersSeeTheEnabledCapabilities() async throws {
+        let seen = SPLKLocked<[Set<String>]>([])
+        let handler = ClosureHandler { request, context in
+            seen.withLock { $0.append(context.capabilities) }
+            return try await Fixtures.echoHandler.handle(request, context: context)
+        }
+        let harness = try await Harness.memory(
+            handler: handler,
+            hostCapabilities: [SPLKCapability.object, SPLKCapability.details, SPLKCapability.hierarchyMasks],
+            clientCapabilities: [SPLKCapability.object, SPLKCapability.details, SPLKCapability.image]
+        )
+        _ = try await harness.session.unary(Fixtures.getObject(1))
+        _ = try await collectOIDs(harness.session.stream(Fixtures.fetchDetails(count: 1)))
+        let enabled: Set<String> = [SPLKCapability.object, SPLKCapability.details]
+        #expect(seen.withLock { $0 } == [enabled, enabled])
+        await harness.session.close()
+    }
+
     @Test func onewayFailureReachesTheErrorStream() async throws {
         let harness = try await Harness.memory()
         try await harness.session.oneway(Fixtures.invoke("not-found"))

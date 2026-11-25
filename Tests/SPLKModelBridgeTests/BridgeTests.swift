@@ -322,6 +322,27 @@ struct ModelRoundTripTests {
         #expect(depth == 299)
         #expect(SPLKBridge.flatten(roots) == nodes)
     }
+
+    @Test func masksTravelAsTheLastChild() {
+        var mask = richNode(depth: 1, oid: 20)
+        mask.isMask = true
+        let maskChild = richNode(depth: 2, oid: 30)
+        let nodes = [richNode(depth: 0, oid: 0), richNode(depth: 1, oid: 10), mask, maskChild]
+
+        let roots = SPLKBridge.rebuild(nodes)
+        let owner = roots[0]
+        #expect(owner.subitems?.count == 1)
+        #expect(owner.mask?.isMask == true)
+        #expect(owner.mask?.layerObject?.oid == 21)
+        #expect(owner.mask?.subitems?.first?.layerObject?.oid == 31)
+        #expect(SPLKBridge.flatten(roots) == nodes)
+        #expect(SPLKBridge.flatten(roots, includesMasks: false) == Array(nodes[0...1]))
+
+        // Fetched children list the mask as a root.
+        let children = SPLKBridge.rebuild([richNode(depth: 0, oid: 10), { var node = mask; node.depth = 0; return node }()])
+        #expect(children.map(\.isMask) == [false, true])
+        #expect(SPLKBridge.flatten(children, includesMasks: false).count == 1)
+    }
 }
 
 struct ErrorMappingTests {

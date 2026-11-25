@@ -51,6 +51,18 @@ class SPLKOutlineRowView: SPLKTableRowView {
         }
     }
 
+    // Laid out between the title and the subtitle.
+    var titleAccessoryView: NSView? {
+        didSet {
+            guard oldValue !== titleAccessoryView else { return }
+            oldValue?.removeFromSuperview()
+            if let titleAccessoryView {
+                addSubview(titleAccessoryView)
+            }
+            needsLayout = true
+        }
+    }
+
     init(compactUI compact: Bool) {
         useCompactUI = compact
         if compact {
@@ -92,8 +104,13 @@ class SPLKOutlineRowView: SPLKTableRowView {
         titleLabel.fitSize().setX(x + titleLeft).centerVertically()
         var maxX = titleLabel.frame.maxX
 
+        if let titleAccessoryView, !titleAccessoryView.isHidden {
+            titleAccessoryView.setX(maxX + 6).centerVertically()
+            maxX = titleAccessoryView.frame.maxX
+        }
+
         if subtitleLabel.isVisible {
-            subtitleLabel.fitSize().setX(titleLabel.frame.maxX + subtitleLeft).centerVertically()
+            subtitleLabel.fitSize().setX(maxX + subtitleLeft).centerVertically()
             maxX = subtitleLabel.frame.maxX
         }
         [disclosureButton, titleLabel, subtitleLabel].visibleViews.offset(y: -1)
