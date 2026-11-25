@@ -1,5 +1,3 @@
-#ifdef SHOULD_COMPILE_SPLK_SHARED 
-
 //
 //  SPLKAutoLayoutConstraint.m
 //  Lookin
@@ -103,5 +101,3 @@
 }
 
 @end
-
-#endif /* SHOULD_COMPILE_SPLK_SHARED */

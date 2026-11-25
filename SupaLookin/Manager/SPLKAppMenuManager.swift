@@ -47,7 +47,7 @@ private let kTag_LookinClientGitHubIssues = 62
 private let kTag_SPLKServerGitHubIssues = 63
 private let kTag_Weibo = 64
 
-private let kTag_CopySPM = 67
+private let kTag_DownloadXCFramework = 67
 private let kTag_MoreIntegrationGuide = 68
 private let kTag_Jobs = 69
 private let kTag_DocumentCollection = 70
@@ -164,8 +164,8 @@ final class SPLKAppMenuManager: NSObject, NSMenuDelegate {
             Self.open("https://weibo.com/234885306")
         }
 
-        menu_help?.item(withTag: kTag_CopySPM)?.onAction { _ in
-            Self.copyToPasteboard("https://github.com/weirui-kong/SupaLookin")
+        menu_help?.item(withTag: kTag_DownloadXCFramework)?.onAction { _ in
+            Self.open("https://github.com/weirui-kong/SupaLookin/releases/latest")
         }
         menu_help?.item(withTag: kTag_MoreIntegrationGuide)?.onAction { _ in
             Self.open("https://github.com/weirui-kong/SupaLookin#readme")
@@ -308,11 +308,5 @@ final class SPLKAppMenuManager: NSObject, NSMenuDelegate {
         if let url = URL(string: urlString) {
             NSWorkspace.shared.open(url)
         }
-    }
-
-    private static func copyToPasteboard(_ string: String) {
-        let paste = NSPasteboard.general
-        paste.clearContents()
-        paste.writeObjects([string as NSString])
     }
 }

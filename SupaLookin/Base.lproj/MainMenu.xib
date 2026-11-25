@@ -168,10 +168,10 @@
                     <modifierMask key="keyEquivalentModifierMask"/>
                     <menu key="submenu" title="Help" systemMenu="help" id="1Xd-pd-BoU">
                         <items>
-                            <menuItem title="Integrate by SPM (Click to Copy)" id="tzW-YO-PTy">
+                            <menuItem title="Download SPLKServer.xcframework" id="tzW-YO-PTy">
                                 <modifierMask key="keyEquivalentModifierMask"/>
                             </menuItem>
-                            <menuItem title="https://github.com/weirui-kong/SupaLookin" tag="67" id="B9m-qb-e0j">
+                            <menuItem title="https://github.com/weirui-kong/SupaLookin/releases/latest" tag="67" id="B9m-qb-e0j">
                                 <modifierMask key="keyEquivalentModifierMask"/>
                             </menuItem>
                             <menuItem isSeparatorItem="YES" id="Q9p-dn-YRK"/>

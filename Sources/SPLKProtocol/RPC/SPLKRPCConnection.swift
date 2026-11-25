@@ -5,8 +5,6 @@
 //  Created by Weirui Kong on 2026/11/10.
 //
 
-#if SHOULD_COMPILE_SPLK_SHARED
-
 import Foundation
 import SwiftProtobuf
 
@@ -485,5 +483,3 @@ public actor SPLKRPCConnection {
         request.deadlineMs == 0 ? SPLKProtocolInfo.defaultDeadline : TimeInterval(request.deadlineMs) / 1000
     }
 }
-
-#endif

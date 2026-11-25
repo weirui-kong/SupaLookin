@@ -23,7 +23,7 @@ VERSION="$(sed -n 's/.*SPLK_SERVER_READABLE_VERSION = @"\([^"]*\)".*/\1/p' "$ROO
 mkdir -p "$WORK/package"
 ln -s "$ROOT/Package.swift" "$ROOT/Package.resolved" "$ROOT/Sources" "$ROOT/Tests" "$WORK/package/"
 
-# SPLKServer compiles its server only in Debug, so the optimization that Release would bring is set here.
+# Debug keeps NSAssert and the rest as they've always been; the optimization that Release would bring is set here.
 build() {
     local destination="$1" products="$2"
     (cd "$WORK/package" && xcodebuild -quiet -scheme SPLKServerDynamic -destination "$destination" -configuration Debug \

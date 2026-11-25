@@ -1,4 +1,5 @@
-#ifdef SHOULD_COMPILE_SPLK_SERVER
+#import <TargetConditionals.h>
+#if TARGET_OS_IPHONE
 //
 //  SPLKMultiplatformAdapter.m
 //  
@@ -89,4 +90,4 @@
 
 @end
 
-#endif /* SHOULD_COMPILE_SPLK_SERVER */
+#endif /* TARGET_OS_IPHONE */

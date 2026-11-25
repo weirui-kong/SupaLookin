@@ -1,5 +1,3 @@
-#ifdef SHOULD_COMPILE_SPLK_SHARED 
-
 //
 //  NSSet+SPLK.m
 //  Lookin
@@ -77,5 +75,3 @@
 }
 
 @end
-
-#endif /* SHOULD_COMPILE_SPLK_SHARED */

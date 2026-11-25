@@ -1,5 +1,3 @@
-#ifdef SHOULD_COMPILE_SPLK_SHARED 
-
 //
 //  SPLKAttributesSection.m
 //  Lookin
@@ -52,5 +50,3 @@
 }
 
 @end
-
-#endif /* SHOULD_COMPILE_SPLK_SHARED */

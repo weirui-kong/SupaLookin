@@ -1,5 +1,3 @@
-#ifdef SHOULD_COMPILE_SPLK_SHARED 
-
 //
 //  SPLKAttrIdentifiers.m
 //  Lookin
@@ -249,5 +247,3 @@ SPLKAttrIdentifier const SPLKAttr_UIStackView_Axis_Axis = @"usv_axis_axis";
 SPLKAttrIdentifier const SPLKAttr_UIStackView_Distribution_Distribution = @"usv_dis_dis";
 SPLKAttrIdentifier const SPLKAttr_UIStackView_Alignment_Alignment = @"usv_ali_ali";
 SPLKAttrIdentifier const SPLKAttr_UIStackView_Spacing_Spacing = @"usv_spa_spa";
-
-#endif /* SHOULD_COMPILE_SPLK_SHARED */

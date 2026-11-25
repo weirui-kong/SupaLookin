@@ -1,5 +1,3 @@
-#ifdef SHOULD_COMPILE_SPLK_SHARED 
-
 //
 //  SPLKIvarTrace.m
 //  Lookin
@@ -66,5 +64,3 @@ NSString *const SPLKIvarTraceRelationValue_Self = @"self";
 }
 
 @end
-
-#endif /* SHOULD_COMPILE_SPLK_SHARED */

@@ -1,4 +1,4 @@
-#if SHOULD_COMPILE_SPLK_SERVER
+#if canImport(UIKit)
 
 //
 //  SPLKTraceManager+Extension.swift
@@ -98,4 +98,4 @@ public class SPLKSwiftTraceManager: NSObject {
     }
 }
 
-#endif /* SHOULD_COMPILE_SPLK_SERVER */
+#endif

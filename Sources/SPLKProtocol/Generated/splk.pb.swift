@@ -1,5 +1,3 @@
-#if SHOULD_COMPILE_SPLK_SHARED
-
 // DO NOT EDIT.
 // swift-format-ignore-file
 // swiftlint:disable all
@@ -7513,5 +7511,3 @@ nonisolated extension SPLKV2WaitForIdle: SwiftProtobuf.Message, SwiftProtobuf._M
     return true
   }
 }
-
-#endif

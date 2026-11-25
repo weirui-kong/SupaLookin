@@ -5,8 +5,6 @@
 //  Created by Weirui Kong on 2026/11/25.
 //
 
-#if SHOULD_COMPILE_SPLK_SHARED
-
 import Compression
 import CoreGraphics
 import Foundation
@@ -130,5 +128,3 @@ extension SPLKBridge {
         return length > 0 ? Data(bytes: destination, count: length) : nil
     }
 }
-
-#endif

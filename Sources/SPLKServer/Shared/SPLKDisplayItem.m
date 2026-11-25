@@ -1,5 +1,3 @@
-#ifdef SHOULD_COMPILE_SPLK_SHARED
-
 //
 //  SPLKDisplayItem.m
 //  qmuidemo
@@ -462,5 +460,3 @@
 //}
 
 @end
-
-#endif /* SHOULD_COMPILE_SPLK_SHARED */

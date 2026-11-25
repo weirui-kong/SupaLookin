@@ -5,8 +5,6 @@
 //  Created by Weirui Kong on 2026/11/10.
 //
 
-#if SHOULD_COMPILE_SPLK_SHARED
-
 import Foundation
 import SwiftProtobuf
 
@@ -166,5 +164,3 @@ public actor SPLKHost {
         await closeSession()
     }
 }
-
-#endif

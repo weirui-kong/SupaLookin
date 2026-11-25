@@ -1,5 +1,3 @@
-#ifdef SHOULD_COMPILE_SPLK_SHARED
-
 //
 //  SPLKDashboardBlueprint.m
 //  Lookin
@@ -1192,5 +1190,3 @@
 }
 
 @end
-
-#endif /* SHOULD_COMPILE_SPLK_SHARED */

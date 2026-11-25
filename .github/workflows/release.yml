@@ -102,7 +102,7 @@ jobs:
 
           ## SPLKServer.xcframework
 
-          SPLKServer for iOS and the iOS Simulator, prebuilt, for apps that would rather embed a binary than build the Swift package. Add \`SPLKServer.xcframework\` to your app target with **Embed & Sign**. It works in Debug builds only; keep it out of your Release builds.
+          SPLKServer for iOS and the iOS Simulator, prebuilt. Add \`SPLKServer.xcframework\` to your app target with **Embed & Sign**. Keep it out of your Release builds: it runs in any build it's in.
 
           With Swift Package Manager, from a package of your own:
 

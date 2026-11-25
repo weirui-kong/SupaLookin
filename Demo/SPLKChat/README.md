@@ -2,9 +2,7 @@
 
 A small chat app for trying Supa Lookin against something realistic: inspecting, Live Control, and agent takeover over MCP, on simulators and on devices.
 
-It embeds SPLKServer as a dynamic framework, through the `SPLKServerDynamic` product of the repository root's `Package.swift`. Nothing in the app imports it: SPLKServer starts itself once the app finishes launching, and listens on 127.0.0.1:47264–47269 on a simulator, or on 47275–47279 over USB on a device.
-
-SPLKServer only compiles in the Debug configuration, so build Debug. A Release build still embeds the framework, but nothing in it listens.
+It embeds SPLKServer as a dynamic framework, built from source through the `SPLKServerDynamic` product of the repository root's `Package.swift`. Nothing in the app imports it: SPLKServer starts itself once the app finishes launching, and listens on 127.0.0.1:47264–47269 on a simulator, or on 47275–47279 over USB on a device, in Debug and Release builds alike.
 
 ## What's in it
 

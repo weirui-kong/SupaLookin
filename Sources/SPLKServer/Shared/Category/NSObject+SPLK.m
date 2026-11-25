@@ -1,5 +1,3 @@
-#ifdef SHOULD_COMPILE_SPLK_SHARED 
-
 //
 //  NSObject+SPLK.m
 //  Lookin
@@ -234,5 +232,3 @@ static char kAssociatedObjectKey_SPLKAllBindObjects;
 }
 
 @end
-
-#endif /* SHOULD_COMPILE_SPLK_SHARED */

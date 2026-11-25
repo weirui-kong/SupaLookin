@@ -7,8 +7,6 @@
 
 #include "SPLKQOI.h"
 
-#if SHOULD_COMPILE_SPLK_SHARED
-
 #define SPLK_QOI_OP_INDEX 0x00
 #define SPLK_QOI_OP_DIFF 0x40
 #define SPLK_QOI_OP_LUMA 0x80
@@ -188,5 +186,3 @@ bool SPLKQOIDecode(const uint8_t *data, size_t length, uint32_t width, uint32_t 
     }
     return true;
 }
-
-#endif

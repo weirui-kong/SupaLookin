@@ -5,8 +5,6 @@
 //  Created by Weirui Kong on 2026/11/10.
 //
 
-#if SHOULD_COMPILE_SPLK_SHARED
-
 import Foundation
 import CoreGraphics
 import SPLKProtocol
@@ -250,5 +248,3 @@ extension SPLKBridge {
         return constraint
     }
 }
-
-#endif

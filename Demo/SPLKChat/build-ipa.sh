@@ -6,7 +6,6 @@
 #  Created by Weirui Kong on 2026/11/18.
 #
 # Builds a Debug SPLKChat.ipa signed ad hoc, for TrollStore to install on a jailbroken device.
-# Debug only: SPLKServer doesn't listen in Release.
 
 set -euo pipefail
 

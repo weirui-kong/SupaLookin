@@ -1,5 +1,3 @@
-#ifdef SHOULD_COMPILE_SPLK_SHARED 
-
 //
 //  SPLKWeakContainer.m
 //  Lookin
@@ -39,5 +37,3 @@
 }
 
 @end
-
-#endif /* SHOULD_COMPILE_SPLK_SHARED */

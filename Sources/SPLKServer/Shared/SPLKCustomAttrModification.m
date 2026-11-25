@@ -1,4 +1,3 @@
-#ifdef SHOULD_COMPILE_SPLK_SHARED
 //
 //  SPLKCustomAttrModification.m
 //  SPLKServer
@@ -30,5 +29,3 @@
 }
 
 @end
-
-#endif /* SHOULD_COMPILE_SPLK_SHARED */

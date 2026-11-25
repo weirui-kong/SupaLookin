@@ -1,5 +1,3 @@
-#ifdef SHOULD_COMPILE_SPLK_SHARED 
-
 //
 //  SPLKAppInfo.m
 //  qmuidemo
@@ -243,5 +241,3 @@ static NSString * const CodingKey_DeviceType = @"8";
 }
 
 @end
-
-#endif /* SHOULD_COMPILE_SPLK_SHARED */

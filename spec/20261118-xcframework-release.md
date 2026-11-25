@@ -75,3 +75,7 @@ with the version and checksum filled in.
 The framework is still built in the Debug configuration, since that's what compiles the server, but with Release's optimization: the script passes `SWIFT_OPTIMIZATION_LEVEL=-O`, `SWIFT_COMPILATION_MODE=wholemodule`, `GCC_OPTIMIZATION_LEVEL=s` and `ENABLE_TESTABILITY=NO`. Everything else stays as in Debug, `NSAssert` included. Nothing changes for an app embedding it: the zip, its contents and the Debug-only note are the same.
 
 Verified by building SPLK Chat with the same settings and running `SPLKMaskLiveTests` against it on a device.
+
+## Update: the only way in (see `20261126-xcframework-only.md`)
+
+The framework is now the only way apps integrate SPLKServer; the Swift package isn't one any more. The server no longer depends on the Debug configuration to compile, so the framework runs in any build it's embedded in, and the README and release notes say to keep it out of Release builds for that reason. The script still builds Debug, now only for `NSAssert` and the rest.

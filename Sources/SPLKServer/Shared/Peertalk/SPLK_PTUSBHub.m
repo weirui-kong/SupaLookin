@@ -1,5 +1,3 @@
-#ifdef SHOULD_COMPILE_SPLK_SHARED 
-
 #import "SPLK_PTUSBHub.h"
 
 
@@ -670,5 +668,3 @@ static NSString *kPlistPacketTypeConnect = @"Connect";
 }
 
 @end
-
-#endif /* SHOULD_COMPILE_SPLK_SHARED */

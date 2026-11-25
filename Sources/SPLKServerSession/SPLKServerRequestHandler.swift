@@ -5,7 +5,7 @@
 //  Created by Weirui Kong on 2026/11/10.
 //
 
-#if SHOULD_COMPILE_SPLK_SERVER
+#if canImport(UIKit)
 
 import Foundation
 import UIKit

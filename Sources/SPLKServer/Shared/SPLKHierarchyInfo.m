@@ -1,5 +1,3 @@
-#ifdef SHOULD_COMPILE_SPLK_SHARED 
-
 //
 //  SPLKDisplayInfo.m
 //  WeRead
@@ -102,5 +100,3 @@ static NSString * const SPLKHierarchyInfoCodingKey_CollapsedClassList = @"4";
 }
 
 @end
-
-#endif /* SHOULD_COMPILE_SPLK_SHARED */

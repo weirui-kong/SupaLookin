@@ -2,23 +2,6 @@
 
 import PackageDescription
 
-let serverPlatforms: [Platform] = [.iOS, .tvOS, .visionOS, .macCatalyst]
-
-let sharedDefines: [CSetting] = [
-    .define("SHOULD_COMPILE_SPLK_SHARED", to: "1", .when(platforms: [.macOS])),
-    .define("SHOULD_COMPILE_SPLK_SHARED", to: "1", .when(platforms: serverPlatforms, configuration: .debug)),
-    .define("SHOULD_COMPILE_SPLK_SERVER", to: "1", .when(platforms: serverPlatforms, configuration: .debug)),
-]
-
-let sharedSwiftDefines: [SwiftSetting] = [
-    .define("SHOULD_COMPILE_SPLK_SHARED", .when(platforms: [.macOS])),
-    .define("SHOULD_COMPILE_SPLK_SHARED", .when(platforms: serverPlatforms, configuration: .debug)),
-]
-
-let serverSwiftDefines: [SwiftSetting] = [
-    .define("SHOULD_COMPILE_SPLK_SERVER", .when(platforms: serverPlatforms, configuration: .debug)),
-]
-
 let package = Package(
     name: "SupaLookin",
     platforms: [
@@ -38,23 +21,19 @@ let package = Package(
     targets: [
         .target(
             name: "SPLKServerBase",
-            path: "Sources/SPLKServerBase",
-            cSettings: sharedDefines
+            path: "Sources/SPLKServerBase"
         ),
         .target(
             name: "SPLKServerSwift",
             dependencies: ["SPLKServerBase"],
             path: "Sources/SPLKServerSwift",
-            swiftSettings: [
-                .define("SHOULD_COMPILE_SPLK_SERVER", .when(platforms: serverPlatforms, configuration: .debug)),
-                .swiftLanguageMode(.v5),
-            ]
+            swiftSettings: [.swiftLanguageMode(.v5)]
         ),
         .target(
             name: "SPLKServer",
             dependencies: ["SPLKServerBase", "SPLKServerSwift"],
             path: "Sources/SPLKServer",
-            cSettings: sharedDefines + [
+            cSettings: [
                 .headerSearchPath("Server/Category"),
                 .headerSearchPath("Server/Connection"),
                 .headerSearchPath("Server/Connection/RequestHandler"),
@@ -65,25 +44,21 @@ let package = Package(
             name: "SPLKProtocol",
             dependencies: [.product(name: "SwiftProtobuf", package: "swift-protobuf")],
             path: "Sources/SPLKProtocol",
-            exclude: ["Schema"],
-            swiftSettings: sharedSwiftDefines
+            exclude: ["Schema"]
         ),
         .target(
             name: "SPLKImageCodec",
-            path: "Sources/SPLKImageCodec",
-            cSettings: sharedDefines
+            path: "Sources/SPLKImageCodec"
         ),
         .target(
             name: "SPLKModelBridge",
             dependencies: ["SPLKProtocol", "SPLKServer", "SPLKImageCodec"],
-            path: "Sources/SPLKModelBridge",
-            swiftSettings: sharedSwiftDefines
+            path: "Sources/SPLKModelBridge"
         ),
         .target(
             name: "SPLKServerSession",
             dependencies: ["SPLKProtocol", "SPLKModelBridge", "SPLKServer"],
-            path: "Sources/SPLKServerSession",
-            swiftSettings: serverSwiftDefines
+            path: "Sources/SPLKServerSession"
         ),
         .testTarget(
             name: "SPLKProtocolTests",

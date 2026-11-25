@@ -167,3 +167,7 @@ SPM always builds `SPLKServerSwift`, so `SPLKTraceManager` imports it unconditio
 ## Update: e2e demo (see `20261110-protocol-v2-m2-server.md`)
 
 The repository now holds a demo app's sources under `Scripts/e2e/` for end-to-end tests. It is a Swift file and an `Info.plist` built by `Scripts/e2e-sim.sh`, not an Xcode project. "A demo iOS app in this repository" under Out of scope no longer applies.
+
+## Update: xcframework only (see `20261126-xcframework-only.md`)
+
+Apps now integrate SPLKServer only through the prebuilt `SPLKServer.xcframework`; the Swift package is no longer an integration path. `SHOULD_COMPILE_SPLK_SHARED` is gone, and `SHOULD_COMPILE_SPLK_SERVER` became a platform check (`TARGET_OS_IPHONE` / `canImport(UIKit)`), so the server compiles in every configuration and Release builds no longer get empty modules.

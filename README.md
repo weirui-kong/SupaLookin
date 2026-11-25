@@ -6,21 +6,16 @@ SupaLookin is based on [Lookin](https://github.com/hughkli/Lookin) and [LookinSe
 
 ## Integrating SPLKServer
 
-Add this repository as a Swift package and link the `SPLKServer` product to your iOS app target:
+SPLKServer ships as `SPLKServer.xcframework.zip` with every [release](https://github.com/weirui-kong/SupaLookin/releases/latest), prebuilt for iOS and the iOS Simulator.
 
-```swift
-.package(url: "https://github.com/weirui-kong/SupaLookin", from: "1.0.16")
-```
-
-In Xcode: File › Add Package Dependencies…, enter `https://github.com/weirui-kong/SupaLookin`, and add `SPLKServer` to your app.
-
-- SPLKServer only does anything in the Debug configuration. Its own modules are empty in Release builds, but SPM still links swift-protobuf there, about 1.7 MB.
-- Building it needs Xcode 26 or later (Swift 6.2), which its swift-protobuf dependency requires.
-- Requires iOS 13, tvOS 13 or visionOS 1 or later. Mac Catalyst is supported.
+- Add `SPLKServer.xcframework` to your app target with **Embed & Sign**. Or, with Swift Package Manager, use it as a `binaryTarget`; the release notes give its URL and checksum.
+- Nothing imports it: it starts itself when the app launches.
+- Keep it out of your Release builds: it runs in any build it's in.
+- Requires iOS 15 or later.
 - SPLKServer listens on ports 47264–47269 (simulator) and 47275–47279 (USB device). It doesn't clash with stock LookinServer, so both can run in the same app.
 - The hooks your app can implement are LookinServer's with the `splk_` prefix: `splk_customDebugInfos`, `splk_collapsedClassList`, `splk_colorAlias`, `splk_shouldCaptureImage`, and so on.
 
-Every [release](https://github.com/weirui-kong/SupaLookin/releases/latest) also carries `SPLKServer.xcframework.zip`, SPLKServer prebuilt for iOS and the iOS Simulator, for apps that would rather embed a binary than build the package. Add `SPLKServer.xcframework` to your app target with **Embed & Sign**, or use it as a SwiftPM `binaryTarget`; the release notes give its URL and checksum. Nothing imports it: it starts itself when the app launches. It's built in Debug and works only there, so keep it out of your Release builds.
+Apps that added this repository as a Swift package should switch to the framework. The package is no longer meant for apps, and its newer versions run in Release builds too.
 
 ## Documentation
 

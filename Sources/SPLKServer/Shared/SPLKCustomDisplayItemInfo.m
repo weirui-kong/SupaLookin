@@ -1,5 +1,3 @@
-#ifdef SHOULD_COMPILE_SPLK_SHARED
-
 //
 //  SPLKCustomDisplayItemInfo.m
 //  SPLKServer
@@ -55,5 +53,3 @@
 }
 
 @end
-
-#endif /* SHOULD_COMPILE_SPLK_SHARED */

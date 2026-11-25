@@ -1,5 +1,3 @@
-#ifdef SHOULD_COMPILE_SPLK_SHARED 
-
 //
 //  Image+SPLK.m
 //  SPLKServer
@@ -22,5 +20,3 @@
 @end
 
 #endif
-
-#endif /* SHOULD_COMPILE_SPLK_SHARED */
